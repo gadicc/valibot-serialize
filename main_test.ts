@@ -34,6 +34,15 @@ describe("serialize (AST)", () => {
     });
   });
 
+  it("object with optional keys advertises optionalKeys", () => {
+    const s = serialize(v.object({ a: v.optional(v.string()), b: v.number() }));
+    expect(s.node).toEqual({
+      type: "object",
+      entries: { a: { type: "optional", base: { type: "string" } }, b: { type: "number" } },
+      optionalKeys: ["a"],
+    });
+  });
+
   it("optional and nullable wrappers", () => {
     const opt = serialize(v.optional(v.string()));
     expect(opt.node).toEqual({ type: "optional", base: { type: "string" } });
@@ -68,6 +77,20 @@ describe("serialize (AST)", () => {
   it("number extras (integer/safe/multipleOf)", () => {
     const s = serialize(v.pipe(v.number(), v.integer(), v.safeInteger(), v.multipleOf(3)));
     expect(s.node).toEqual({ type: "number", integer: true, safeInteger: true, multipleOf: 3 });
+  });
+
+  it("enum node (union of literals and picklist)", () => {
+    const u = serialize(v.union([v.literal("a"), v.literal("b")]));
+    expect(u.node).toEqual({ type: "enum", values: ["a", "b"] });
+    const e = serialize(v.picklist(["x", "y", "z"]));
+    expect(e.node).toEqual({ type: "enum", values: ["x", "y", "z"] });
+  });
+
+  it("set and map nodes", () => {
+    const s = serialize(v.set(v.string()));
+    expect(s.node).toEqual({ type: "set", value: { type: "string" } });
+    const m = serialize(v.map(v.string(), v.number()));
+    expect(m.node).toEqual({ type: "map", key: { type: "string" }, value: { type: "number" } });
   });
 
   it("union, tuple, record nodes", () => {
@@ -180,6 +203,20 @@ describe("deserialize", () => {
     expect(() => v.parse(r, { a: 1, b: 2 })).not.toThrow();
     expect(() => v.parse(r, { a: "x" }))
       .toThrow();
+  });
+
+  it("enum + set/map behavior", () => {
+    const e = deserialize(serialize(v.union([v.literal("a"), v.literal("b")])));
+    expect(() => v.parse(e, "a")).not.toThrow();
+    expect(() => v.parse(e, "c")).toThrow();
+
+    const s = deserialize(serialize(v.set(v.number())));
+    expect(() => v.parse(s, new Set([1, 2]))).not.toThrow();
+    expect(() => v.parse(s, [1, 2] as unknown as Set<number>)).toThrow();
+
+    const m = deserialize(serialize(v.map(v.string(), v.number())));
+    expect(() => v.parse(m, new Map([["a", 1]]))).not.toThrow();
+    expect(() => v.parse(m, { a: 1 } as unknown as Map<string, number>)).toThrow();
   });
 
   it("array constraints behavior", () => {

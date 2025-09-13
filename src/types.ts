@@ -8,13 +8,16 @@ export type SchemaNode =
   | { type: "boolean" }
   | { type: "literal"; value: PrimitiveLiteral }
   | { type: "array"; item: SchemaNode; minLength?: number; maxLength?: number; length?: number }
-  | { type: "object"; entries: Record<string, SchemaNode> }
+  | { type: "object"; entries: Record<string, SchemaNode>; optionalKeys?: string[] }
   | { type: "optional"; base: SchemaNode }
   | { type: "nullable"; base: SchemaNode }
   | { type: "nullish"; base: SchemaNode }
   | { type: "union"; options: SchemaNode[] }
   | { type: "tuple"; items: SchemaNode[] }
-  | { type: "record"; key: SchemaNode; value: SchemaNode };
+  | { type: "record"; key: SchemaNode; value: SchemaNode }
+  | { type: "enum"; values: PrimitiveLiteral[] }
+  | { type: "set"; value: SchemaNode }
+  | { type: "map"; key: SchemaNode; value: SchemaNode };
 
 export interface SerializedSchema {
   kind: "schema";

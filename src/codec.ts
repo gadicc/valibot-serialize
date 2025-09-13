@@ -65,6 +65,10 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       for (const key of Object.keys(entries as Record<string, unknown>)) {
         if (!isSchemaNode((entries as Record<string, unknown>)[key])) return false;
       }
+      const opt = (node as { optionalKeys?: unknown }).optionalKeys;
+      if (opt !== undefined) {
+        if (!Array.isArray(opt) || opt.some((k) => typeof k !== "string")) return false;
+      }
       return true;
     }
     case "optional":
@@ -82,6 +86,22 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       return Array.isArray(items) && items.every((n) => isSchemaNode(n));
     }
     case "record":
+      return (
+        isSchemaNode((node as { key?: unknown }).key) &&
+        isSchemaNode((node as { value?: unknown }).value)
+      );
+    case "enum": {
+      const values = (node as { values?: unknown }).values;
+      if (!Array.isArray(values)) return false;
+      for (const v of values) {
+        const t = typeof v;
+        if (!(t === "string" || t === "number" || t === "boolean") && v !== null) return false;
+      }
+      return true;
+    }
+    case "set":
+      return isSchemaNode((node as { value?: unknown }).value);
+    case "map":
       return (
         isSchemaNode((node as { key?: unknown }).key) &&
         isSchemaNode((node as { value?: unknown }).value)
@@ -116,12 +136,23 @@ function encodeNode(schema: AnySchema): SchemaNode {
     case "boolean":
       return { type: "boolean" };
     case "literal": {
-      const value = (snap as { value?: unknown }).value ?? (any as { value?: unknown }).value;
+      const value = (snap as { literal?: unknown; value?: unknown }).literal ?? (snap as { value?: unknown }).value ?? (any as { literal?: unknown; value?: unknown }).literal ?? (any as { value?: unknown }).value;
       if (value === undefined) throw new Error("Unsupported literal schema without value");
       if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
         return { type: "literal", value };
       }
       throw new Error("Only JSON-serializable literal values are supported");
+    }
+    case "picklist": {
+      const options = (snap as { options?: unknown[] }).options ?? (any as { options?: unknown[] }).options;
+      if (!Array.isArray(options)) throw new Error("Unsupported picklist schema: missing options");
+      const out: Array<string | number | boolean | null> = [];
+      for (const val of options) {
+        const t = typeof val;
+        if (t === "string" || t === "number" || t === "boolean" || val === null) out.push(val as never);
+        else throw new Error("Unsupported picklist value type");
+      }
+      return { type: "enum", values: out };
     }
     case "array": {
       return encodeArray(any);
@@ -132,12 +163,15 @@ function encodeNode(schema: AnySchema): SchemaNode {
         throw new Error("Unsupported object schema: missing entries");
       }
       const out: Record<string, SchemaNode> = {};
+      const optionalKeys: string[] = [];
       for (const key of Object.keys(entries)) {
         const sub = entries[key] as AnySchema | undefined;
         if (!sub) throw new Error(`Unsupported object schema: invalid entry for key '${key}'`);
-        out[key] = encodeNode(sub);
+        const encoded = encodeNode(sub);
+        out[key] = encoded;
+        if (encoded.type === "optional") optionalKeys.push(key);
       }
-      return { type: "object", entries: out };
+      return optionalKeys.length > 0 ? { type: "object", entries: out, optionalKeys } : { type: "object", entries: out };
     }
     case "optional": {
       const wrapped = (any as { wrapped?: unknown }).wrapped as AnySchema | undefined;
@@ -157,7 +191,12 @@ function encodeNode(schema: AnySchema): SchemaNode {
     case "union": {
       const options = (any as { options?: unknown[] }).options as AnySchema[] | undefined;
       if (!Array.isArray(options)) throw new Error("Unsupported union schema: missing options");
-      return { type: "union", options: options.map((o) => encodeNode(o)) };
+      const enc = options.map((o) => encodeNode(o));
+      const literals = enc.every((n) => n.type === "literal");
+      if (literals) {
+        return { type: "enum", values: enc.map((n) => (n as { type: "literal"; value: unknown }).value as never) };
+      }
+      return { type: "union", options: enc };
     }
     case "tuple": {
       const items = (any as { items?: unknown[] }).items as AnySchema[] | undefined;
@@ -169,6 +208,28 @@ function encodeNode(schema: AnySchema): SchemaNode {
       const value = (any as { value?: unknown }).value as AnySchema | undefined;
       if (!key || !value) throw new Error("Unsupported record schema: missing key/value");
       return { type: "record", key: encodeNode(key), value: encodeNode(value) };
+    }
+    case "enum": {
+      const values = ((any as { options?: unknown[] }).options as unknown[]) ?? ((any as { enum?: unknown[] }).enum as unknown[]);
+      if (!Array.isArray(values)) throw new Error("Unsupported enum schema: missing options");
+      const out: Array<string | number | boolean | null> = [];
+      for (const val of values) {
+        const t = typeof val;
+        if (t === "string" || t === "number" || t === "boolean" || val === null) out.push(val as never);
+        else throw new Error("Unsupported enum value type");
+      }
+      return { type: "enum", values: out };
+    }
+    case "set": {
+      const value = (any as { value?: unknown }).value as AnySchema | undefined;
+      if (!value) throw new Error("Unsupported set schema: missing value");
+      return { type: "set", value: encodeNode(value) };
+    }
+    case "map": {
+      const key = (any as { key?: unknown }).key as AnySchema | undefined;
+      const value = (any as { value?: unknown }).value as AnySchema | undefined;
+      if (!key || !value) throw new Error("Unsupported map schema: missing key/value");
+      return { type: "map", key: encodeNode(key), value: encodeNode(value) };
     }
     default:
       throw new Error(`Unsupported schema type for serialization: ${String(type)}`);
@@ -332,6 +393,14 @@ function decodeNode(node: SchemaNode): AnySchema {
       return v.tuple(node.items.map((i) => decodeNode(i)) as never);
     case "record":
       return v.record(decodeNode(node.key) as never, decodeNode(node.value) as never);
+    case "enum": {
+      const literals = node.values.map((val) => v.literal(val as never));
+      return v.union(literals as never);
+    }
+    case "set":
+      return v.set(decodeNode(node.value) as never);
+    case "map":
+      return v.map(decodeNode(node.key) as never, decodeNode(node.value) as never);
     default:
       throw new Error(`Unsupported node type: ${(node as { type: string }).type}`);
   }
