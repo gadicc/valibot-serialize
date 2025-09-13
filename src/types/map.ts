@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -82,3 +83,9 @@ export function mapFromJsonSchema(schema: Record<string, unknown>, ctx: { conver
   };
 }
 
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"map"> = encodeMap as never;
+export const decode: Decoder<"map"> = decodeMap as never;
+export const toCode: ToCode<"map"> = mapToCode as never;
+export const toJsonSchema: ToJsonSchema<"map"> = mapToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = mapFromJsonSchema as never;

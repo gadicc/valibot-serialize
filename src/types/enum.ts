@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -45,3 +46,9 @@ export function enumFromJsonSchema(schema: Record<string, unknown>): Extract<Sch
   return { type: "enum", values: (schema as { enum?: unknown[] }).enum as never };
 }
 
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"enum"> = encodeEnum as never;
+export const decode: Decoder<"enum"> = decodeEnum as never;
+export const toCode: ToCode<"enum"> = enumToCode as never;
+export const toJsonSchema: ToJsonSchema<"enum"> = enumToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = enumFromJsonSchema as never;

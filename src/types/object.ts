@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -126,3 +127,9 @@ function propKey(k: string): string {
   return /^(?:[$A-Z_a-z][$\w]*)$/.test(k) ? k : JSON.stringify(k);
 }
 
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"object"> = encodeObject as never;
+export const decode: Decoder<"object"> = decodeObject as never;
+export const toCode: ToCode<"object"> = objectToCode as never;
+export const toJsonSchema: ToJsonSchema<"object"> = objectToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = objectFromJsonSchema as never;

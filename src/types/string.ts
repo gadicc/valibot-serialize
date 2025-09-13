@@ -4,6 +4,7 @@ import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
 import { escapeRegex, unescapeRegex } from "../regex_utils.ts";
 import { patterns as pat, detect } from "../patterns.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -483,3 +484,10 @@ function regexLiteral(pattern: string, flags?: string): string {
 
 // Helpers to avoid static import cycles
 // no dynamic imports here; this module is self-contained
+
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"string"> = encodeString;
+export const decode: Decoder<"string"> = decodeString as never;
+export const toCode: ToCode<"string"> = stringToCode as never;
+export const toJsonSchema: ToJsonSchema<"string"> = stringToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = stringFromJsonSchema as never;

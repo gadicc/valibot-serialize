@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -53,3 +54,10 @@ export function tupleFromJsonSchema(schema: Record<string, unknown>, ctx: { conv
   if (typeof (schema as { items?: unknown }).items === "object") (node as { rest?: SchemaNode }).rest = ctx.convert((schema as { items: Record<string, unknown> }).items);
   return node;
 }
+
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"tuple"> = encodeTuple as never;
+export const decode: Decoder<"tuple"> = decodeTuple as never;
+export const toCode: ToCode<"tuple"> = tupleToCode as never;
+export const toJsonSchema: ToJsonSchema<"tuple"> = tupleToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = tupleFromJsonSchema as never;

@@ -1,6 +1,6 @@
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import { FORMAT_VERSION, type SchemaNode, type SerializedSchema } from "./types.ts";
-import { codecs, stringCodec, numberCodec, booleanCodec, dateCodec, literalCodec, enumCodec, fileCodec, blobCodec, arrayCodec, objectCodec, optionalCodec, nullableCodec, nullishCodec, unionCodec, tupleCodec, recordCodec, setCodec, mapCodec } from "./types/registry.ts";
+import { codecs, stringCodec, numberCodec, booleanCodec, dateCodec, literalCodec, enumCodec, fileCodec, blobCodec, arrayCodec, objectCodec, optionalCodec, nullableCodec, nullishCodec, unionCodec, tupleCodec, recordCodec, setCodec, mapCodec } from "./registry.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 

@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -85,3 +86,9 @@ export function blobFromJsonSchema(_schema: Record<string, unknown>): Extract<Sc
   return { type: "blob" };
 }
 
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"blob"> = encodeBlob as never;
+export const decode: Decoder<"blob"> = decodeBlob as never;
+export const toCode: ToCode<"blob"> = blobToCode as never;
+export const toJsonSchema: ToJsonSchema<"blob"> = blobToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = blobFromJsonSchema as never;

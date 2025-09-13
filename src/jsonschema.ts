@@ -1,5 +1,5 @@
 import type { SchemaNode, SerializedSchema } from "./types.ts";
-import { stringCodec, numberCodec, booleanCodec, dateCodec, literalCodec, enumCodec, fileCodec, blobCodec, arrayCodec, objectCodec, optionalCodec, nullableCodec, nullishCodec, unionCodec, tupleCodec, recordCodec, setCodec, mapCodec } from "./types/registry.ts";
+import { stringCodec, numberCodec, booleanCodec, dateCodec, literalCodec, enumCodec, fileCodec, blobCodec, arrayCodec, objectCodec, optionalCodec, nullableCodec, nullishCodec, unionCodec, tupleCodec, recordCodec, setCodec, mapCodec } from "./registry.ts";
 
 type JsonSchema = Record<string, unknown>;
 

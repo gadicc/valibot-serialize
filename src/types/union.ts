@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -41,3 +42,9 @@ export function unionFromJsonSchema(schema: Record<string, unknown>, ctx: { conv
   return { type: "union", options: ((schema as { anyOf?: Record<string, unknown>[] }).anyOf ?? []).map(ctx.convert) };
 }
 
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"union"> = encodeUnion as never;
+export const decode: Decoder<"union"> = decodeUnion as never;
+export const toCode: ToCode<"union"> = unionToCode as never;
+export const toJsonSchema: ToJsonSchema<"union"> = unionToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = unionFromJsonSchema as never;

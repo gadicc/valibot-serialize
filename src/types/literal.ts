@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -38,6 +39,13 @@ export function literalFromJsonSchema(schema: Record<string, unknown>): Extract<
   return { type: "literal", value: (schema as { const?: unknown }).const as never };
 }
 
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"literal"> = encodeLiteral as never;
+export const decode: Decoder<"literal"> = decodeLiteral as never;
+export const toCode: ToCode<"literal"> = literalToCode as never;
+export const toJsonSchema: ToJsonSchema<"literal"> = literalToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = literalFromJsonSchema as never;
+
 function lit(vl: unknown): string {
   switch (typeof vl) {
     case "string":
@@ -52,4 +60,3 @@ function lit(vl: unknown): string {
       return JSON.stringify(vl);
   }
 }
-

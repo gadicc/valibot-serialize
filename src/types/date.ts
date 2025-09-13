@@ -2,6 +2,7 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
+import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -33,3 +34,9 @@ export function dateFromJsonSchema(_schema: Record<string, unknown>): Extract<Sc
   return { type: "date" };
 }
 
+// Named export aliases for consistency with module.d.ts
+export const encode: Encoder<"date"> = encodeDate as never;
+export const decode: Decoder<"date"> = decodeDate as never;
+export const toCode: ToCode<"date"> = dateToCode as never;
+export const toJsonSchema: ToJsonSchema<"date"> = dateToJsonSchema as never;
+export const fromJsonSchema: FromJsonSchema = dateFromJsonSchema as never;
