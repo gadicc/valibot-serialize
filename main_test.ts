@@ -171,6 +171,28 @@ describe("serialize (AST)", () => {
     const enumJs = toJsonSchema(enumAst);
     expect((enumJs as Record<string, unknown>).enum).toEqual(["x", "y"]);
   });
+
+  it("fromJsonSchema subset roundtrip", async () => {
+    const js = {
+      type: "object",
+      properties: {
+        a: { type: "string", minLength: 1 },
+        b: { type: "number" },
+      },
+      required: ["a"],
+      additionalProperties: false,
+      minProperties: 1,
+    } as const;
+    const { fromJsonSchema } = await import("./main.ts");
+    const serialized = fromJsonSchema(js as unknown as Record<string, unknown>);
+    expect(isSerializedSchema(serialized)).toBe(true);
+    const node = serialized.node as { type: string; entries: Record<string, unknown>; policy: string };
+    expect(node.type).toBe("object");
+    expect(Object.keys(node.entries)).toEqual(["a", "b"]);
+    expect(node.policy).toBe("strict");
+    const back = toJsonSchema(serialized) as Record<string, unknown>;
+    expect(back.type).toBe("object");
+  });
 });
 
 describe("type guard", () => {

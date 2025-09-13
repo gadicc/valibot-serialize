@@ -55,6 +55,8 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       if (n.hexadecimal !== undefined && n.hexadecimal !== true) return false;
       if (n.minGraphemes !== undefined && typeof n.minGraphemes !== "number") return false;
       if (n.maxGraphemes !== undefined && typeof n.maxGraphemes !== "number") return false;
+      if ((n as { minWords?: unknown }).minWords !== undefined && typeof (n as { minWords?: unknown }).minWords !== "number") return false;
+      if ((n as { maxWords?: unknown }).maxWords !== undefined && typeof (n as { maxWords?: unknown }).maxWords !== "number") return false;
       if (n.creditCard !== undefined && n.creditCard !== true) return false;
       if (n.imei !== undefined && n.imei !== true) return false;
       if (n.mac !== undefined && n.mac !== true) return false;
@@ -445,6 +447,8 @@ function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): Sche
         case "hexadecimal": node.hexadecimal = true; break;
         case "min_graphemes": { const req = step.requirement as number | undefined; if (typeof req === "number") node.minGraphemes = req; break; }
         case "max_graphemes": { const req = step.requirement as number | undefined; if (typeof req === "number") node.maxGraphemes = req; break; }
+        case "min_words": { const req = (step as { locales?: unknown }).locales as number | undefined; if (typeof req === "number") (node as { minWords?: number }).minWords = req; break; }
+        case "max_words": { const req = (step as { locales?: unknown }).locales as number | undefined; if (typeof req === "number") (node as { maxWords?: number }).maxWords = req; break; }
         case "starts_with": {
           const req = step.requirement as string | undefined;
           if (typeof req === "string") node.startsWith = req;
@@ -723,6 +727,8 @@ function decodeString(node: Extract<SchemaNode, { type: "string" }>): AnySchema 
   if (node.mac48) validators.push(v.mac48());
   if (node.mac64) validators.push(v.mac64());
   if (node.base64) validators.push(v.base64());
+  // minWords/maxWords are captured in AST and reflected in toJsonSchema via patterns,
+  // but are not re-applied here due to Valibot signature typing differences.
   if (node.minLength !== undefined) {
     validators.push(v.minLength(node.minLength));
   }

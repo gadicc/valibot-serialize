@@ -56,8 +56,13 @@ function convertNode(node: SchemaNode): JsonSchema {
       return { anyOf: [convertNode(node.base), { type: "null" }] };
     case "nullish":
       return { anyOf: [convertNode(node.base), { type: "null" }] };
-    case "union":
+    case "union": {
+      const literals = node.options.every((o) => o.type === "literal");
+      if (literals) {
+        return { enum: (node.options as Extract<SchemaNode, { type: "literal" }>[]) .map((o) => o.value) } as JsonSchema;
+      }
       return { anyOf: node.options.map(convertNode) };
+    }
     case "tuple": {
       const schema: JsonSchema = {
         type: "array",
@@ -123,6 +128,27 @@ function buildStringSchema(node: Extract<SchemaNode, { type: "string" }>): JsonS
   if (node.pattern) patterns.push(node.pattern);
   if (node.startsWith) patterns.push(`^${escapeRegex(node.startsWith)}.*`);
   if (node.endsWith) patterns.push(`.*${escapeRegex(node.endsWith)}$`);
+  if (node.hexColor) patterns.push("^#?[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$");
+  if (node.slug) patterns.push("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+  if (node.digits) patterns.push("^[0-9]+$");
+  if (node.hexadecimal) patterns.push("^[0-9A-Fa-f]+$");
+  // ISO date/time patterns (approximate)
+  if (node.isoDate) patterns.push("^\\d{4}-\\d{2}-\\d{2}$");
+  if (node.isoTime) patterns.push("^\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?(Z|[+\\-]\\d{2}:?\\d{2})?$");
+  if (node.isoTimeSecond) patterns.push("^\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+\\-]\\d{2}:?\\d{2})?$");
+  if (node.isoDateTime || node.isoTimestamp) patterns.push("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?(Z|[+\\-]\\d{2}:?\\d{2})?$");
+  if (node.isoWeek) patterns.push("^\\d{4}-W\\d{2}(-\\d)?$");
+  // Word count approximations
+  if ((node as { minWords?: number }).minWords !== undefined) {
+    const n = (node as { minWords: number }).minWords;
+    // At least n words: require at least n-1 spaces and final word
+    patterns.push(`^(?:\\S+\\s+){${Math.max(0, n - 1)}}\\S+(?:\\s+\\S+)*$`);
+  }
+  if ((node as { maxWords?: number }).maxWords !== undefined) {
+    const m = (node as { maxWords: number }).maxWords;
+    // At most m words: up to m occurrences of word blocks separated by whitespace
+    patterns.push(`^\\s*(?:\\S+(?:\\s+|$)){0,${m}}$`);
+  }
   if (patterns.length === 1) schema.pattern = patterns[0];
   else if (patterns.length > 1) schema.allOf = patterns.map((p) => ({ pattern: p }));
   const formats: string[] = [];
@@ -131,6 +157,11 @@ function buildStringSchema(node: Extract<SchemaNode, { type: "string" }>): JsonS
   if (node.uuid) formats.push("uuid");
   if (node.ipv4) formats.push("ipv4");
   if (node.ipv6) formats.push("ipv6");
+  if (node.ip && !node.ipv4 && !node.ipv6) {
+    // generic IP: accept both
+    (schema.anyOf ??= []) as unknown as Array<unknown>;
+    (schema.anyOf as Array<unknown>).push({ type: "string", format: "ipv4" }, { type: "string", format: "ipv6" });
+  }
   if (formats.length === 1) schema.format = formats[0];
   else if (formats.length > 1) schema.anyOf = formats.map((f) => ({ type: "string", format: f }));
   return schema;
@@ -152,4 +183,3 @@ function escapeRegex(s: string): string {
 }
 
 export type { JsonSchema };
-
