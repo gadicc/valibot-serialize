@@ -79,8 +79,13 @@ describe("serialize (AST)", () => {
   });
 
   it("string formats and anchors", () => {
-    const s = serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.url(), v.uuid(), v.ip(), v.ipv4(), v.ipv6(), v.hexColor(), v.slug(), v.startsWith("ab"), v.endsWith("yz"), v.length(3)));
-    expect(s.node).toMatchObject({ type: "string", email: true, rfcEmail: true, url: true, uuid: true, ip: true, ipv4: true, ipv6: true, hexColor: true, slug: true, startsWith: "ab", endsWith: "yz", length: 3 });
+    const s = serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.url(), v.uuid(), v.ip(), v.ipv4(), v.ipv6(), v.hexColor(), v.slug(), v.isoDate(), v.isoDateTime(), v.isoTime(), v.isoTimeSecond(), v.isoTimestamp(), v.digits(), v.emoji(), v.hexadecimal(), v.minGraphemes(1), v.maxGraphemes(5), v.startsWith("ab"), v.endsWith("yz")));
+    expect(s.node).toMatchObject({ type: "string", email: true, rfcEmail: true, url: true, uuid: true, ip: true, ipv4: true, ipv6: true, hexColor: true, slug: true, isoDate: true, isoDateTime: true, isoTime: true, isoTimeSecond: true, isoTimestamp: true, digits: true, emoji: true, hexadecimal: true, minGraphemes: 1, maxGraphemes: 5, startsWith: "ab", endsWith: "yz" });
+  });
+
+  it("ulid/nanoid/cuid2 + isoWeek flags", () => {
+    const s = serialize(v.pipe(v.string(), v.ulid(), v.nanoid(), v.cuid2(), v.isoWeek()));
+    expect(s.node).toMatchObject({ type: "string", ulid: true, nanoid: true, cuid2: true, isoWeek: true });
   });
 
   it("number extras (integer/safe/multipleOf)", () => {
@@ -105,6 +110,26 @@ describe("serialize (AST)", () => {
   it("tuple with rest node", () => {
     const t = serialize(v.tupleWithRest([v.string()], v.number()));
     expect(t.node).toEqual({ type: "tuple", items: [{ type: "string" }], rest: { type: "number" } });
+  });
+
+  it("date node shape", () => {
+    const d = serialize(v.date());
+    expect(d.node).toEqual({ type: "date" });
+  });
+
+  it("string transforms shape", () => {
+    const s = serialize(v.pipe(v.string(), v.trim(), v.toUpperCase()));
+    expect(s.node).toMatchObject({ type: "string", transforms: ["trim", "toUpperCase"] });
+  });
+
+  it("file node shape", () => {
+    const f = serialize(v.pipe(v.file(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"])));
+    expect(f.node).toEqual({ type: "file", minSize: 1, maxSize: 2, mimeTypes: ["text/plain"] });
+  });
+
+  it("blob node shape", () => {
+    const b = serialize(v.pipe(v.blob(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"])));
+    expect(b.node).toEqual({ type: "blob", minSize: 1, maxSize: 2, mimeTypes: ["text/plain"] });
   });
 
   it("union, tuple, record nodes", () => {
@@ -159,6 +184,21 @@ describe("deserialize", () => {
       .not.toThrow();
     expect(() => v.parse(schema, { a: 1, b: "x" }))
       .toThrow();
+  });
+
+  it("pick/omit/partial behavior", () => {
+    const base = v.object({ a: v.string(), b: v.number(), c: v.boolean() });
+    const picked = deserialize(serialize(v.pick(base, ["a", "b"])));
+    expect(() => v.parse(picked, { a: "x", b: 1 })).not.toThrow();
+    expect(() => v.parse(picked, { a: "x" as unknown as number })).toThrow();
+
+    const omitted = deserialize(serialize(v.omit(base, ["c"])));
+    expect(() => v.parse(omitted, { a: "x", b: 1 })).not.toThrow();
+    expect(() => v.parse(omitted, { a: "x", b: 1, c: true })).not.toThrow();
+
+    const partial = deserialize(serialize(v.partial(base)));
+    expect(() => v.parse(partial, {})).not.toThrow();
+    expect(() => v.parse(partial, { a: "x" })).not.toThrow();
   });
 
   it("loose/strict/rest behavior", () => {
@@ -260,6 +300,49 @@ describe("deserialize", () => {
     expect(() => v.parse(s, "a@test.com")).not.toThrow();
     expect(() => v.parse(s, "test.com")).toThrow();
     expect(() => v.parse(s, "b@test.com")).toThrow();
+  });
+
+  it("string transforms behavior", () => {
+    const s = deserialize(serialize(v.pipe(v.string(), v.trim(), v.toUpperCase())));
+    expect(v.parse(s, "  a ")).toBe("A");
+  });
+
+  it("credit card behavior", () => {
+    const s = deserialize(serialize(v.pipe(v.string(), v.creditCard())));
+    expect(() => v.parse(s, "4111111111111111")).not.toThrow();
+    expect(() => v.parse(s, "123")).toThrow();
+  });
+
+  it("array nonEmpty behavior", () => {
+    const s = deserialize(serialize(v.pipe(v.array(v.string()), v.nonEmpty())));
+    expect(() => v.parse(s, ["a"])) .not.toThrow();
+    expect(() => v.parse(s, [])) .toThrow();
+  });
+
+  it("date behavior", () => {
+    const s = deserialize(serialize(v.date()));
+    expect(() => v.parse(s, new Date())) .not.toThrow();
+    expect(() => v.parse(s, "2020-01-01")) .toThrow();
+  });
+
+  it("file behavior", () => {
+    const f = deserialize(serialize(v.pipe(v.file(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"]))));
+    const ok = new File([new Uint8Array(1)], "a.txt", { type: "text/plain" });
+    const tooBig = new File([new Uint8Array(3)], "b.txt", { type: "text/plain" });
+    const wrongType = new File([new Uint8Array(1)], "c.bin", { type: "application/octet-stream" });
+    expect(() => v.parse(f, ok)).not.toThrow();
+    expect(() => v.parse(f, tooBig)).toThrow();
+    expect(() => v.parse(f, wrongType)).toThrow();
+  });
+
+  it("blob behavior", () => {
+    const b = deserialize(serialize(v.pipe(v.blob(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"]))));
+    const ok = new Blob([new Uint8Array(1)], { type: "text/plain" });
+    const tooBig = new Blob([new Uint8Array(3)], { type: "text/plain" });
+    const wrongType = new Blob([new Uint8Array(1)], { type: "application/octet-stream" });
+    expect(() => v.parse(b, ok)).not.toThrow();
+    expect(() => v.parse(b, tooBig)).toThrow();
+    expect(() => v.parse(b, wrongType)).toThrow();
   });
 
   it("set/map constraints behavior", () => {

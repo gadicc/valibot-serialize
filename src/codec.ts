@@ -20,7 +20,7 @@ function isSchemaNode(node: unknown): node is SchemaNode {
   const t = (node as { type?: string }).type;
   switch (t) {
     case "string": {
-      const n = node as { minLength?: unknown; maxLength?: unknown; length?: unknown; pattern?: unknown; patternFlags?: unknown; email?: unknown; rfcEmail?: unknown; url?: unknown; uuid?: unknown; ip?: unknown; ipv4?: unknown; ipv6?: unknown; hexColor?: unknown; slug?: unknown; startsWith?: unknown; endsWith?: unknown };
+      const n = node as { minLength?: unknown; maxLength?: unknown; length?: unknown; pattern?: unknown; patternFlags?: unknown; email?: unknown; rfcEmail?: unknown; url?: unknown; uuid?: unknown; ip?: unknown; ipv4?: unknown; ipv6?: unknown; hexColor?: unknown; slug?: unknown; creditCard?: unknown; imei?: unknown; mac?: unknown; mac48?: unknown; mac64?: unknown; base64?: unknown; ulid?: unknown; nanoid?: unknown; cuid2?: unknown; isoDate?: unknown; isoDateTime?: unknown; isoTime?: unknown; isoTimeSecond?: unknown; isoTimestamp?: unknown; isoWeek?: unknown; digits?: unknown; emoji?: unknown; hexadecimal?: unknown; minGraphemes?: unknown; maxGraphemes?: unknown; startsWith?: unknown; endsWith?: unknown; transforms?: unknown };
       if (n.minLength !== undefined && typeof n.minLength !== "number") return false;
       if (n.maxLength !== undefined && typeof n.maxLength !== "number") return false;
       if (n.length !== undefined && typeof n.length !== "number") return false;
@@ -35,8 +35,57 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       if (n.ipv6 !== undefined && n.ipv6 !== true) return false;
       if (n.hexColor !== undefined && n.hexColor !== true) return false;
       if (n.slug !== undefined && n.slug !== true) return false;
+      if (n.creditCard !== undefined && n.creditCard !== true) return false;
+      if (n.imei !== undefined && n.imei !== true) return false;
+      if (n.mac !== undefined && n.mac !== true) return false;
+      if (n.mac48 !== undefined && n.mac48 !== true) return false;
+      if (n.mac64 !== undefined && n.mac64 !== true) return false;
+      if (n.base64 !== undefined && n.base64 !== true) return false;
+      if (n.ulid !== undefined && n.ulid !== true) return false;
+      if (n.nanoid !== undefined && n.nanoid !== true) return false;
+      if (n.cuid2 !== undefined && n.cuid2 !== true) return false;
+      if (n.isoDate !== undefined && n.isoDate !== true) return false;
+      if (n.isoDateTime !== undefined && n.isoDateTime !== true) return false;
+      if (n.isoTime !== undefined && n.isoTime !== true) return false;
+      if (n.isoTimeSecond !== undefined && n.isoTimeSecond !== true) return false;
+      if (n.isoTimestamp !== undefined && n.isoTimestamp !== true) return false;
+      if (n.isoWeek !== undefined && n.isoWeek !== true) return false;
+      if (n.digits !== undefined && n.digits !== true) return false;
+      if (n.emoji !== undefined && n.emoji !== true) return false;
+      if (n.hexadecimal !== undefined && n.hexadecimal !== true) return false;
+      if (n.minGraphemes !== undefined && typeof n.minGraphemes !== "number") return false;
+      if (n.maxGraphemes !== undefined && typeof n.maxGraphemes !== "number") return false;
+      if (n.creditCard !== undefined && n.creditCard !== true) return false;
+      if (n.imei !== undefined && n.imei !== true) return false;
+      if (n.mac !== undefined && n.mac !== true) return false;
+      if (n.mac48 !== undefined && n.mac48 !== true) return false;
+      if (n.mac64 !== undefined && n.mac64 !== true) return false;
+      if (n.base64 !== undefined && n.base64 !== true) return false;
       if (n.startsWith !== undefined && typeof n.startsWith !== "string") return false;
       if (n.endsWith !== undefined && typeof n.endsWith !== "string") return false;
+      if (n.transforms !== undefined) {
+        if (!Array.isArray(n.transforms)) return false;
+        const allowed = new Set(["trim","trimStart","trimEnd","toUpperCase","toLowerCase","normalize"]);
+        for (const t of n.transforms) if (typeof t !== "string" || !allowed.has(t)) return false;
+      }
+      return true;
+    }
+    case "file": {
+      const n = node as { minSize?: unknown; maxSize?: unknown; mimeTypes?: unknown };
+      if (n.minSize !== undefined && typeof n.minSize !== "number") return false;
+      if (n.maxSize !== undefined && typeof n.maxSize !== "number") return false;
+      if (n.mimeTypes !== undefined) {
+        if (!Array.isArray(n.mimeTypes) || (n.mimeTypes as unknown[]).some((x) => typeof x !== "string")) return false;
+      }
+      return true;
+    }
+    case "blob": {
+      const n = node as { minSize?: unknown; maxSize?: unknown; mimeTypes?: unknown };
+      if (n.minSize !== undefined && typeof n.minSize !== "number") return false;
+      if (n.maxSize !== undefined && typeof n.maxSize !== "number") return false;
+      if (n.mimeTypes !== undefined) {
+        if (!Array.isArray(n.mimeTypes) || (n.mimeTypes as unknown[]).some((x) => typeof x !== "string")) return false;
+      }
       return true;
     }
     case "number": {
@@ -52,6 +101,8 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       return true;
     }
     case "boolean":
+      return true;
+    case "date":
       return true;
     case "literal": {
       const value = (node as { value?: unknown }).value;
@@ -155,6 +206,12 @@ function encodeNode(schema: AnySchema): SchemaNode {
       return encodeNumber(any);
     case "boolean":
       return { type: "boolean" };
+    case "date":
+      return { type: "date" };
+    case "file":
+      return encodeFile(any as never);
+    case "blob":
+      return encodeBlob(any as never);
     case "literal": {
       const value = (snap as { literal?: unknown; value?: unknown }).literal ?? (snap as { value?: unknown }).value ?? (any as { literal?: unknown; value?: unknown }).literal ?? (any as { value?: unknown }).value;
       if (value === undefined) throw new Error("Unsupported literal schema without value");
@@ -312,13 +369,12 @@ function encodeNode(schema: AnySchema): SchemaNode {
 }
 
 function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): SchemaNode {
-  const node: { type: "string"; minLength?: number; maxLength?: number; length?: number; pattern?: string; patternFlags?: string; email?: true; rfcEmail?: true; url?: true; uuid?: true; ip?: true; ipv4?: true; ipv6?: true; hexColor?: true; slug?: true; startsWith?: string; endsWith?: string } = { type: "string" };
+  const node: { type: "string"; minLength?: number; maxLength?: number; length?: number; pattern?: string; patternFlags?: string; email?: true; rfcEmail?: true; url?: true; uuid?: true; ip?: true; ipv4?: true; ipv6?: true; hexColor?: true; slug?: true; creditCard?: true; imei?: true; mac?: true; mac48?: true; mac64?: true; base64?: true; ulid?: true; nanoid?: true; cuid2?: true; isoDate?: true; isoDateTime?: true; isoTime?: true; isoTimeSecond?: true; isoTimestamp?: true; isoWeek?: true; digits?: true; emoji?: true; hexadecimal?: true; minGraphemes?: number; maxGraphemes?: number; startsWith?: string; endsWith?: string; transforms?: Array<"trim"|"trimStart"|"trimEnd"|"toUpperCase"|"toLowerCase"|"normalize"> } = { type: "string" };
   const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
   if (Array.isArray(pipe)) {
     for (const step of pipe) {
       if (!step || typeof step !== "object") continue;
-      if (step.kind !== "validation") continue;
-      switch (step.type) {
+      if (step.kind === "validation") switch (step.type) {
         case "min_length": {
           const req = step.requirement as number | undefined;
           if (typeof req === "number") node.minLength = req;
@@ -343,24 +399,35 @@ function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): Sche
           }
           break;
         }
-        case "email":
-          node.email = true; break;
-        case "rfc_email":
-          node.rfcEmail = true; break;
-        case "url":
-          node.url = true; break;
-        case "uuid":
-          node.uuid = true; break;
-        case "ip":
-          node.ip = true; break;
-        case "ipv4":
-          node.ipv4 = true; break;
-        case "ipv6":
-          node.ipv6 = true; break;
-        case "hex_color":
-          node.hexColor = true; break;
-        case "slug":
-          node.slug = true; break;
+        case "email": node.email = true; break;
+        case "rfc_email": node.rfcEmail = true; break;
+        case "url": node.url = true; break;
+        case "uuid": node.uuid = true; break;
+        case "ip": node.ip = true; break;
+        case "ipv4": node.ipv4 = true; break;
+        case "ipv6": node.ipv6 = true; break;
+        case "hex_color": node.hexColor = true; break;
+        case "slug": node.slug = true; break;
+        case "credit_card": node.creditCard = true; break;
+        case "imei": node.imei = true; break;
+        case "mac": node.mac = true; break;
+        case "mac48": node.mac48 = true; break;
+        case "mac64": node.mac64 = true; break;
+        case "base64": node.base64 = true; break;
+        case "ulid": node.ulid = true; break;
+        case "nanoid": node.nanoid = true; break;
+        case "cuid2": node.cuid2 = true; break;
+        case "iso_date": node.isoDate = true; break;
+        case "iso_date_time": node.isoDateTime = true; break;
+        case "iso_time": node.isoTime = true; break;
+        case "iso_time_second": node.isoTimeSecond = true; break;
+        case "iso_timestamp": node.isoTimestamp = true; break;
+        case "iso_week": node.isoWeek = true; break;
+        case "digits": node.digits = true; break;
+        case "emoji": node.emoji = true; break;
+        case "hexadecimal": node.hexadecimal = true; break;
+        case "min_graphemes": { const req = step.requirement as number | undefined; if (typeof req === "number") node.minGraphemes = req; break; }
+        case "max_graphemes": { const req = step.requirement as number | undefined; if (typeof req === "number") node.maxGraphemes = req; break; }
         case "starts_with": {
           const req = step.requirement as string | undefined;
           if (typeof req === "string") node.startsWith = req;
@@ -371,6 +438,47 @@ function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): Sche
           if (typeof req === "string") node.endsWith = req;
           break;
         }
+      } else if (step.kind === "transformation") switch (step.type) {
+        case "trim": (node.transforms ??= []).push("trim"); break;
+        case "trim_start": (node.transforms ??= []).push("trimStart"); break;
+        case "trim_end": (node.transforms ??= []).push("trimEnd"); break;
+        case "to_upper_case": (node.transforms ??= []).push("toUpperCase"); break;
+        case "to_lower_case": (node.transforms ??= []).push("toLowerCase"); break;
+        case "normalize": (node.transforms ??= []).push("normalize"); break;
+      }
+    }
+  }
+  return node;
+}
+
+function encodeFile(any: Record<string, unknown>): SchemaNode {
+  const node: { type: "file"; minSize?: number; maxSize?: number; mimeTypes?: string[] } = { type: "file" };
+  const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
+  if (Array.isArray(pipe)) {
+    for (const step of pipe) {
+      if (!step || typeof step !== "object") continue;
+      if (step.kind !== "validation") continue;
+      switch (step.type) {
+        case "min_size": { const req = step.requirement as number | undefined; if (typeof req === "number") node.minSize = req; break; }
+        case "max_size": { const req = step.requirement as number | undefined; if (typeof req === "number") node.maxSize = req; break; }
+        case "mime_type": { const req = step.requirement as string[] | undefined; if (Array.isArray(req)) node.mimeTypes = req; break; }
+      }
+    }
+  }
+  return node;
+}
+
+function encodeBlob(any: Record<string, unknown>): SchemaNode {
+  const node: { type: "blob"; minSize?: number; maxSize?: number; mimeTypes?: string[] } = { type: "blob" };
+  const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
+  if (Array.isArray(pipe)) {
+    for (const step of pipe) {
+      if (!step || typeof step !== "object") continue;
+      if (step.kind !== "validation") continue;
+      switch (step.type) {
+        case "min_size": { const req = step.requirement as number | undefined; if (typeof req === "number") node.minSize = req; break; }
+        case "max_size": { const req = step.requirement as number | undefined; if (typeof req === "number") node.maxSize = req; break; }
+        case "mime_type": { const req = step.requirement as string[] | undefined; if (Array.isArray(req)) node.mimeTypes = req; break; }
       }
     }
   }
@@ -445,6 +553,10 @@ function encodeArray(any: { item?: unknown; pipe?: unknown[] } & Record<string, 
         case "length": {
           const req = step.requirement as number | undefined;
           if (typeof req === "number") node.length = req;
+          break;
+        }
+        case "non_empty": {
+          node.minLength = Math.max(1, node.minLength ?? 0);
           break;
         }
       }
@@ -522,6 +634,12 @@ function decodeNode(node: SchemaNode): AnySchema {
       return decodeNumber(node);
     case "boolean":
       return v.boolean();
+    case "date":
+      return v.date();
+    case "blob":
+      return decodeBlob(node);
+    case "file":
+      return decodeFile(node);
     case "literal":
       return v.literal(node.value as never);
     case "array":
@@ -567,7 +685,7 @@ function decodeNode(node: SchemaNode): AnySchema {
 }
 
 function decodeString(node: Extract<SchemaNode, { type: "string" }>): AnySchema {
-  const s = v.string();
+  let s = v.string();
   const validators: unknown[] = [];
   if (node.email) validators.push(v.email());
   if (node.rfcEmail) validators.push(v.rfcEmail());
@@ -578,6 +696,12 @@ function decodeString(node: Extract<SchemaNode, { type: "string" }>): AnySchema 
   if (node.ipv6) validators.push(v.ipv6());
   if (node.hexColor) validators.push(v.hexColor());
   if (node.slug) validators.push(v.slug());
+  if (node.creditCard) validators.push(v.creditCard());
+  if (node.imei) validators.push(v.imei());
+  if (node.mac) validators.push(v.mac());
+  if (node.mac48) validators.push(v.mac48());
+  if (node.mac64) validators.push(v.mac64());
+  if (node.base64) validators.push(v.base64());
   if (node.minLength !== undefined) {
     validators.push(v.minLength(node.minLength));
   }
@@ -593,19 +717,41 @@ function decodeString(node: Extract<SchemaNode, { type: "string" }>): AnySchema 
   }
   if (node.startsWith !== undefined) validators.push(v.startsWith(node.startsWith));
   if (node.endsWith !== undefined) validators.push(v.endsWith(node.endsWith));
-  switch (validators.length) {
-    case 0:
-      return s;
-    case 1:
-      return v.pipe(s, validators[0] as never);
-    case 2:
-      return v.pipe(s, validators[0] as never, validators[1] as never);
-    case 3:
-      return v.pipe(s, validators[0] as never, validators[1] as never, validators[2] as never);
-    default:
-      // Should not happen given supported constraints
-      return v.pipe(s, ...(validators as never[]));
+  if (validators.length > 0) {
+    s = v.pipe(s, ...(validators as never[]));
   }
+  // Additional string-only validators that do not take requirements
+  const extra: unknown[] = [];
+  if (node.isoDate) extra.push(v.isoDate());
+  if (node.isoDateTime) extra.push(v.isoDateTime());
+  if (node.isoTime) extra.push(v.isoTime());
+  if (node.isoTimeSecond) extra.push(v.isoTimeSecond());
+  if (node.isoTimestamp) extra.push(v.isoTimestamp());
+  if (node.digits) extra.push(v.digits());
+  if (node.emoji) extra.push(v.emoji());
+  if (node.hexadecimal) extra.push(v.hexadecimal());
+  if (node.minGraphemes !== undefined) extra.push(v.minGraphemes(node.minGraphemes));
+  if (node.maxGraphemes !== undefined) extra.push(v.maxGraphemes(node.maxGraphemes));
+  if (extra.length > 0) {
+    s = v.pipe(s, ...(extra as never[]));
+  }
+  if (node.transforms && node.transforms.length > 0) {
+    const items: unknown[] = [];
+    for (const t of node.transforms) {
+      switch (t) {
+        case "trim": items.push(v.trim()); break;
+        case "trimStart": items.push(v.trimStart()); break;
+        case "trimEnd": items.push(v.trimEnd()); break;
+        case "toUpperCase": items.push(v.toUpperCase()); break;
+        case "toLowerCase": items.push(v.toLowerCase()); break;
+        case "normalize": items.push(v.normalize()); break;
+      }
+    }
+    if (items.length > 0) {
+      s = v.pipe(s, ...(items as never[]));
+    }
+  }
+  return s;
 }
 
 function decodeNumber(node: Extract<SchemaNode, { type: "number" }>): AnySchema {
@@ -653,6 +799,32 @@ function decodeArray(node: Extract<SchemaNode, { type: "array" }>): AnySchema {
     default:
       return v.pipe(base, ...(validators as never[]));
   }
+}
+
+function decodeFile(node: Extract<SchemaNode, { type: "file" }>): AnySchema {
+  let f = v.file();
+  const actions: unknown[] = [];
+  if (node.minSize !== undefined) actions.push(v.minSize(node.minSize));
+  if (node.maxSize !== undefined) actions.push(v.maxSize(node.maxSize));
+  if (node.mimeTypes && node.mimeTypes.length > 0) {
+    const mimeType = (v as unknown as { mimeType: (req: string[] | string) => unknown }).mimeType;
+    actions.push(mimeType(node.mimeTypes));
+  }
+  if (actions.length > 0) f = v.pipe(f, ...(actions as never[]));
+  return f;
+}
+
+function decodeBlob(node: Extract<SchemaNode, { type: "blob" }>): AnySchema {
+  let b = v.blob();
+  const items: unknown[] = [];
+  if (node.minSize !== undefined) items.push(v.minSize(node.minSize));
+  if (node.maxSize !== undefined) items.push(v.maxSize(node.maxSize));
+  if (node.mimeTypes && node.mimeTypes.length > 0) {
+    const mimeType = (v as unknown as { mimeType: (req: string[] | string) => unknown }).mimeType;
+    items.push(mimeType(node.mimeTypes));
+  }
+  if (items.length > 0) b = v.pipe(b, ...(items as never[]));
+  return b;
 }
 
 function decodeSet(node: Extract<SchemaNode, { type: "set" }>): AnySchema {
