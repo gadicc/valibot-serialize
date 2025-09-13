@@ -1,7 +1,7 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize, FORMAT_VERSION, isSerializedSchema, serialize, serializedSchemaJson, toJsonSchema } from "./main.ts";
+import { deserialize, FORMAT_VERSION, isSerializedSchema, serialize, serializedSchemaJson, toJsonSchema } from "../main.ts";
 
 describe("serialize (AST)", () => {
   it("string node shape", () => {
@@ -181,7 +181,7 @@ describe("serialize (AST)", () => {
   });
 
   it("fromJsonSchema anyOf consts to enum", async () => {
-    const { fromJsonSchema } = await import("./main.ts");
+    const { fromJsonSchema } = await import("../main.ts");
     const js = { anyOf: [{ const: "a" }, { const: "b" }] } as unknown as Record<string, unknown>;
     const s = fromJsonSchema(js);
     expect(s.node.type).toBe("enum");
@@ -199,7 +199,7 @@ describe("serialize (AST)", () => {
       additionalProperties: false,
       minProperties: 1,
     } as const;
-    const { fromJsonSchema } = await import("./main.ts");
+    const { fromJsonSchema } = await import("../main.ts");
     const serialized = fromJsonSchema(js as unknown as Record<string, unknown>);
     expect(isSerializedSchema(serialized)).toBe(true);
     const node = serialized.node as { type: string; entries: Record<string, unknown>; policy: string };

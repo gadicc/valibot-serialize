@@ -101,6 +101,8 @@ Outputs a JSON Schema for the data shape.
 - `deno task test`
 - `deno task fmt`
 
+See CONTRIBUTING.md for project layout, test naming, and workflow conventions.
+
 ## License
 
 MIT
