@@ -8,3 +8,4 @@ export { toJsonSchema } from "./src/jsonschema.ts";
 export { fromJsonSchema } from "./src/from_jsonschema.ts";
 export type { JsonSchema } from "./src/jsonschema.ts";
 export type { JsonSchemaInput } from "./src/from_jsonschema.ts";
+export { toCode } from "./src/to_code.ts";

@@ -12,7 +12,7 @@ Badges TBD.
 
 ```ts
 import * as v from "@valibot/valibot";
-import { deserialize, serialize } from "valibot-serialize";
+import { deserialize, serialize, toCode } from "valibot-serialize";
 
 const LoginSchema = v.object({
   email: v.string(),
@@ -27,6 +27,26 @@ const parsed = v.parse(NewLoginSchema, {
   email: "hello@example.com",
   password: "password",
 });
+```
+
+### Generate Builder Code
+
+`toCode(serialized: SerializedSchema): string` returns compact Valibot builder
+code that reconstructs the schema (assumes `v` is in scope):
+
+```ts
+import * as v from "@valibot/valibot";
+import { serialize, toCode } from "valibot-serialize";
+
+const schema = v.object({ email: v.string(), password: v.string() });
+const code = toCode(serialize(schema));
+// "v.object({email:v.string(),password:v.string()});"
+
+// You can eval it if you want a runtime instance:
+const factory = new Function("v", "return " + code) as (
+  vx: typeof v,
+) => unknown;
+const rebuilt = factory(v);
 ```
 
 ## Motivation
@@ -62,6 +82,9 @@ create dep-free versions of those schemas.
   - Basic, lossy converter from a subset of JSON Schema → our AST
     (strings/numbers/booleans/literals/arrays/objects/enums/unions/tuples/sets/maps
     approximations).
+- `toCode(serialized: SerializedSchema): string`
+  - Emits concise Valibot builder code for the given AST (no imports), ending
+    with a semicolon. Intended for code‑gen/export; format it as you like.
 
 ### Supported nodes and flags (AST)
 
@@ -121,6 +144,19 @@ echo '{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":
 ```
 
 Outputs a JSON Schema for the data shape.
+
+Generate Valibot builder code from a serialized AST (read from stdin):
+
+```
+echo '{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":"object","entries":{"email":{"type":"string"},"password":{"type":"string"}}}}' \
+  | deno task tocode
+```
+
+Outputs:
+
+```
+v.object({email:v.string(),password:v.string()});
+```
 
 ## Notes
 
