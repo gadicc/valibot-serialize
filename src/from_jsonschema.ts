@@ -1,6 +1,7 @@
 import type { SchemaNode, SerializedSchema } from "./types.ts";
 import { unescapeRegex } from "./regex_utils.ts";
 import { detect } from "./patterns.ts";
+import { stringCodec, numberCodec } from "./types/registry.ts";
 
 type JS = Record<string, unknown>;
 
@@ -16,6 +17,8 @@ export function fromJsonSchema(schema: JS): SerializedSchema {
 
 function convert(schema: JS): SchemaNode {
   const type = schema.type as string | undefined;
+  // Delegate leaf conversions to type codecs where possible
+  if (type === "string") return stringCodec.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
   if (schema.const !== undefined) {
     return { type: "literal", value: schema.const as never };
   }
@@ -86,20 +89,7 @@ function convert(schema: JS): SchemaNode {
   }
 
   if (type === "number" || type === "integer") {
-    const node: Extract<SchemaNode, { type: "number" }> = { type: "number" };
-    if (type === "integer") node.integer = true;
-    if (typeof schema.minimum === "number") node.min = schema.minimum as number;
-    if (typeof schema.maximum === "number") node.max = schema.maximum as number;
-    if (typeof schema.exclusiveMinimum === "number") {
-      node.gt = schema.exclusiveMinimum as number;
-    }
-    if (typeof schema.exclusiveMaximum === "number") {
-      node.lt = schema.exclusiveMaximum as number;
-    }
-    if (typeof schema.multipleOf === "number") {
-      node.multipleOf = schema.multipleOf as number;
-    }
-    return node;
+    return numberCodec.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
   }
 
   if (type === "boolean") return { type: "boolean" };
