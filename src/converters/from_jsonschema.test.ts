@@ -1,6 +1,6 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { fromJsonSchema } from "../main.ts";
+import { fromJsonSchema } from "../../main.ts";
 
 describe("fromJsonSchema extra coverage", () => {
   it("detects ip from anyOf string formats", () => {

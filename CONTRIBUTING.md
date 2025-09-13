@@ -7,8 +7,9 @@ side‑effect free.
 
 - `main.ts` — Library entry, re-exporting public API from `src/`.
 - `src/` — Implementation and tests.
-  - Implementation files are focused modules (e.g., `encode.ts`, `decode.ts`,
-    `guard.ts`).
+  - Converters: `src/converters/` (`encode.ts`, `decode.ts`, `to_code.ts`,
+    `to_jsonschema.ts`, `from_jsonschema.ts`) with colocated tests.
+  - Core: `guard.ts`, `types.ts`, `registry.ts`, and `src/types/*` codecs.
   - Tests colocated: `*.test.ts` (e.g., `codec.test.ts`).
 - `tools/` — Small scripts used for local development or docs.
 

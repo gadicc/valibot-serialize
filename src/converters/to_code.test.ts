@@ -1,7 +1,7 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize, toCode } from "../main.ts";
+import { serialize, toCode } from "../../main.ts";
 
 describe("toCode", () => {
   it("object with primitives (compact)", () => {

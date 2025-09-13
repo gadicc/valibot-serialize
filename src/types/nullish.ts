@@ -1,6 +1,6 @@
 import * as v from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
-import type { JsonSchema } from "../jsonschema.ts";
+import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type { AnySchema } from "../type_interfaces.ts";
 import type {
   Decoder,

@@ -1,4 +1,4 @@
-import type { SchemaNode, SerializedSchema } from "./types.ts";
+import type { SchemaNode, SerializedSchema } from "../types.ts";
 import {
   arrayCodec,
   blobCodec,
@@ -18,7 +18,7 @@ import {
   stringCodec,
   tupleCodec,
   unionCodec,
-} from "./registry.ts";
+} from "../registry.ts";
 
 type JsonSchema = Record<string, unknown>;
 

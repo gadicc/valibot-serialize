@@ -1,6 +1,6 @@
 import type { TypeCodec } from "./type_interfaces.ts";
 import type { SchemaNode } from "./types.ts";
-import type { JsonSchema } from "./jsonschema.ts";
+import type { JsonSchema } from "./converters/to_jsonschema.ts";
 
 declare module "src/types/*" {
   export const typeName: SchemaNode["type"];

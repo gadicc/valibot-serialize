@@ -3,7 +3,7 @@ import {
   FORMAT_VERSION,
   type SchemaNode,
   type SerializedSchema,
-} from "./types.ts";
+} from "../types.ts";
 import {
   arrayCodec,
   blobCodec,
@@ -24,7 +24,7 @@ import {
   stringCodec,
   tupleCodec,
   unionCodec,
-} from "./registry.ts";
+} from "../registry.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 

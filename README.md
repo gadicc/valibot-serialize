@@ -205,14 +205,16 @@ See CONTRIBUTING.md for project layout, test naming, and workflow conventions.
 
 - Internal registry lives at `src/registry.ts` and wires codecs from
   `src/types/*`.
+- Converter modules live under `src/converters/`: `encode.ts`, `decode.ts`,
+  `to_code.ts`, `to_jsonschema.ts`, `from_jsonschema.ts`.
 - Each `src/types/<name>.ts` module exports a consistent API:
   - `typeName`, `matchesValibotType`, `encode`, `decode`, `toCode`,
     `toJsonSchema`, `fromJsonSchema`.
   - The common function shapes are defined in `src/type_interfaces.ts`.
 - Ambient module typings for `src/types/*` are in `src/type-mod.d.ts`.
-- For convenience, `src/types/mod.ts` re-exports each type module as a namespace
-  (e.g., `stringMod`, `numberMod`, ...), so you can
-  `import { stringMod } from "./src/types/mod.ts"` in internal tooling.
+- For convenience, `src/types/index.ts` re-exports each type module as a
+  namespace (e.g., `string`, `number`, ...). Example usage in internal tooling:
+  `import { string as stringMod } from "./src/types/index.ts"`.
 
 ## License
 

@@ -1,7 +1,7 @@
 // import removed; decoders are delegated to codecs now
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
-import type { SchemaNode, SerializedSchema } from "./types.ts";
-import { isSerializedSchema } from "./guard.ts";
+import type { SchemaNode, SerializedSchema } from "../types.ts";
+import { isSerializedSchema } from "../guard.ts";
 import {
   arrayCodec,
   blobCodec,
@@ -21,7 +21,7 @@ import {
   stringCodec,
   tupleCodec,
   unionCodec,
-} from "./registry.ts";
+} from "../registry.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 

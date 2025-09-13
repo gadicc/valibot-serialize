@@ -1,6 +1,6 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { FORMAT_VERSION, toJsonSchema } from "../main.ts";
+import { FORMAT_VERSION, toJsonSchema } from "../../main.ts";
 
 const env = {
   kind: "schema" as const,
@@ -37,8 +37,10 @@ describe("toJsonSchema extra coverage", () => {
       { pattern: string }
     >;
     expect(allOf.length).toBe(2);
-    expect(allOf[0].pattern.startsWith("^\\+")).toBe(true);
-    expect(allOf[1].pattern.endsWith("\\(x\\)$")).toBe(true);
+    expect(allOf[0].pattern.startsWith("^\\+"))
+      .toBe(true);
+    expect(allOf[1].pattern.endsWith("\\(x\\)$"))
+      .toBe(true);
   });
 
   it("record/set/map/tuple/date/file/blob mappings", () => {
