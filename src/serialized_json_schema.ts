@@ -191,58 +191,91 @@ export const serializedSchemaJson = {
       type: "object",
       additionalProperties: false,
       required: ["type", "base"],
-      properties: { type: { const: "optional" }, base: { $ref: "#/$defs/SchemaNode" } },
+      properties: {
+        type: { const: "optional" },
+        base: { $ref: "#/$defs/SchemaNode" },
+      },
     },
     NullableNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "base"],
-      properties: { type: { const: "nullable" }, base: { $ref: "#/$defs/SchemaNode" } },
+      properties: {
+        type: { const: "nullable" },
+        base: { $ref: "#/$defs/SchemaNode" },
+      },
     },
     NullishNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "base"],
-      properties: { type: { const: "nullish" }, base: { $ref: "#/$defs/SchemaNode" } },
+      properties: {
+        type: { const: "nullish" },
+        base: { $ref: "#/$defs/SchemaNode" },
+      },
     },
     UnionNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "options"],
-      properties: { type: { const: "union" }, options: { type: "array", items: { $ref: "#/$defs/SchemaNode" } } },
+      properties: {
+        type: { const: "union" },
+        options: { type: "array", items: { $ref: "#/$defs/SchemaNode" } },
+      },
     },
     TupleNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "items"],
-      properties: { type: { const: "tuple" }, items: { type: "array", items: { $ref: "#/$defs/SchemaNode" } }, rest: { $ref: "#/$defs/SchemaNode" } },
+      properties: {
+        type: { const: "tuple" },
+        items: { type: "array", items: { $ref: "#/$defs/SchemaNode" } },
+        rest: { $ref: "#/$defs/SchemaNode" },
+      },
     },
     RecordNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "key", "value"],
-      properties: { type: { const: "record" }, key: { $ref: "#/$defs/SchemaNode" }, value: { $ref: "#/$defs/SchemaNode" } },
+      properties: {
+        type: { const: "record" },
+        key: { $ref: "#/$defs/SchemaNode" },
+        value: { $ref: "#/$defs/SchemaNode" },
+      },
     },
     EnumNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "values"],
-      properties: { type: { const: "enum" }, values: { type: "array", items: { $ref: "#/$defs/PrimitiveLiteral" } } },
+      properties: {
+        type: { const: "enum" },
+        values: { type: "array", items: { $ref: "#/$defs/PrimitiveLiteral" } },
+      },
     },
     SetNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "value"],
-      properties: { type: { const: "set" }, value: { $ref: "#/$defs/SchemaNode" }, minSize: { type: "number" }, maxSize: { type: "number" } },
+      properties: {
+        type: { const: "set" },
+        value: { $ref: "#/$defs/SchemaNode" },
+        minSize: { type: "number" },
+        maxSize: { type: "number" },
+      },
     },
     MapNode: {
       type: "object",
       additionalProperties: false,
       required: ["type", "key", "value"],
-      properties: { type: { const: "map" }, key: { $ref: "#/$defs/SchemaNode" }, value: { $ref: "#/$defs/SchemaNode" }, minSize: { type: "number" }, maxSize: { type: "number" } },
+      properties: {
+        type: { const: "map" },
+        key: { $ref: "#/$defs/SchemaNode" },
+        value: { $ref: "#/$defs/SchemaNode" },
+        minSize: { type: "number" },
+        maxSize: { type: "number" },
+      },
     },
   },
 } as const;
 
 export type SerializedJsonSchema = typeof serializedSchemaJson;
-

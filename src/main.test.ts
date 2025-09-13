@@ -1,7 +1,14 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize, FORMAT_VERSION, isSerializedSchema, serialize, serializedSchemaJson, toJsonSchema } from "../main.ts";
+import {
+  deserialize,
+  FORMAT_VERSION,
+  isSerializedSchema,
+  serialize,
+  serializedSchemaJson,
+  toJsonSchema,
+} from "../main.ts";
 
 describe("serialize (AST)", () => {
   it("string node shape", () => {
@@ -38,20 +45,42 @@ describe("serialize (AST)", () => {
     const s = serialize(v.object({ a: v.optional(v.string()), b: v.number() }));
     expect(s.node).toEqual({
       type: "object",
-      entries: { a: { type: "optional", base: { type: "string" } }, b: { type: "number" } },
+      entries: {
+        a: { type: "optional", base: { type: "string" } },
+        b: { type: "number" },
+      },
       optionalKeys: ["a"],
     });
   });
 
   it("loose/strict/objectWithRest nodes", () => {
     const loose = serialize(v.looseObject({ a: v.string() }));
-    expect(loose.node).toEqual({ type: "object", entries: { a: { type: "string" } }, policy: "loose" });
+    expect(loose.node).toEqual({
+      type: "object",
+      entries: { a: { type: "string" } },
+      policy: "loose",
+    });
     const strict = serialize(v.strictObject({ a: v.string() }));
-    expect(strict.node).toEqual({ type: "object", entries: { a: { type: "string" } }, policy: "strict" });
+    expect(strict.node).toEqual({
+      type: "object",
+      entries: { a: { type: "string" } },
+      policy: "strict",
+    });
     const rest = serialize(v.objectWithRest({ a: v.string() }, v.number()));
-    expect(rest.node).toEqual({ type: "object", entries: { a: { type: "string" } }, rest: { type: "number" } });
-    const withCounts = serialize(v.pipe(v.object({ a: v.string() }), v.minEntries(1), v.maxEntries(2)));
-    expect(withCounts.node).toEqual({ type: "object", entries: { a: { type: "string" } }, minEntries: 1, maxEntries: 2 });
+    expect(rest.node).toEqual({
+      type: "object",
+      entries: { a: { type: "string" } },
+      rest: { type: "number" },
+    });
+    const withCounts = serialize(
+      v.pipe(v.object({ a: v.string() }), v.minEntries(1), v.maxEntries(2)),
+    );
+    expect(withCounts.node).toEqual({
+      type: "object",
+      entries: { a: { type: "string" } },
+      minEntries: 1,
+      maxEntries: 2,
+    });
   });
 
   it("optional and nullable wrappers", () => {
@@ -64,8 +93,16 @@ describe("serialize (AST)", () => {
   });
 
   it("string constraints (min/max/regex)", () => {
-    const s = serialize(v.pipe(v.string(), v.minLength(3), v.maxLength(5), v.regex(/abc/i)));
-    expect(s.node).toEqual({ type: "string", minLength: 3, maxLength: 5, pattern: "abc", patternFlags: "i" });
+    const s = serialize(
+      v.pipe(v.string(), v.minLength(3), v.maxLength(5), v.regex(/abc/i)),
+    );
+    expect(s.node).toEqual({
+      type: "string",
+      minLength: 3,
+      maxLength: 5,
+      pattern: "abc",
+      patternFlags: "i",
+    });
   });
 
   it("number constraints (min/max)", () => {
@@ -74,25 +111,110 @@ describe("serialize (AST)", () => {
   });
 
   it("array constraints (min/max/length)", () => {
-    const s1 = serialize(v.pipe(v.array(v.string()), v.minLength(2), v.maxLength(3)));
-    expect(s1.node).toEqual({ type: "array", item: { type: "string" }, minLength: 2, maxLength: 3 });
+    const s1 = serialize(
+      v.pipe(v.array(v.string()), v.minLength(2), v.maxLength(3)),
+    );
+    expect(s1.node).toEqual({
+      type: "array",
+      item: { type: "string" },
+      minLength: 2,
+      maxLength: 3,
+    });
     const s2 = serialize(v.pipe(v.array(v.number()), v.length(2)));
-    expect(s2.node).toEqual({ type: "array", item: { type: "number" }, length: 2 });
+    expect(s2.node).toEqual({
+      type: "array",
+      item: { type: "number" },
+      length: 2,
+    });
   });
 
   it("string formats and anchors", () => {
-    const s = serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.url(), v.uuid(), v.ip(), v.ipv4(), v.ipv6(), v.hexColor(), v.slug(), v.isoDate(), v.isoDateTime(), v.isoTime(), v.isoTimeSecond(), v.isoTimestamp(), v.digits(), v.emoji(), v.hexadecimal(), v.minGraphemes(1), v.maxGraphemes(5), v.startsWith("ab"), v.endsWith("yz")));
-    expect(s.node).toMatchObject({ type: "string", email: true, rfcEmail: true, url: true, uuid: true, ip: true, ipv4: true, ipv6: true, hexColor: true, slug: true, isoDate: true, isoDateTime: true, isoTime: true, isoTimeSecond: true, isoTimestamp: true, digits: true, emoji: true, hexadecimal: true, minGraphemes: 1, maxGraphemes: 5, startsWith: "ab", endsWith: "yz" });
+    const s = serialize(
+      v.pipe(
+        v.string(),
+        v.email(),
+        v.rfcEmail(),
+        v.url(),
+        v.uuid(),
+        v.ip(),
+        v.ipv4(),
+        v.ipv6(),
+        v.hexColor(),
+        v.slug(),
+        v.isoDate(),
+        v.isoDateTime(),
+        v.isoTime(),
+        v.isoTimeSecond(),
+        v.isoTimestamp(),
+        v.digits(),
+        v.emoji(),
+        v.hexadecimal(),
+        v.minGraphemes(1),
+        v.maxGraphemes(5),
+        v.startsWith("ab"),
+        v.endsWith("yz"),
+      ),
+    );
+    expect(s.node).toMatchObject({
+      type: "string",
+      email: true,
+      rfcEmail: true,
+      url: true,
+      uuid: true,
+      ip: true,
+      ipv4: true,
+      ipv6: true,
+      hexColor: true,
+      slug: true,
+      isoDate: true,
+      isoDateTime: true,
+      isoTime: true,
+      isoTimeSecond: true,
+      isoTimestamp: true,
+      digits: true,
+      emoji: true,
+      hexadecimal: true,
+      minGraphemes: 1,
+      maxGraphemes: 5,
+      startsWith: "ab",
+      endsWith: "yz",
+    });
   });
 
   it("ulid/nanoid/cuid2 + isoWeek flags", () => {
-    const s = serialize(v.pipe(v.string(), v.ulid(), v.nanoid(), v.cuid2(), v.isoWeek()));
-    expect(s.node).toMatchObject({ type: "string", ulid: true, nanoid: true, cuid2: true, isoWeek: true });
+    const s = serialize(
+      v.pipe(v.string(), v.ulid(), v.nanoid(), v.cuid2(), v.isoWeek()),
+    );
+    expect(s.node).toMatchObject({
+      type: "string",
+      ulid: true,
+      nanoid: true,
+      cuid2: true,
+      isoWeek: true,
+    });
   });
 
   it("number extras (integer/safe/multipleOf)", () => {
-    const s = serialize(v.pipe(v.number(), v.finite(), v.integer(), v.safeInteger(), v.multipleOf(3), v.gtValue(1), v.ltValue(9)));
-    expect(s.node).toEqual({ type: "number", finite: true, integer: true, safeInteger: true, multipleOf: 3, gt: 1, lt: 9 });
+    const s = serialize(
+      v.pipe(
+        v.number(),
+        v.finite(),
+        v.integer(),
+        v.safeInteger(),
+        v.multipleOf(3),
+        v.gtValue(1),
+        v.ltValue(9),
+      ),
+    );
+    expect(s.node).toEqual({
+      type: "number",
+      finite: true,
+      integer: true,
+      safeInteger: true,
+      multipleOf: 3,
+      gt: 1,
+      lt: 9,
+    });
   });
 
   it("enum node (union of literals and picklist)", () => {
@@ -106,12 +228,20 @@ describe("serialize (AST)", () => {
     const s = serialize(v.set(v.string()));
     expect(s.node).toEqual({ type: "set", value: { type: "string" } });
     const m = serialize(v.map(v.string(), v.number()));
-    expect(m.node).toEqual({ type: "map", key: { type: "string" }, value: { type: "number" } });
+    expect(m.node).toEqual({
+      type: "map",
+      key: { type: "string" },
+      value: { type: "number" },
+    });
   });
 
   it("tuple with rest node", () => {
     const t = serialize(v.tupleWithRest([v.string()], v.number()));
-    expect(t.node).toEqual({ type: "tuple", items: [{ type: "string" }], rest: { type: "number" } });
+    expect(t.node).toEqual({
+      type: "tuple",
+      items: [{ type: "string" }],
+      rest: { type: "number" },
+    });
   });
 
   it("date node shape", () => {
@@ -121,43 +251,77 @@ describe("serialize (AST)", () => {
 
   it("string transforms shape", () => {
     const s = serialize(v.pipe(v.string(), v.trim(), v.toUpperCase()));
-    expect(s.node).toMatchObject({ type: "string", transforms: ["trim", "toUpperCase"] });
+    expect(s.node).toMatchObject({
+      type: "string",
+      transforms: ["trim", "toUpperCase"],
+    });
   });
 
   it("file node shape", () => {
-    const f = serialize(v.pipe(v.file(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"])));
-    expect(f.node).toEqual({ type: "file", minSize: 1, maxSize: 2, mimeTypes: ["text/plain"] });
+    const f = serialize(
+      v.pipe(v.file(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"])),
+    );
+    expect(f.node).toEqual({
+      type: "file",
+      minSize: 1,
+      maxSize: 2,
+      mimeTypes: ["text/plain"],
+    });
   });
 
   it("blob node shape", () => {
-    const b = serialize(v.pipe(v.blob(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"])));
-    expect(b.node).toEqual({ type: "blob", minSize: 1, maxSize: 2, mimeTypes: ["text/plain"] });
+    const b = serialize(
+      v.pipe(v.blob(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"])),
+    );
+    expect(b.node).toEqual({
+      type: "blob",
+      minSize: 1,
+      maxSize: 2,
+      mimeTypes: ["text/plain"],
+    });
   });
 
   it("union, tuple, record nodes", () => {
     const u = serialize(v.union([v.string(), v.number()]));
-    expect(u.node).toEqual({ type: "union", options: [{ type: "string" }, { type: "number" }] });
+    expect(u.node).toEqual({
+      type: "union",
+      options: [{ type: "string" }, { type: "number" }],
+    });
     const t = serialize(v.tuple([v.string(), v.number()]));
-    expect(t.node).toEqual({ type: "tuple", items: [{ type: "string" }, { type: "number" }] });
+    expect(t.node).toEqual({
+      type: "tuple",
+      items: [{ type: "string" }, { type: "number" }],
+    });
     const r = serialize(v.record(v.string(), v.number()));
-    expect(r.node).toEqual({ type: "record", key: { type: "string" }, value: { type: "number" } });
+    expect(r.node).toEqual({
+      type: "record",
+      key: { type: "string" },
+      value: { type: "number" },
+    });
   });
 
   it("serialized JSON Schema shape", () => {
     // Weak structural checks without using `any`
     expect(typeof serializedSchemaJson.$schema).toBe("string");
-    const props = (serializedSchemaJson as Record<string, unknown>).properties as Record<string, unknown>;
+    const props = (serializedSchemaJson as Record<string, unknown>)
+      .properties as Record<string, unknown>;
     expect(typeof props).toBe("object");
     expect(Object.prototype.hasOwnProperty.call(props, "node")).toBe(true);
-    const defs = (serializedSchemaJson as Record<string, unknown>).$defs as Record<string, unknown>;
+    const defs = (serializedSchemaJson as Record<string, unknown>)
+      .$defs as Record<string, unknown>;
     expect(typeof defs).toBe("object");
     expect(Object.keys(defs).length).toBeGreaterThan(5);
   });
 
   it("toJsonSchema basics", () => {
-    const ast = serialize(v.object({ a: v.string(), b: v.optional(v.number()) }));
+    const ast = serialize(
+      v.object({ a: v.string(), b: v.optional(v.number()) }),
+    );
     const js = toJsonSchema(ast);
-    const props = (js as Record<string, unknown>).properties as Record<string, unknown>;
+    const props = (js as Record<string, unknown>).properties as Record<
+      string,
+      unknown
+    >;
     const req = (js as Record<string, unknown>).required as string[];
     expect((js as Record<string, unknown>).type).toBe("object");
     expect(Object.keys(props)).toEqual(["a", "b"]);
@@ -173,19 +337,30 @@ describe("serialize (AST)", () => {
   });
 
   it("toJsonSchema string ID/validator patterns", () => {
-    const idAst = serialize(v.pipe(v.string(), v.ulid(), v.nanoid(), v.cuid2(), v.creditCard()));
+    const idAst = serialize(
+      v.pipe(v.string(), v.ulid(), v.nanoid(), v.cuid2(), v.creditCard()),
+    );
     const js = toJsonSchema(idAst) as Record<string, unknown>;
     expect(js.type).toBe("string");
     // Expect a combined pattern/allOf present
-    expect(Object.prototype.hasOwnProperty.call(js, "pattern") || Object.prototype.hasOwnProperty.call(js, "allOf")).toBe(true);
+    expect(
+      Object.prototype.hasOwnProperty.call(js, "pattern") ||
+        Object.prototype.hasOwnProperty.call(js, "allOf"),
+    ).toBe(true);
   });
 
   it("fromJsonSchema anyOf consts to enum", async () => {
     const { fromJsonSchema } = await import("../main.ts");
-    const js = { anyOf: [{ const: "a" }, { const: "b" }] } as unknown as Record<string, unknown>;
+    const js = { anyOf: [{ const: "a" }, { const: "b" }] } as unknown as Record<
+      string,
+      unknown
+    >;
     const s = fromJsonSchema(js);
     expect(s.node.type).toBe("enum");
-    expect((s.node as { type: string; values: string[] }).values).toEqual(["a", "b"]);
+    expect((s.node as { type: string; values: string[] }).values).toEqual([
+      "a",
+      "b",
+    ]);
   });
 
   it("fromJsonSchema subset roundtrip", async () => {
@@ -202,7 +377,11 @@ describe("serialize (AST)", () => {
     const { fromJsonSchema } = await import("../main.ts");
     const serialized = fromJsonSchema(js as unknown as Record<string, unknown>);
     expect(isSerializedSchema(serialized)).toBe(true);
-    const node = serialized.node as { type: string; entries: Record<string, unknown>; policy: string };
+    const node = serialized.node as {
+      type: string;
+      entries: Record<string, unknown>;
+      policy: string;
+    };
     expect(node.type).toBe("object");
     expect(Object.keys(node.entries)).toEqual(["a", "b"]);
     expect(node.policy).toBe("strict");
@@ -221,7 +400,10 @@ describe("type guard", () => {
     const payload = serialize(v.string());
     const badVendor = { ...payload, vendor: "other" as const };
     const badVersion = { ...payload, version: 2 as 1 } as typeof payload;
-    const badFormat = { ...payload, format: (FORMAT_VERSION + 1) as typeof FORMAT_VERSION } as typeof payload;
+    const badFormat = {
+      ...payload,
+      format: (FORMAT_VERSION + 1) as typeof FORMAT_VERSION,
+    } as typeof payload;
     expect(isSerializedSchema(badVendor)).toBe(false);
     expect(isSerializedSchema(badVersion)).toBe(false);
     expect(isSerializedSchema(badFormat)).toBe(false);
@@ -278,10 +460,16 @@ describe("deserialize", () => {
     expect(() => v.parse(strict, { a: "x" })).not.toThrow();
     expect(() => v.parse(strict, { a: "x", extra: 1 })).toThrow();
 
-    const rest = deserialize(serialize(v.objectWithRest({ a: v.string() }, v.number())));
+    const rest = deserialize(
+      serialize(v.objectWithRest({ a: v.string() }, v.number())),
+    );
     expect(() => v.parse(rest, { a: "x", extra: 1 })).not.toThrow();
     expect(() => v.parse(rest, { a: "x", extra: "no" })).toThrow();
-    const counted = deserialize(serialize(v.pipe(v.object({ a: v.string(), b: v.number() }), v.minEntries(2))));
+    const counted = deserialize(
+      serialize(
+        v.pipe(v.object({ a: v.string(), b: v.number() }), v.minEntries(2)),
+      ),
+    );
     expect(() => v.parse(counted, { a: "x", b: 1 })).not.toThrow();
     expect(() => v.parse(counted, { a: "x" })).toThrow();
   });
@@ -312,7 +500,9 @@ describe("deserialize", () => {
   });
 
   it("string constraints behavior", () => {
-    const serialized = serialize(v.pipe(v.string(), v.minLength(2), v.regex(/^a/)));
+    const serialized = serialize(
+      v.pipe(v.string(), v.minLength(2), v.regex(/^a/)),
+    );
     const schema = deserialize(serialized);
     expect(() => v.parse(schema, "ab")).not.toThrow();
     expect(() => v.parse(schema, "b")).toThrow();
@@ -320,7 +510,9 @@ describe("deserialize", () => {
   });
 
   it("number constraints behavior", () => {
-    const serialized = serialize(v.pipe(v.number(), v.minValue(2), v.maxValue(3)));
+    const serialized = serialize(
+      v.pipe(v.number(), v.minValue(2), v.maxValue(3)),
+    );
     const schema = deserialize(serialized);
     expect(() => v.parse(schema, 2)).not.toThrow();
     expect(() => v.parse(schema, 4)).toThrow();
@@ -355,11 +547,14 @@ describe("deserialize", () => {
 
     const m = deserialize(serialize(v.map(v.string(), v.number())));
     expect(() => v.parse(m, new Map([["a", 1]]))).not.toThrow();
-    expect(() => v.parse(m, { a: 1 } as unknown as Map<string, number>)).toThrow();
+    expect(() => v.parse(m, { a: 1 } as unknown as Map<string, number>))
+      .toThrow();
   });
 
   it("array constraints behavior", () => {
-    const s = deserialize(serialize(v.pipe(v.array(v.number()), v.minLength(1), v.maxLength(2))));
+    const s = deserialize(
+      serialize(v.pipe(v.array(v.number()), v.minLength(1), v.maxLength(2))),
+    );
     expect(() => v.parse(s, [1])).not.toThrow();
     expect(() => v.parse(s, [1, 2])).not.toThrow();
     expect(() => v.parse(s, [])).toThrow();
@@ -367,7 +562,9 @@ describe("deserialize", () => {
   });
 
   it("string formats behavior", () => {
-    const s = deserialize(serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.startsWith("a"))));
+    const s = deserialize(
+      serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.startsWith("a"))),
+    );
     // This is approximate: just check a couple cases
     expect(() => v.parse(s, "a@test.com")).not.toThrow();
     expect(() => v.parse(s, "test.com")).toThrow();
@@ -375,7 +572,9 @@ describe("deserialize", () => {
   });
 
   it("string transforms behavior", () => {
-    const s = deserialize(serialize(v.pipe(v.string(), v.trim(), v.toUpperCase())));
+    const s = deserialize(
+      serialize(v.pipe(v.string(), v.trim(), v.toUpperCase())),
+    );
     expect(v.parse(s, "  a ")).toBe("A");
   });
 
@@ -387,31 +586,55 @@ describe("deserialize", () => {
 
   it("array nonEmpty behavior", () => {
     const s = deserialize(serialize(v.pipe(v.array(v.string()), v.nonEmpty())));
-    expect(() => v.parse(s, ["a"])) .not.toThrow();
-    expect(() => v.parse(s, [])) .toThrow();
+    expect(() => v.parse(s, ["a"])).not.toThrow();
+    expect(() => v.parse(s, [])).toThrow();
   });
 
   it("date behavior", () => {
     const s = deserialize(serialize(v.date()));
-    expect(() => v.parse(s, new Date())) .not.toThrow();
-    expect(() => v.parse(s, "2020-01-01")) .toThrow();
+    expect(() => v.parse(s, new Date())).not.toThrow();
+    expect(() => v.parse(s, "2020-01-01")).toThrow();
   });
 
   it("file behavior", () => {
-    const f = deserialize(serialize(v.pipe(v.file(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"]))));
+    const f = deserialize(
+      serialize(
+        v.pipe(
+          v.file(),
+          v.minSize(1),
+          v.maxSize(2),
+          v.mimeType(["text/plain"]),
+        ),
+      ),
+    );
     const ok = new File([new Uint8Array(1)], "a.txt", { type: "text/plain" });
-    const tooBig = new File([new Uint8Array(3)], "b.txt", { type: "text/plain" });
-    const wrongType = new File([new Uint8Array(1)], "c.bin", { type: "application/octet-stream" });
+    const tooBig = new File([new Uint8Array(3)], "b.txt", {
+      type: "text/plain",
+    });
+    const wrongType = new File([new Uint8Array(1)], "c.bin", {
+      type: "application/octet-stream",
+    });
     expect(() => v.parse(f, ok)).not.toThrow();
     expect(() => v.parse(f, tooBig)).toThrow();
     expect(() => v.parse(f, wrongType)).toThrow();
   });
 
   it("blob behavior", () => {
-    const b = deserialize(serialize(v.pipe(v.blob(), v.minSize(1), v.maxSize(2), v.mimeType(["text/plain"]))));
+    const b = deserialize(
+      serialize(
+        v.pipe(
+          v.blob(),
+          v.minSize(1),
+          v.maxSize(2),
+          v.mimeType(["text/plain"]),
+        ),
+      ),
+    );
     const ok = new Blob([new Uint8Array(1)], { type: "text/plain" });
     const tooBig = new Blob([new Uint8Array(3)], { type: "text/plain" });
-    const wrongType = new Blob([new Uint8Array(1)], { type: "application/octet-stream" });
+    const wrongType = new Blob([new Uint8Array(1)], {
+      type: "application/octet-stream",
+    });
     expect(() => v.parse(b, ok)).not.toThrow();
     expect(() => v.parse(b, tooBig)).toThrow();
     expect(() => v.parse(b, wrongType)).toThrow();
@@ -423,19 +646,29 @@ describe("deserialize", () => {
       vendor: "valibot" as const,
       version: 1 as const,
       format: FORMAT_VERSION,
-      node: { type: "set" as const, value: { type: "string" as const }, minSize: 1, maxSize: 2 },
+      node: {
+        type: "set" as const,
+        value: { type: "string" as const },
+        minSize: 1,
+        maxSize: 2,
+      },
     };
     const setSchema = deserialize(setSerialized);
-    expect(() => v.parse(setSchema, new Set(["a"])) ).not.toThrow();
+    expect(() => v.parse(setSchema, new Set(["a"]))).not.toThrow();
     expect(() => v.parse(setSchema, new Set())).toThrow();
-    expect(() => v.parse(setSchema, new Set(["a", "b", "c"])) ).toThrow();
+    expect(() => v.parse(setSchema, new Set(["a", "b", "c"]))).toThrow();
 
     const mapSerialized = {
       kind: "schema" as const,
       vendor: "valibot" as const,
       version: 1 as const,
       format: FORMAT_VERSION,
-      node: { type: "map" as const, key: { type: "string" as const }, value: { type: "number" as const }, minSize: 1 },
+      node: {
+        type: "map" as const,
+        key: { type: "string" as const },
+        value: { type: "number" as const },
+        minSize: 1,
+      },
     };
     const mapSchema = deserialize(mapSerialized);
     expect(() => v.parse(mapSchema, new Map([["a", 1]]))).not.toThrow();
@@ -443,11 +676,13 @@ describe("deserialize", () => {
   });
 
   it("tuple with rest behavior", () => {
-    const schema = deserialize(serialize(v.tupleWithRest([v.string()], v.number())));
-    expect(() => v.parse(schema, ["a"]) ).not.toThrow();
-    expect(() => v.parse(schema, ["a", 1, 2]) ).not.toThrow();
-    expect(() => v.parse(schema, [1]) ).toThrow();
-    expect(() => v.parse(schema, ["a", "b"]) ).toThrow();
+    const schema = deserialize(
+      serialize(v.tupleWithRest([v.string()], v.number())),
+    );
+    expect(() => v.parse(schema, ["a"])).not.toThrow();
+    expect(() => v.parse(schema, ["a", 1, 2])).not.toThrow();
+    expect(() => v.parse(schema, [1])).toThrow();
+    expect(() => v.parse(schema, ["a", "b"])).toThrow();
   });
 });
 

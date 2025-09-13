@@ -26,7 +26,9 @@ try {
   const trimmed = input.trim();
   if (trimmed.startsWith("[")) {
     const arr = JSON.parse(trimmed);
-    if (!Array.isArray(arr)) throw new Error("Top-level JSON must be array or objects per line");
+    if (!Array.isArray(arr)) {
+      throw new Error("Top-level JSON must be array or objects per line");
+    }
     arr.forEach((o, i) => checkOne(o, i));
   } else {
     // Try NDJSON (one JSON per line)
@@ -38,7 +40,10 @@ try {
     }
   }
 } catch (err) {
-  console.error("Failed to parse input:", err instanceof Error ? err.message : String(err));
+  console.error(
+    "Failed to parse input:",
+    err instanceof Error ? err.message : String(err),
+  );
   Deno.exit(1);
 }
 
@@ -47,4 +52,3 @@ if (errors > 0) {
   Deno.exit(2);
 }
 console.log(`Validation succeeded: ${count} schemas.`);
-

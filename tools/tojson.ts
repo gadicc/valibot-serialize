@@ -11,7 +11,9 @@ try {
   const js = toJsonSchema(data);
   console.log(JSON.stringify(js, null, 2));
 } catch (err) {
-  console.error("Failed to read/convert input:", err instanceof Error ? err.message : String(err));
+  console.error(
+    "Failed to read/convert input:",
+    err instanceof Error ? err.message : String(err),
+  );
   Deno.exit(1);
 }
-

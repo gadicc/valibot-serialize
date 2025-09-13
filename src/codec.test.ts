@@ -1,47 +1,89 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { FORMAT_VERSION, deserialize, isSerializedSchema, serialize } from "../main.ts";
+import {
+  deserialize,
+  FORMAT_VERSION,
+  isSerializedSchema,
+  serialize,
+} from "../main.ts";
 
 describe("codec error paths and guards", () => {
   it("serialize throws on unsupported literal value", () => {
-    const fake = { type: "literal", value: { a: 1 } } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const fake = {
+      type: "literal",
+      value: { a: 1 },
+    } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
     expect(() => serialize(fake as never)).toThrow();
   });
 
   it("serialize throws on picklist without options", () => {
-    const fake = { type: "picklist" } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const fake = { type: "picklist" } as unknown as v.BaseSchema<
+      unknown,
+      unknown,
+      v.BaseIssue<unknown>
+    >;
     expect(() => serialize(fake as never)).toThrow();
   });
 
   it("serialize throws on object missing/invalid entries", () => {
-    const missing = { type: "object" } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const missing = { type: "object" } as unknown as v.BaseSchema<
+      unknown,
+      unknown,
+      v.BaseIssue<unknown>
+    >;
     expect(() => serialize(missing as never)).toThrow();
-    const invalid = { type: "object", entries: { a: undefined } } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const invalid = {
+      type: "object",
+      entries: { a: undefined },
+    } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
     expect(() => serialize(invalid as never)).toThrow();
   });
 
   it("serialize throws on tuple_with_rest missing parts", () => {
-    const noItems = { type: "tuple_with_rest", rest: v.number() } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const noItems = {
+      type: "tuple_with_rest",
+      rest: v.number(),
+    } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
     expect(() => serialize(noItems as never)).toThrow();
-    const noRest = { type: "tuple_with_rest", items: [v.string()] } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const noRest = {
+      type: "tuple_with_rest",
+      items: [v.string()],
+    } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
     expect(() => serialize(noRest as never)).toThrow();
   });
 
   it("serialize throws on record without key/value and enum without options", () => {
-    const rec = { type: "record" } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const rec = { type: "record" } as unknown as v.BaseSchema<
+      unknown,
+      unknown,
+      v.BaseIssue<unknown>
+    >;
     expect(() => serialize(rec as never)).toThrow();
-    const en = { type: "enum" } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const en = { type: "enum" } as unknown as v.BaseSchema<
+      unknown,
+      unknown,
+      v.BaseIssue<unknown>
+    >;
     expect(() => serialize(en as never)).toThrow();
   });
 
   it("serialize throws on unsupported schema type", () => {
-    const unk = { type: "weird" } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+    const unk = { type: "weird" } as unknown as v.BaseSchema<
+      unknown,
+      unknown,
+      v.BaseIssue<unknown>
+    >;
     expect(() => serialize(unk as never)).toThrow();
   });
 
   it("isSerializedSchema rejects invalid node shapes", () => {
-    const base = { kind: "schema" as const, vendor: "valibot" as const, version: 1 as const, format: FORMAT_VERSION };
+    const base = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: FORMAT_VERSION,
+    };
     const badString = { ...base, node: { type: "string", minLength: "x" } };
     expect(isSerializedSchema(badString)).toBe(false);
     const badObject = { ...base, node: { type: "object", entries: "bad" } };
@@ -58,7 +100,13 @@ describe("codec error paths and guards", () => {
   });
 
   it("deserialize throws on unsupported node type", () => {
-    const payload = { kind: "schema" as const, vendor: "valibot" as const, version: 1 as const, format: FORMAT_VERSION, node: { type: "weird" } };
+    const payload = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: FORMAT_VERSION,
+      node: { type: "weird" },
+    };
     expect(() => deserialize(payload as never)).toThrow();
   });
 
@@ -68,7 +116,10 @@ describe("codec error paths and guards", () => {
       vendor: "valibot" as const,
       version: 1 as const,
       format: FORMAT_VERSION,
-      node: { type: "string" as const, transforms: ["trimStart", "trimEnd", "normalize"] },
+      node: {
+        type: "string" as const,
+        transforms: ["trimStart", "trimEnd", "normalize"],
+      },
     };
     const schema = deserialize(payload as never);
     expect(v.parse(schema, "  a  ")).toBe("a");
@@ -123,7 +174,14 @@ describe("codec error paths and guards", () => {
             maxWords: 2,
             startsWith: "a",
             endsWith: "b",
-            transforms: ["trim", "trimStart", "trimEnd", "toUpperCase", "toLowerCase", "normalize"],
+            transforms: [
+              "trim",
+              "trimStart",
+              "trimEnd",
+              "toUpperCase",
+              "toLowerCase",
+              "normalize",
+            ],
           },
           b: {
             type: "number" as const,
@@ -148,22 +206,68 @@ describe("codec error paths and guards", () => {
     // Add other node kinds for guard execution
     const others = [
       { type: "date" as const },
-      { type: "file" as const, minSize: 1, maxSize: 2, mimeTypes: ["text/plain"] },
-      { type: "blob" as const, minSize: 1, maxSize: 2, mimeTypes: ["text/plain"] },
+      {
+        type: "file" as const,
+        minSize: 1,
+        maxSize: 2,
+        mimeTypes: ["text/plain"],
+      },
+      {
+        type: "blob" as const,
+        minSize: 1,
+        maxSize: 2,
+        mimeTypes: ["text/plain"],
+      },
       { type: "literal" as const, value: null },
-      { type: "array" as const, item: { type: "boolean" as const }, minLength: 1, maxLength: 2, length: 1 },
+      {
+        type: "array" as const,
+        item: { type: "boolean" as const },
+        minLength: 1,
+        maxLength: 2,
+        length: 1,
+      },
       { type: "optional" as const, base: { type: "number" as const } },
       { type: "nullable" as const, base: { type: "number" as const } },
       { type: "nullish" as const, base: { type: "number" as const } },
-      { type: "union" as const, options: [{ type: "string" as const }, { type: "number" as const }] },
-      { type: "tuple" as const, items: [{ type: "string" as const }, { type: "number" as const }], rest: { type: "boolean" as const } },
-      { type: "record" as const, key: { type: "string" as const }, value: { type: "number" as const } },
+      {
+        type: "union" as const,
+        options: [{ type: "string" as const }, { type: "number" as const }],
+      },
+      {
+        type: "tuple" as const,
+        items: [{ type: "string" as const }, { type: "number" as const }],
+        rest: { type: "boolean" as const },
+      },
+      {
+        type: "record" as const,
+        key: { type: "string" as const },
+        value: { type: "number" as const },
+      },
       { type: "enum" as const, values: ["a", 1, true, null] },
-      { type: "set" as const, value: { type: "string" as const }, minSize: 1, maxSize: 2 },
-      { type: "map" as const, key: { type: "string" as const }, value: { type: "number" as const }, minSize: 1, maxSize: 2 },
+      {
+        type: "set" as const,
+        value: { type: "string" as const },
+        minSize: 1,
+        maxSize: 2,
+      },
+      {
+        type: "map" as const,
+        key: { type: "string" as const },
+        value: { type: "number" as const },
+        minSize: 1,
+        maxSize: 2,
+      },
     ];
     for (const node of others) {
-      const ok = isSerializedSchema({ kind: "schema", vendor: "valibot", version: 1, format: FORMAT_VERSION, node } as const);
+      const ok = isSerializedSchema(
+        {
+          kind: "schema",
+          vendor: "valibot",
+          version: 1,
+          format: FORMAT_VERSION,
+          node,
+        } as const,
+      );
       expect(ok).toBe(true);
     }
   });

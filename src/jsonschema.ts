@@ -1,4 +1,6 @@
 import type { SchemaNode, SerializedSchema } from "./types.ts";
+import { escapeRegex } from "./regex_utils.ts";
+import { patterns as pat } from "./patterns.ts";
 
 type JsonSchema = Record<string, unknown>;
 
@@ -23,7 +25,9 @@ function convertNode(node: SchemaNode): JsonSchema {
       };
       if (node.minLength !== undefined) schema.minItems = node.minLength;
       if (node.maxLength !== undefined) schema.maxItems = node.maxLength;
-      if (node.length !== undefined) schema.minItems = schema.maxItems = node.length;
+      if (node.length !== undefined) {
+        schema.minItems = schema.maxItems = node.length;
+      }
       return schema;
     }
     case "object": {
@@ -59,7 +63,10 @@ function convertNode(node: SchemaNode): JsonSchema {
     case "union": {
       const literals = node.options.every((o) => o.type === "literal");
       if (literals) {
-        return { enum: (node.options as Extract<SchemaNode, { type: "literal" }>[]) .map((o) => o.value) } as JsonSchema;
+        return {
+          enum: (node.options as Extract<SchemaNode, { type: "literal" }>[])
+            .map((o) => o.value),
+        } as JsonSchema;
       }
       return { anyOf: node.options.map(convertNode) };
     }
@@ -84,14 +91,21 @@ function convertNode(node: SchemaNode): JsonSchema {
     case "enum":
       return { enum: node.values.slice() } as JsonSchema;
     case "set": {
-      const schema: JsonSchema = { type: "array", items: convertNode(node.value), uniqueItems: true };
+      const schema: JsonSchema = {
+        type: "array",
+        items: convertNode(node.value),
+        uniqueItems: true,
+      };
       if (node.minSize !== undefined) schema.minItems = node.minSize;
       if (node.maxSize !== undefined) schema.maxItems = node.maxSize;
       return schema;
     }
     case "map": {
       // Approximate as object with value schema
-      const schema: JsonSchema = { type: "object", additionalProperties: convertNode(node.value) };
+      const schema: JsonSchema = {
+        type: "object",
+        additionalProperties: convertNode(node.value),
+      };
       if (node.minSize !== undefined) schema.minProperties = node.minSize;
       if (node.maxSize !== undefined) schema.maxProperties = node.maxSize;
       return schema;
@@ -102,65 +116,91 @@ function convertNode(node: SchemaNode): JsonSchema {
     case "file": {
       // Approximate as binary string; contentMediaType cannot express multiple easily
       const schema: JsonSchema = { type: "string", contentEncoding: "binary" };
-      if (node.mimeTypes && node.mimeTypes.length === 1) (schema as Record<string, unknown>).contentMediaType = node.mimeTypes[0];
+      if (node.mimeTypes && node.mimeTypes.length === 1) {
+        (schema as Record<string, unknown>).contentMediaType =
+          node.mimeTypes[0];
+      }
       if (node.mimeTypes && node.mimeTypes.length > 1) {
-        (schema as Record<string, unknown>).anyOf = node.mimeTypes.map((mt) => ({ type: "string", contentEncoding: "binary", contentMediaType: mt }));
+        (schema as Record<string, unknown>).anyOf = node.mimeTypes.map((
+          mt,
+        ) => ({
+          type: "string",
+          contentEncoding: "binary",
+          contentMediaType: mt,
+        }));
       }
       return schema;
     }
     case "blob": {
       const schema: JsonSchema = { type: "string", contentEncoding: "binary" };
-      if (node.mimeTypes && node.mimeTypes.length === 1) (schema as Record<string, unknown>).contentMediaType = node.mimeTypes[0];
+      if (node.mimeTypes && node.mimeTypes.length === 1) {
+        (schema as Record<string, unknown>).contentMediaType =
+          node.mimeTypes[0];
+      }
       if (node.mimeTypes && node.mimeTypes.length > 1) {
-        (schema as Record<string, unknown>).anyOf = node.mimeTypes.map((mt) => ({ type: "string", contentEncoding: "binary", contentMediaType: mt }));
+        (schema as Record<string, unknown>).anyOf = node.mimeTypes.map((
+          mt,
+        ) => ({
+          type: "string",
+          contentEncoding: "binary",
+          contentMediaType: mt,
+        }));
       }
       return schema;
     }
   }
 }
 
-function buildStringSchema(node: Extract<SchemaNode, { type: "string" }>): JsonSchema {
+function buildStringSchema(
+  node: Extract<SchemaNode, { type: "string" }>,
+): JsonSchema {
   const schema: JsonSchema = { type: "string" };
   if (node.minLength !== undefined) schema.minLength = node.minLength;
   if (node.maxLength !== undefined) schema.maxLength = node.maxLength;
-  if (node.length !== undefined) schema.minLength = schema.maxLength = node.length;
-  const patterns: string[] = [];
-  if (node.pattern) patterns.push(node.pattern);
-  if (node.startsWith) patterns.push(`^${escapeRegex(node.startsWith)}.*`);
-  if (node.endsWith) patterns.push(`.*${escapeRegex(node.endsWith)}$`);
-  if (node.hexColor) patterns.push("^#?[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$");
-  if (node.slug) patterns.push("^[a-z0-9]+(?:-[a-z0-9]+)*$");
-  if (node.digits) patterns.push("^[0-9]+$");
-  if (node.hexadecimal) patterns.push("^[0-9A-Fa-f]+$");
-  if ((node as { creditCard?: true }).creditCard) patterns.push("^[0-9]{12,19}$");
-  if ((node as { imei?: true }).imei) patterns.push("^\\d{15}$");
-  if ((node as { mac?: true }).mac) patterns.push("^(?:[0-9A-Fa-f]{2}([:\\-]))(?:[0-9A-Fa-f]{2}\\1){4}[0-9A-Fa-f]{2}$");
-  if ((node as { mac48?: true }).mac48) patterns.push("^(?:[0-9A-Fa-f]{2}([:\\-]))(?:[0-9A-Fa-f]{2}\\1){4}[0-9A-Fa-f]{2}$");
-  if ((node as { mac64?: true }).mac64) patterns.push("^(?:[0-9A-Fa-f]{2}([:\\-]))(?:[0-9A-Fa-f]{2}\\1){6}[0-9A-Fa-f]{2}$");
-  if ((node as { base64?: true }).base64) patterns.push("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+  if (node.length !== undefined) {
+    schema.minLength = schema.maxLength = node.length;
+  }
+  const patternsArr: string[] = [];
+  if (node.pattern) patternsArr.push(node.pattern);
+  if (node.startsWith) patternsArr.push(`^${escapeRegex(node.startsWith)}.*`);
+  if (node.endsWith) patternsArr.push(`.*${escapeRegex(node.endsWith)}$`);
+  if (node.hexColor) patternsArr.push(pat.hexColor);
+  if (node.slug) patternsArr.push(pat.slug);
+  if (node.digits) patternsArr.push(pat.digits);
+  if (node.hexadecimal) patternsArr.push(pat.hexadecimal);
+  if ((node as { creditCard?: true }).creditCard) {
+    patternsArr.push("^[0-9]{12,19}$");
+  }
+  if ((node as { imei?: true }).imei) patternsArr.push("^\\d{15}$");
+  if ((node as { mac?: true }).mac) patternsArr.push(pat.mac);
+  if ((node as { mac48?: true }).mac48) patternsArr.push(pat.mac48);
+  if ((node as { mac64?: true }).mac64) patternsArr.push(pat.mac64);
+  if ((node as { base64?: true }).base64) patternsArr.push(pat.base64);
   // IDs
-  if ((node as { ulid?: true }).ulid) patterns.push("^[0-9A-HJKMNP-TV-Z]{26}$");
-  if ((node as { nanoid?: true }).nanoid) patterns.push("^[A-Za-z0-9_-]+$");
-  if ((node as { cuid2?: true }).cuid2) patterns.push("^[a-z0-9]{25}$");
+  if ((node as { ulid?: true }).ulid) patternsArr.push(pat.ulid);
+  if ((node as { nanoid?: true }).nanoid) patternsArr.push(pat.nanoid);
+  if ((node as { cuid2?: true }).cuid2) patternsArr.push(pat.cuid2);
   // ISO date/time patterns (approximate)
-  if (node.isoDate) patterns.push("^\\d{4}-\\d{2}-\\d{2}$");
-  if (node.isoTime) patterns.push("^\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?(Z|[+\\-]\\d{2}:?\\d{2})?$");
-  if (node.isoTimeSecond) patterns.push("^\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+\\-]\\d{2}:?\\d{2})?$");
-  if (node.isoDateTime || node.isoTimestamp) patterns.push("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?(Z|[+\\-]\\d{2}:?\\d{2})?$");
-  if (node.isoWeek) patterns.push("^\\d{4}-W\\d{2}(-\\d)?$");
+  if (node.isoDate) patternsArr.push(pat.isoDate);
+  if (node.isoTime) patternsArr.push(pat.isoTime);
+  if (node.isoTimeSecond) patternsArr.push(pat.isoTimeSecond);
+  if (node.isoDateTime || node.isoTimestamp) patternsArr.push(pat.isoDateTime);
+  if (node.isoWeek) patternsArr.push(pat.isoWeek);
   // Word count approximations
   if ((node as { minWords?: number }).minWords !== undefined) {
     const n = (node as { minWords: number }).minWords;
     // At least n words: require at least n-1 spaces and final word
-    patterns.push(`^(?:\\S+\\s+){${Math.max(0, n - 1)}}\\S+(?:\\s+\\S+)*$`);
+    patternsArr.push(`^(?:\\S+\\s+){${Math.max(0, n - 1)}}\\S+(?:\\s+\\S+)*$`);
   }
   if ((node as { maxWords?: number }).maxWords !== undefined) {
     const m = (node as { maxWords: number }).maxWords;
     // At most m words: up to m occurrences of word blocks separated by whitespace
-    patterns.push(`^\\s*(?:\\S+(?:\\s+|$)){0,${m}}$`);
+    patternsArr.push(`^\\s*(?:\\S+(?:\\s+|$)){0,${m}}$`);
   }
-  if (patterns.length === 1) schema.pattern = patterns[0];
-  else if (patterns.length > 1) schema.allOf = patterns.map((p) => ({ pattern: p }));
+  if (patternsArr.length === 1) schema.pattern = patternsArr[0];
+  else if (patternsArr.length > 1) {
+    schema.allOf = patternsArr.map((p) => ({ pattern: p }));
+  }
   const formats: string[] = [];
   if (node.email) formats.push("email");
   if (node.url) formats.push("uri");
@@ -170,14 +210,21 @@ function buildStringSchema(node: Extract<SchemaNode, { type: "string" }>): JsonS
   if (node.ip && !node.ipv4 && !node.ipv6) {
     // generic IP: accept both
     (schema.anyOf ??= []) as unknown as Array<unknown>;
-    (schema.anyOf as Array<unknown>).push({ type: "string", format: "ipv4" }, { type: "string", format: "ipv6" });
+    (schema.anyOf as Array<unknown>).push({ type: "string", format: "ipv4" }, {
+      type: "string",
+      format: "ipv6",
+    });
   }
   if (formats.length === 1) schema.format = formats[0];
-  else if (formats.length > 1) schema.anyOf = formats.map((f) => ({ type: "string", format: f }));
+  else if (formats.length > 1) {
+    schema.anyOf = formats.map((f) => ({ type: "string", format: f }));
+  }
   return schema;
 }
 
-function buildNumberSchema(node: Extract<SchemaNode, { type: "number" }>): JsonSchema {
+function buildNumberSchema(
+  node: Extract<SchemaNode, { type: "number" }>,
+): JsonSchema {
   const schema: JsonSchema = { type: "number" };
   if (node.integer) schema.type = "integer";
   if (node.min !== undefined) schema.minimum = node.min;
@@ -186,10 +233,6 @@ function buildNumberSchema(node: Extract<SchemaNode, { type: "number" }>): JsonS
   if (node.lt !== undefined) schema.exclusiveMaximum = node.lt;
   if (node.multipleOf !== undefined) schema.multipleOf = node.multipleOf;
   return schema;
-}
-
-function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export type { JsonSchema };

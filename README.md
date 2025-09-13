@@ -6,12 +6,12 @@ and to decode them back. It also includes helpers to export a JSON Schema (Draft
 
 Copyright (c) 2025 by Gadi Cohen. [MIT licensed](./LICENSE.txt).
 
-Badges TODO.
+Badges TBD.
 
 ## Quick Start
 
 ```ts
-import * as v from "valibot";
+import * as v from "@valibot/valibot";
 import { deserialize, serialize } from "valibot-serialize";
 
 const LoginSchema = v.object({

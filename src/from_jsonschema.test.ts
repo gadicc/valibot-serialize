@@ -4,14 +4,23 @@ import { fromJsonSchema } from "../main.ts";
 
 describe("fromJsonSchema extra coverage", () => {
   it("detects ip from anyOf string formats", () => {
-    const s = fromJsonSchema({ type: "string", anyOf: [{ type: "string", format: "ipv4" }, { type: "string", format: "ipv6" }] });
+    const s = fromJsonSchema({
+      type: "string",
+      anyOf: [{ type: "string", format: "ipv4" }, {
+        type: "string",
+        format: "ipv6",
+      }],
+    });
     expect(s.node.type).toBe("string");
     expect((s.node as { ip?: boolean }).ip).toBe(true);
   });
 
   it("string patterns map to flags and starts/ends", () => {
     // Provide patterns in the simplified forms recognized by fromJsonSchema
-    const ulid = fromJsonSchema({ type: "string", pattern: "00000000000000000000000000" });
+    const ulid = fromJsonSchema({
+      type: "string",
+      pattern: "00000000000000000000000000",
+    });
     expect((ulid.node as { ulid?: boolean }).ulid).toBe(true);
     const base64 = fromJsonSchema({ type: "string", pattern: "ABCD==" });
     expect((base64.node as { base64?: boolean }).base64).toBe(true);
@@ -27,8 +36,23 @@ describe("fromJsonSchema extra coverage", () => {
   });
 
   it("numbers including integer and bounds", () => {
-    const s = fromJsonSchema({ type: "integer", minimum: 1, maximum: 2, exclusiveMinimum: 0, exclusiveMaximum: 3, multipleOf: 2 });
-    const n = s.node as { type: string; integer?: boolean; min?: number; max?: number; gt?: number; lt?: number; multipleOf?: number };
+    const s = fromJsonSchema({
+      type: "integer",
+      minimum: 1,
+      maximum: 2,
+      exclusiveMinimum: 0,
+      exclusiveMaximum: 3,
+      multipleOf: 2,
+    });
+    const n = s.node as {
+      type: string;
+      integer?: boolean;
+      min?: number;
+      max?: number;
+      gt?: number;
+      lt?: number;
+      multipleOf?: number;
+    };
     expect(n.type).toBe("number");
     expect(n.integer).toBe(true);
     expect(n.min).toBe(1);
@@ -39,19 +63,43 @@ describe("fromJsonSchema extra coverage", () => {
   });
 
   it("union anyOf fallback (non-const)", () => {
-    const s = fromJsonSchema({ anyOf: [{ type: "string" }, { type: "number" }] });
+    const s = fromJsonSchema({
+      anyOf: [{ type: "string" }, { type: "number" }],
+    });
     expect(s.node.type).toBe("union");
   });
 
   it("array forms: tuple, tuple with rest, set, array", () => {
-    const tuple = fromJsonSchema({ type: "array", prefixItems: [{ type: "string" }, { type: "number" }] });
+    const tuple = fromJsonSchema({
+      type: "array",
+      prefixItems: [{ type: "string" }, { type: "number" }],
+    });
     expect(tuple.node.type).toBe("tuple");
-    const rest = fromJsonSchema({ type: "array", prefixItems: [{ type: "string" }], items: { type: "number" } });
+    const rest = fromJsonSchema({
+      type: "array",
+      prefixItems: [{ type: "string" }],
+      items: { type: "number" },
+    });
     expect((rest.node as { rest?: unknown }).rest).toBeDefined();
-    const set = fromJsonSchema({ type: "array", uniqueItems: true, items: { type: "string" }, minItems: 1, maxItems: 2 });
+    const set = fromJsonSchema({
+      type: "array",
+      uniqueItems: true,
+      items: { type: "string" },
+      minItems: 1,
+      maxItems: 2,
+    });
     expect(set.node.type).toBe("set");
-    const arr = fromJsonSchema({ type: "array", items: { type: "number" }, minItems: 3, maxItems: 4 });
-    const an = arr.node as { type: string; minLength?: number; maxLength?: number };
+    const arr = fromJsonSchema({
+      type: "array",
+      items: { type: "number" },
+      minItems: 3,
+      maxItems: 4,
+    });
+    const an = arr.node as {
+      type: string;
+      minLength?: number;
+      maxLength?: number;
+    };
     expect(an.type).toBe("array");
     expect(an.minLength).toBe(3);
     expect(an.maxLength).toBe(4);
@@ -66,7 +114,13 @@ describe("fromJsonSchema extra coverage", () => {
       minProperties: 1,
       maxProperties: 5,
     });
-    const node = s.node as { type: string; entries: Record<string, unknown>; rest?: unknown; minEntries?: number; maxEntries?: number };
+    const node = s.node as {
+      type: string;
+      entries: Record<string, unknown>;
+      rest?: unknown;
+      minEntries?: number;
+      maxEntries?: number;
+    };
     expect(node.type).toBe("object");
     expect(Object.keys(node.entries)).toEqual(["a"]);
     expect(node.rest).toBeDefined();

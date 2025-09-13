@@ -4,17 +4,11 @@ Generated examples for common string validators and flags.
 
 Run: `deno task gen-docs` to refresh this file.
 
-
-
 ## string.email
 
-
-
 ```ts
-v.pipe(v.string(), v.email())
+v.pipe(v.string(), v.email());
 ```
-
-
 
 **AST**
 
@@ -31,8 +25,6 @@ v.pipe(v.string(), v.email())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -42,17 +34,11 @@ v.pipe(v.string(), v.email())
 }
 ```
 
-
-
 ## string.url
 
-
-
 ```ts
-v.pipe(v.string(), v.url())
+v.pipe(v.string(), v.url());
 ```
-
-
 
 **AST**
 
@@ -69,8 +55,6 @@ v.pipe(v.string(), v.url())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -80,17 +64,11 @@ v.pipe(v.string(), v.url())
 }
 ```
 
-
-
 ## string.uuid
 
-
-
 ```ts
-v.pipe(v.string(), v.uuid())
+v.pipe(v.string(), v.uuid());
 ```
-
-
 
 **AST**
 
@@ -107,8 +85,6 @@ v.pipe(v.string(), v.uuid())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -118,17 +94,11 @@ v.pipe(v.string(), v.uuid())
 }
 ```
 
-
-
 ## string.ip(ipv4|ipv6)
 
-
-
 ```ts
-v.pipe(v.string(), v.ip())
+v.pipe(v.string(), v.ip());
 ```
-
-
 
 **AST**
 
@@ -144,8 +114,6 @@ v.pipe(v.string(), v.ip())
   }
 }
 ```
-
-
 
 **JSON Schema**
 
@@ -165,17 +133,11 @@ v.pipe(v.string(), v.ip())
 }
 ```
 
-
-
 ## string.ipv4
 
-
-
 ```ts
-v.pipe(v.string(), v.ipv4())
+v.pipe(v.string(), v.ipv4());
 ```
-
-
 
 **AST**
 
@@ -192,8 +154,6 @@ v.pipe(v.string(), v.ipv4())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -203,17 +163,11 @@ v.pipe(v.string(), v.ipv4())
 }
 ```
 
-
-
 ## string.ipv6
 
-
-
 ```ts
-v.pipe(v.string(), v.ipv6())
+v.pipe(v.string(), v.ipv6());
 ```
-
-
 
 **AST**
 
@@ -230,8 +184,6 @@ v.pipe(v.string(), v.ipv6())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -241,17 +193,11 @@ v.pipe(v.string(), v.ipv6())
 }
 ```
 
-
-
 ## string.hexColor
 
-
-
 ```ts
-v.pipe(v.string(), v.hexColor())
+v.pipe(v.string(), v.hexColor());
 ```
-
-
 
 **AST**
 
@@ -268,8 +214,6 @@ v.pipe(v.string(), v.hexColor())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -279,17 +223,11 @@ v.pipe(v.string(), v.hexColor())
 }
 ```
 
-
-
 ## string.slug
 
-
-
 ```ts
-v.pipe(v.string(), v.slug())
+v.pipe(v.string(), v.slug());
 ```
-
-
 
 **AST**
 
@@ -306,8 +244,6 @@ v.pipe(v.string(), v.slug())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -317,17 +253,11 @@ v.pipe(v.string(), v.slug())
 }
 ```
 
-
-
 ## string.digits
 
-
-
 ```ts
-v.pipe(v.string(), v.digits())
+v.pipe(v.string(), v.digits());
 ```
-
-
 
 **AST**
 
@@ -344,8 +274,6 @@ v.pipe(v.string(), v.digits())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -355,17 +283,11 @@ v.pipe(v.string(), v.digits())
 }
 ```
 
-
-
 ## string.emoji
 
-
-
 ```ts
-v.pipe(v.string(), v.emoji())
+v.pipe(v.string(), v.emoji());
 ```
-
-
 
 **AST**
 
@@ -382,8 +304,6 @@ v.pipe(v.string(), v.emoji())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -392,17 +312,11 @@ v.pipe(v.string(), v.emoji())
 }
 ```
 
-
-
 ## string.hexadecimal
 
-
-
 ```ts
-v.pipe(v.string(), v.hexadecimal())
+v.pipe(v.string(), v.hexadecimal());
 ```
-
-
 
 **AST**
 
@@ -419,8 +333,6 @@ v.pipe(v.string(), v.hexadecimal())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -430,17 +342,11 @@ v.pipe(v.string(), v.hexadecimal())
 }
 ```
 
-
-
 ## string.creditCard
 
-
-
 ```ts
-v.pipe(v.string(), v.creditCard())
+v.pipe(v.string(), v.creditCard());
 ```
-
-
 
 **AST**
 
@@ -457,8 +363,6 @@ v.pipe(v.string(), v.creditCard())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -468,17 +372,11 @@ v.pipe(v.string(), v.creditCard())
 }
 ```
 
-
-
 ## string.imei
 
-
-
 ```ts
-v.pipe(v.string(), v.imei())
+v.pipe(v.string(), v.imei());
 ```
-
-
 
 **AST**
 
@@ -495,8 +393,6 @@ v.pipe(v.string(), v.imei())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -506,17 +402,11 @@ v.pipe(v.string(), v.imei())
 }
 ```
 
-
-
 ## string.mac
 
-
-
 ```ts
-v.pipe(v.string(), v.mac())
+v.pipe(v.string(), v.mac());
 ```
-
-
 
 **AST**
 
@@ -533,8 +423,6 @@ v.pipe(v.string(), v.mac())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -544,17 +432,11 @@ v.pipe(v.string(), v.mac())
 }
 ```
 
-
-
 ## string.mac48
 
-
-
 ```ts
-v.pipe(v.string(), v.mac48())
+v.pipe(v.string(), v.mac48());
 ```
-
-
 
 **AST**
 
@@ -571,8 +453,6 @@ v.pipe(v.string(), v.mac48())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -582,17 +462,11 @@ v.pipe(v.string(), v.mac48())
 }
 ```
 
-
-
 ## string.mac64
 
-
-
 ```ts
-v.pipe(v.string(), v.mac64())
+v.pipe(v.string(), v.mac64());
 ```
-
-
 
 **AST**
 
@@ -609,8 +483,6 @@ v.pipe(v.string(), v.mac64())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -620,17 +492,11 @@ v.pipe(v.string(), v.mac64())
 }
 ```
 
-
-
 ## string.base64
 
-
-
 ```ts
-v.pipe(v.string(), v.base64())
+v.pipe(v.string(), v.base64());
 ```
-
-
 
 **AST**
 
@@ -647,8 +513,6 @@ v.pipe(v.string(), v.base64())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -658,17 +522,11 @@ v.pipe(v.string(), v.base64())
 }
 ```
 
-
-
 ## string.ulid
 
-
-
 ```ts
-v.pipe(v.string(), v.ulid())
+v.pipe(v.string(), v.ulid());
 ```
-
-
 
 **AST**
 
@@ -685,8 +543,6 @@ v.pipe(v.string(), v.ulid())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -696,17 +552,11 @@ v.pipe(v.string(), v.ulid())
 }
 ```
 
-
-
 ## string.nanoid
 
-
-
 ```ts
-v.pipe(v.string(), v.nanoid())
+v.pipe(v.string(), v.nanoid());
 ```
-
-
 
 **AST**
 
@@ -723,8 +573,6 @@ v.pipe(v.string(), v.nanoid())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -734,17 +582,11 @@ v.pipe(v.string(), v.nanoid())
 }
 ```
 
-
-
 ## string.cuid2
 
-
-
 ```ts
-v.pipe(v.string(), v.cuid2())
+v.pipe(v.string(), v.cuid2());
 ```
-
-
 
 **AST**
 
@@ -761,8 +603,6 @@ v.pipe(v.string(), v.cuid2())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -772,17 +612,11 @@ v.pipe(v.string(), v.cuid2())
 }
 ```
 
-
-
 ## string.isoDate
 
-
-
 ```ts
-v.pipe(v.string(), v.isoDate())
+v.pipe(v.string(), v.isoDate());
 ```
-
-
 
 **AST**
 
@@ -799,8 +633,6 @@ v.pipe(v.string(), v.isoDate())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -810,17 +642,11 @@ v.pipe(v.string(), v.isoDate())
 }
 ```
 
-
-
 ## string.isoDateTime
 
-
-
 ```ts
-v.pipe(v.string(), v.isoDateTime())
+v.pipe(v.string(), v.isoDateTime());
 ```
-
-
 
 **AST**
 
@@ -837,8 +663,6 @@ v.pipe(v.string(), v.isoDateTime())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -848,17 +672,11 @@ v.pipe(v.string(), v.isoDateTime())
 }
 ```
 
-
-
 ## string.isoTime
 
-
-
 ```ts
-v.pipe(v.string(), v.isoTime())
+v.pipe(v.string(), v.isoTime());
 ```
-
-
 
 **AST**
 
@@ -875,8 +693,6 @@ v.pipe(v.string(), v.isoTime())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -886,17 +702,11 @@ v.pipe(v.string(), v.isoTime())
 }
 ```
 
-
-
 ## string.isoTimeSecond
 
-
-
 ```ts
-v.pipe(v.string(), v.isoTimeSecond())
+v.pipe(v.string(), v.isoTimeSecond());
 ```
-
-
 
 **AST**
 
@@ -913,8 +723,6 @@ v.pipe(v.string(), v.isoTimeSecond())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -924,17 +732,11 @@ v.pipe(v.string(), v.isoTimeSecond())
 }
 ```
 
-
-
 ## string.isoTimestamp
 
-
-
 ```ts
-v.pipe(v.string(), v.isoTimestamp())
+v.pipe(v.string(), v.isoTimestamp());
 ```
-
-
 
 **AST**
 
@@ -951,8 +753,6 @@ v.pipe(v.string(), v.isoTimestamp())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -962,17 +762,11 @@ v.pipe(v.string(), v.isoTimestamp())
 }
 ```
 
-
-
 ## string.isoWeek
 
-
-
 ```ts
-v.pipe(v.string(), v.isoWeek())
+v.pipe(v.string(), v.isoWeek());
 ```
-
-
 
 **AST**
 
@@ -989,8 +783,6 @@ v.pipe(v.string(), v.isoWeek())
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -1000,17 +792,11 @@ v.pipe(v.string(), v.isoWeek())
 }
 ```
 
-
-
 ## string.startsWith/endsWith
 
-
-
 ```ts
-v.pipe(v.string(), v.startsWith("ab"), v.endsWith("yz"))
+v.pipe(v.string(), v.startsWith("ab"), v.endsWith("yz"));
 ```
-
-
 
 **AST**
 
@@ -1028,8 +814,6 @@ v.pipe(v.string(), v.startsWith("ab"), v.endsWith("yz"))
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -1046,17 +830,11 @@ v.pipe(v.string(), v.startsWith("ab"), v.endsWith("yz"))
 }
 ```
 
-
-
 ## string.min/max length
 
-
-
 ```ts
-v.pipe(v.string(), v.minLength(3), v.maxLength(5))
+v.pipe(v.string(), v.minLength(3), v.maxLength(5));
 ```
-
-
 
 **AST**
 
@@ -1074,8 +852,6 @@ v.pipe(v.string(), v.minLength(3), v.maxLength(5))
 }
 ```
 
-
-
 **JSON Schema**
 
 ```json
@@ -1086,17 +862,11 @@ v.pipe(v.string(), v.minLength(3), v.maxLength(5))
 }
 ```
 
-
-
 ## string.graphemes
 
-
-
 ```ts
-v.pipe(v.string(), v.minGraphemes(1), v.maxGraphemes(5))
+v.pipe(v.string(), v.minGraphemes(1), v.maxGraphemes(5));
 ```
-
-
 
 **AST**
 
@@ -1113,8 +883,6 @@ v.pipe(v.string(), v.minGraphemes(1), v.maxGraphemes(5))
   }
 }
 ```
-
-
 
 **JSON Schema**
 

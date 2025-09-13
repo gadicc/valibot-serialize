@@ -141,7 +141,7 @@ const samples: Sample[] = [
   },
   {
     title: "string.startsWith/endsWith",
-    code: "v.pipe(v.string(), v.startsWith(\"ab\"), v.endsWith(\"yz\"))",
+    code: 'v.pipe(v.string(), v.startsWith("ab"), v.endsWith("yz"))',
     build: () => v.pipe(v.string(), v.startsWith("ab"), v.endsWith("yz")),
   },
   {
@@ -166,11 +166,15 @@ function codeBlock(code: string, lang = "ts"): string {
 
 function jsonBlock(obj: unknown, title?: string): string {
   const content = JSON.stringify(obj, null, 2);
-  return `${title ? `\n\n**${title}**` : ""}\n\n\`\`\`json\n${content}\n\`\`\`\n`;
+  return `${
+    title ? `\n\n**${title}**` : ""
+  }\n\n\`\`\`json\n${content}\n\`\`\`\n`;
 }
 
 const parts: string[] = [];
-parts.push("# Valibot → AST → JSON Schema Mappings\n\nGenerated examples for common string validators and flags.\n\nRun: `deno task gen-docs` to refresh this file.\n");
+parts.push(
+  "# Valibot → AST → JSON Schema Mappings\n\nGenerated examples for common string validators and flags.\n\nRun: `deno task gen-docs` to refresh this file.\n",
+);
 
 for (const s of samples) {
   try {
@@ -183,11 +187,13 @@ for (const s of samples) {
     parts.push(jsonBlock(js, "JSON Schema"));
   } catch (err) {
     parts.push(header(s.title));
-    parts.push("(failed to generate: " + (err instanceof Error ? err.message : String(err)) + ")\n");
+    parts.push(
+      "(failed to generate: " +
+        (err instanceof Error ? err.message : String(err)) + ")\n",
+    );
   }
 }
 
 await Deno.mkdir("docs", { recursive: true });
 await Deno.writeTextFile("docs/MAPPINGS.md", parts.join("\n"));
 console.log("Wrote docs/MAPPINGS.md");
-
