@@ -172,6 +172,22 @@ describe("serialize (AST)", () => {
     expect((enumJs as Record<string, unknown>).enum).toEqual(["x", "y"]);
   });
 
+  it("toJsonSchema string ID/validator patterns", () => {
+    const idAst = serialize(v.pipe(v.string(), v.ulid(), v.nanoid(), v.cuid2(), v.creditCard()));
+    const js = toJsonSchema(idAst) as Record<string, unknown>;
+    expect(js.type).toBe("string");
+    // Expect a combined pattern/allOf present
+    expect(Object.prototype.hasOwnProperty.call(js, "pattern") || Object.prototype.hasOwnProperty.call(js, "allOf")).toBe(true);
+  });
+
+  it("fromJsonSchema anyOf consts to enum", async () => {
+    const { fromJsonSchema } = await import("./main.ts");
+    const js = { anyOf: [{ const: "a" }, { const: "b" }] } as unknown as Record<string, unknown>;
+    const s = fromJsonSchema(js);
+    expect(s.node.type).toBe("enum");
+    expect((s.node as { type: string; values: string[] }).values).toEqual(["a", "b"]);
+  });
+
   it("fromJsonSchema subset roundtrip", async () => {
     const js = {
       type: "object",

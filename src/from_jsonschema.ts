@@ -16,19 +16,43 @@ function convert(schema: JS): SchemaNode {
   const type = schema.type as string | undefined;
   if (schema.const !== undefined) return { type: "literal", value: schema.const as never };
   if (Array.isArray(schema.enum)) return { type: "enum", values: schema.enum as Array<string | number | boolean | null> };
-  if (Array.isArray(schema.anyOf)) return { type: "union", options: (schema.anyOf as JS[]).map(convert) };
 
   if (type === "string") {
     const node: Extract<SchemaNode, { type: "string" }> = { type: "string" };
+    // Detect string-level anyOf for ip (ipv4|ipv6)
+    if (Array.isArray(schema.anyOf)) {
+      const ok = (schema.anyOf as JS[]).every((s) => (s as JS).type === "string" && typeof (s as JS).format === "string");
+      if (ok) {
+        const formats = new Set((schema.anyOf as JS[]).map((s) => (s as JS).format as string));
+        if (formats.has("ipv4") && formats.has("ipv6")) node.ip = true;
+      }
+    }
     if (typeof schema.minLength === "number") node.minLength = schema.minLength as number;
     if (typeof schema.maxLength === "number") node.maxLength = schema.maxLength as number;
-    if (typeof schema.pattern === "string") node.pattern = schema.pattern as string;
+    if (typeof schema.pattern === "string") {
+      const p = schema.pattern as string;
+      node.pattern = p;
+      // Heuristics for startsWith / endsWith from our exporter
+      const starts = p.match(/^\^([^.*+?^${}()|[\]\\]+)\.\*$/);
+      if (starts) node.startsWith = unescapeRegex(starts[1]);
+      const ends = p.match(/^\.\*([^.*+?^${}()|[\]\\]+)\$$/);
+      if (ends) node.endsWith = unescapeRegex(ends[1]);
+      if (/^?#?[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})??$/.test(p) || /^#?[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(p)) node.hexColor = true as never;
+      if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p)) node.slug = true as never;
+      if (/^[0-9]+$/.test(p)) node.digits = true as never;
+      if (/^[0-9A-Fa-f]+$/.test(p)) node.hexadecimal = true as never;
+      if (/^[A-Za-z0-9+/]{4}.*=*$/.test(p)) node.base64 = true as never;
+      if (/^[0-9A-HJKMNP-TV-Z]{26}$/.test(p)) node.ulid = true as never;
+      if (/^[A-Za-z0-9_-]+$/.test(p)) node.nanoid = true as never;
+      if (/^[a-z0-9]{25}$/.test(p)) node.cuid2 = true as never;
+    }
     const format = schema.format as string | undefined;
     if (format === "email") node.email = true;
     if (format === "uri") node.url = true;
     if (format === "uuid") node.uuid = true;
     if (format === "ipv4") node.ipv4 = true;
     if (format === "ipv6") node.ipv6 = true;
+    if (format === "date-time") return { type: "date" } as SchemaNode;
     return node;
   }
 
@@ -44,6 +68,14 @@ function convert(schema: JS): SchemaNode {
   }
 
   if (type === "boolean") return { type: "boolean" };
+
+  if (Array.isArray(schema.anyOf)) {
+    const items = schema.anyOf as JS[];
+    if (items.length > 0 && items.every((i) => typeof i === "object" && (i as JS).const !== undefined)) {
+      return { type: "enum", values: items.map((i) => (i as JS).const as string | number | boolean | null) };
+    }
+    return { type: "union", options: items.map(convert) };
+  }
 
   if (type === "array") {
     // tuple style
@@ -87,5 +119,8 @@ function convert(schema: JS): SchemaNode {
   return { type: "string" };
 }
 
-export type { JS as JsonSchemaInput };
+function unescapeRegex(s: string): string {
+  return s.replace(/\\([.*+?^${}()|[\]\\])/g, "$1");
+}
 
+export type { JS as JsonSchemaInput };

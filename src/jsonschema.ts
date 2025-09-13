@@ -132,6 +132,16 @@ function buildStringSchema(node: Extract<SchemaNode, { type: "string" }>): JsonS
   if (node.slug) patterns.push("^[a-z0-9]+(?:-[a-z0-9]+)*$");
   if (node.digits) patterns.push("^[0-9]+$");
   if (node.hexadecimal) patterns.push("^[0-9A-Fa-f]+$");
+  if ((node as { creditCard?: true }).creditCard) patterns.push("^[0-9]{12,19}$");
+  if ((node as { imei?: true }).imei) patterns.push("^\\d{15}$");
+  if ((node as { mac?: true }).mac) patterns.push("^(?:[0-9A-Fa-f]{2}([:\\-]))(?:[0-9A-Fa-f]{2}\\1){4}[0-9A-Fa-f]{2}$");
+  if ((node as { mac48?: true }).mac48) patterns.push("^(?:[0-9A-Fa-f]{2}([:\\-]))(?:[0-9A-Fa-f]{2}\\1){4}[0-9A-Fa-f]{2}$");
+  if ((node as { mac64?: true }).mac64) patterns.push("^(?:[0-9A-Fa-f]{2}([:\\-]))(?:[0-9A-Fa-f]{2}\\1){6}[0-9A-Fa-f]{2}$");
+  if ((node as { base64?: true }).base64) patterns.push("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+  // IDs
+  if ((node as { ulid?: true }).ulid) patterns.push("^[0-9A-HJKMNP-TV-Z]{26}$");
+  if ((node as { nanoid?: true }).nanoid) patterns.push("^[A-Za-z0-9_-]+$");
+  if ((node as { cuid2?: true }).cuid2) patterns.push("^[a-z0-9]{25}$");
   // ISO date/time patterns (approximate)
   if (node.isoDate) patterns.push("^\\d{4}-\\d{2}-\\d{2}$");
   if (node.isoTime) patterns.push("^\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?(Z|[+\\-]\\d{2}:?\\d{2})?$");
