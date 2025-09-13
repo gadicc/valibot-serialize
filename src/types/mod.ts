@@ -17,4 +17,3 @@ export * as tupleMod from "./tuple.ts";
 export * as recordMod from "./record.ts";
 export * as setMod from "./set.ts";
 export * as mapMod from "./map.ts";
-

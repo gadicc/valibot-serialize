@@ -3,8 +3,14 @@ import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
 import { escapeRegex, unescapeRegex } from "../regex_utils.ts";
-import { patterns as pat, detect } from "../patterns.ts";
-import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
+import { detect, patterns as pat } from "../patterns.ts";
+import type {
+  Decoder,
+  Encoder,
+  FromJsonSchema,
+  ToCode,
+  ToJsonSchema,
+} from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -15,15 +21,15 @@ export const typeName = "string" as const;
 export function matchesValibotType(
   any: { type?: string } & Record<string, unknown>,
 ): boolean {
-  const type = (any?.type ?? (JSON.parse(JSON.stringify(any)) as {
+  const type = any?.type ?? (JSON.parse(JSON.stringify(any)) as {
     type?: string;
-  }).type);
+  }).type;
   return type === typeName;
 }
 
 // Encode: Valibot string schema -> SchemaNode("string")
-export function encodeString(
-  any: { pipe?: unknown[] } & Record<string, unknown>,
+export const encode: Encoder<"string"> = function encodeString(
+  any,
 ): Extract<SchemaNode, { type: "string" }> {
   const node: Extract<SchemaNode, { type: "string" }> = { type: "string" };
   const pipe = (any as { pipe?: unknown[] }).pipe as
@@ -203,11 +209,11 @@ export function encodeString(
     }
   }
   return node;
-}
+};
 
 // Decode: SchemaNode("string") -> Valibot schema
-export function decodeString(
-  node: Extract<SchemaNode, { type: "string" }>,
+export const decode: Decoder<"string"> = function decodeString(
+  node,
 ): AnySchema {
   let s = v.string();
   const validators: unknown[] = [];
@@ -220,20 +226,28 @@ export function decodeString(
   if (node.ipv6) validators.push(v.ipv6());
   if (node.hexColor) validators.push(v.hexColor());
   if (node.slug) validators.push(v.slug());
-  if ((node as { creditCard?: true }).creditCard) validators.push(v.creditCard());
+  if ((node as { creditCard?: true }).creditCard) {
+    validators.push(v.creditCard());
+  }
   if ((node as { imei?: true }).imei) validators.push(v.imei());
   if ((node as { mac?: true }).mac) validators.push(v.mac());
   if ((node as { mac48?: true }).mac48) validators.push(v.mac48());
   if ((node as { mac64?: true }).mac64) validators.push(v.mac64());
   if ((node as { base64?: true }).base64) validators.push(v.base64());
-  if (node.minLength !== undefined) validators.push(v.minLength(node.minLength));
-  if (node.maxLength !== undefined) validators.push(v.maxLength(node.maxLength));
+  if (node.minLength !== undefined) {
+    validators.push(v.minLength(node.minLength));
+  }
+  if (node.maxLength !== undefined) {
+    validators.push(v.maxLength(node.maxLength));
+  }
   if (node.length !== undefined) validators.push(v.length(node.length));
   if (node.pattern) {
     const re = new RegExp(node.pattern, node.patternFlags ?? undefined);
     validators.push(v.regex(re));
   }
-  if (node.startsWith !== undefined) validators.push(v.startsWith(node.startsWith));
+  if (node.startsWith !== undefined) {
+    validators.push(v.startsWith(node.startsWith));
+  }
   if (node.endsWith !== undefined) validators.push(v.endsWith(node.endsWith));
   if (validators.length > 0) {
     s = v.pipe(s, ...(validators as never[]));
@@ -247,8 +261,12 @@ export function decodeString(
   if (node.digits) extra.push(v.digits());
   if (node.emoji) extra.push(v.emoji());
   if (node.hexadecimal) extra.push(v.hexadecimal());
-  if (node.minGraphemes !== undefined) extra.push(v.minGraphemes(node.minGraphemes));
-  if (node.maxGraphemes !== undefined) extra.push(v.maxGraphemes(node.maxGraphemes));
+  if (node.minGraphemes !== undefined) {
+    extra.push(v.minGraphemes(node.minGraphemes));
+  }
+  if (node.maxGraphemes !== undefined) {
+    extra.push(v.maxGraphemes(node.maxGraphemes));
+  }
   if ((node as { ulid?: true }).ulid) extra.push(v.ulid());
   if ((node as { nanoid?: true }).nanoid) extra.push(v.nanoid());
   if ((node as { cuid2?: true }).cuid2) extra.push(v.cuid2());
@@ -280,10 +298,10 @@ export function decodeString(
     if (items.length > 0) s = v.pipe(s, ...(items as never[]));
   }
   return s;
-}
+};
 
 // Builder code: SchemaNode("string") -> `v.*` expression
-export function stringToCode(node: Extract<SchemaNode, { type: "string" }>): string {
+export const toCode: ToCode<"string"> = function stringToCode(node): string {
   const base = "v.string()";
   const validators: string[] = [];
   if (node.email) validators.push("v.email()");
@@ -295,20 +313,30 @@ export function stringToCode(node: Extract<SchemaNode, { type: "string" }>): str
   if (node.ipv6) validators.push("v.ipv6()");
   if (node.hexColor) validators.push("v.hexColor()");
   if (node.slug) validators.push("v.slug()");
-  if ((node as { creditCard?: true }).creditCard) validators.push("v.creditCard()");
+  if ((node as { creditCard?: true }).creditCard) {
+    validators.push("v.creditCard()");
+  }
   if ((node as { imei?: true }).imei) validators.push("v.imei()");
   if ((node as { mac?: true }).mac) validators.push("v.mac()");
   if ((node as { mac48?: true }).mac48) validators.push("v.mac48()");
   if ((node as { mac64?: true }).mac64) validators.push("v.mac64()");
   if ((node as { base64?: true }).base64) validators.push("v.base64()");
-  if (node.minLength !== undefined) validators.push(`v.minLength(${node.minLength})`);
-  if (node.maxLength !== undefined) validators.push(`v.maxLength(${node.maxLength})`);
+  if (node.minLength !== undefined) {
+    validators.push(`v.minLength(${node.minLength})`);
+  }
+  if (node.maxLength !== undefined) {
+    validators.push(`v.maxLength(${node.maxLength})`);
+  }
   if (node.length !== undefined) validators.push(`v.length(${node.length})`);
   if (node.pattern !== undefined) {
     validators.push(regexLiteral(node.pattern, node.patternFlags));
   }
-  if (node.startsWith !== undefined) validators.push(`v.startsWith(${JSON.stringify(node.startsWith)})`);
-  if (node.endsWith !== undefined) validators.push(`v.endsWith(${JSON.stringify(node.endsWith)})`);
+  if (node.startsWith !== undefined) {
+    validators.push(`v.startsWith(${JSON.stringify(node.startsWith)})`);
+  }
+  if (node.endsWith !== undefined) {
+    validators.push(`v.endsWith(${JSON.stringify(node.endsWith)})`);
+  }
 
   const extras: string[] = [];
   if (node.isoDate) extras.push("v.isoDate()");
@@ -320,8 +348,12 @@ export function stringToCode(node: Extract<SchemaNode, { type: "string" }>): str
   if (node.digits) extras.push("v.digits()");
   if (node.emoji) extras.push("v.emoji()");
   if (node.hexadecimal) extras.push("v.hexadecimal()");
-  if (node.minGraphemes !== undefined) extras.push(`v.minGraphemes(${node.minGraphemes})`);
-  if (node.maxGraphemes !== undefined) extras.push(`v.maxGraphemes(${node.maxGraphemes})`);
+  if (node.minGraphemes !== undefined) {
+    extras.push(`v.minGraphemes(${node.minGraphemes})`);
+  }
+  if (node.maxGraphemes !== undefined) {
+    extras.push(`v.maxGraphemes(${node.maxGraphemes})`);
+  }
   if ((node as { ulid?: true }).ulid) extras.push("v.ulid()");
   if ((node as { nanoid?: true }).nanoid) extras.push("v.nanoid()");
   if ((node as { cuid2?: true }).cuid2) extras.push("v.cuid2()");
@@ -354,16 +386,18 @@ export function stringToCode(node: Extract<SchemaNode, { type: "string" }>): str
   const pipes = [...validators, ...extras, ...transforms];
   if (pipes.length === 0) return base;
   return `v.pipe(${base},${pipes.join(",")})`;
-}
+};
 
 // JSON Schema: SchemaNode("string") -> JSON Schema fragment
-export function stringToJsonSchema(
-  node: Extract<SchemaNode, { type: "string" }>,
+export const toJsonSchema: ToJsonSchema<"string"> = function stringToJsonSchema(
+  node,
 ): JsonSchema {
   const schema: JsonSchema = { type: "string" };
   if (node.minLength !== undefined) schema.minLength = node.minLength;
   if (node.maxLength !== undefined) schema.maxLength = node.maxLength;
-  if (node.length !== undefined) schema.minLength = schema.maxLength = node.length;
+  if (node.length !== undefined) {
+    schema.minLength = schema.maxLength = node.length;
+  }
   const patternsArr: string[] = [];
   if (node.pattern) patternsArr.push(node.pattern);
   if (node.startsWith) patternsArr.push(`^${escapeRegex(node.startsWith)}.*`);
@@ -372,7 +406,9 @@ export function stringToJsonSchema(
   if (node.slug) patternsArr.push(pat.slug);
   if (node.digits) patternsArr.push(pat.digits);
   if (node.hexadecimal) patternsArr.push(pat.hexadecimal);
-  if ((node as { creditCard?: true }).creditCard) patternsArr.push("^[0-9]{12,19}$");
+  if ((node as { creditCard?: true }).creditCard) {
+    patternsArr.push("^[0-9]{12,19}$");
+  }
   if ((node as { imei?: true }).imei) patternsArr.push("^\\d{15}$");
   if ((node as { mac?: true }).mac) patternsArr.push(pat.mac);
   if ((node as { mac48?: true }).mac48) patternsArr.push(pat.mac48);
@@ -394,8 +430,13 @@ export function stringToJsonSchema(
     const m = (node as { maxWords: number }).maxWords;
     patternsArr.push(`^\\s*(?:\\S+(?:\\s+|$)){0,${m}}$`);
   }
-  if (patternsArr.length === 1) (schema as Record<string, unknown>).pattern = patternsArr[0];
-  else if (patternsArr.length > 1) (schema as Record<string, unknown>).allOf = patternsArr.map((p) => ({ pattern: p }));
+  if (patternsArr.length === 1) {
+    (schema as Record<string, unknown>).pattern = patternsArr[0];
+  } else if (patternsArr.length > 1) {
+    (schema as Record<string, unknown>).allOf = patternsArr.map((p) => ({
+      pattern: p,
+    }));
+  }
   const formats: string[] = [];
   if (node.email) formats.push("email");
   if (node.url) formats.push("uri");
@@ -408,22 +449,32 @@ export function stringToJsonSchema(
       { type: "string", format: "ipv6" },
     ];
   }
-  if (formats.length === 1) (schema as Record<string, unknown>).format = formats[0];
-  else if (formats.length > 1) {
-    (schema as Record<string, unknown>).anyOf = formats.map((f) => ({ type: "string", format: f }));
+  if (formats.length === 1) {
+    (schema as Record<string, unknown>).format = formats[0];
+  } else if (formats.length > 1) {
+    (schema as Record<string, unknown>).anyOf = formats.map((f) => ({
+      type: "string",
+      format: f,
+    }));
   }
   return schema;
-}
+};
 
 // From JSON Schema: string-like JSON Schema -> SchemaNode("string") or Date fallback
-export function stringFromJsonSchema(
-  schema: Record<string, unknown>,
-): Extract<SchemaNode, { type: "string" }> | Extract<SchemaNode, { type: "date" }> {
+export const fromJsonSchema: FromJsonSchema = function stringFromJsonSchema(
+  schema,
+):
+  | Extract<SchemaNode, { type: "string" }>
+  | Extract<SchemaNode, { type: "date" }> {
   const type = schema.type as string | undefined;
   if (type !== "string") return { type: "string" } as const;
   const node: Extract<SchemaNode, { type: "string" }> = { type: "string" };
-  if (typeof schema.minLength === "number") node.minLength = schema.minLength as number;
-  if (typeof schema.maxLength === "number") node.maxLength = schema.maxLength as number;
+  if (typeof schema.minLength === "number") {
+    node.minLength = schema.minLength as number;
+  }
+  if (typeof schema.maxLength === "number") {
+    node.maxLength = schema.maxLength as number;
+  }
   if (typeof schema.pattern === "string") {
     const p = schema.pattern as string;
     node.pattern = p;
@@ -431,21 +482,35 @@ export function stringFromJsonSchema(
     if (starts) node.startsWith = unescapeRegex(starts[1]);
     const ends = p.match(/^\.\*([^.*+?^${}()|[\]\\]+)\$$/);
     if (ends) node.endsWith = unescapeRegex(ends[1]);
-    if (/^#?[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(p)) node.hexColor = true as never;
+    if (/^#?[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(p)) {
+      node.hexColor = true as never;
+    }
     if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p)) node.slug = true as never;
     if (/^[0-9]+$/.test(p)) node.digits = true as never;
     if (/^[0-9A-Fa-f]+$/.test(p)) node.hexadecimal = true as never;
-    if (/^[A-Za-z0-9+/]{4}.*=*$/.test(p)) (node as { base64?: true }).base64 = true as never;
-    if (/^[0-9A-HJKMNP-TV-Z]{26}$/.test(p)) (node as { ulid?: true }).ulid = true as never;
-    if (/^[A-Za-z0-9_-]+$/.test(p)) (node as { nanoid?: true }).nanoid = true as never;
-    if (/^[a-z0-9]{25}$/.test(p)) (node as { cuid2?: true }).cuid2 = true as never;
+    if (/^[A-Za-z0-9+/]{4}.*=*$/.test(p)) {
+      (node as { base64?: true }).base64 = true as never;
+    }
+    if (/^[0-9A-HJKMNP-TV-Z]{26}$/.test(p)) {
+      (node as { ulid?: true }).ulid = true as never;
+    }
+    if (/^[A-Za-z0-9_-]+$/.test(p)) {
+      (node as { nanoid?: true }).nanoid = true as never;
+    }
+    if (/^[a-z0-9]{25}$/.test(p)) {
+      (node as { cuid2?: true }).cuid2 = true as never;
+    }
     if (detect.hexColor.test(p)) node.hexColor = true as never;
     if (detect.slug.test(p)) node.slug = true as never;
     if (detect.digits.test(p)) node.digits = true as never;
     if (detect.hexadecimal.test(p)) node.hexadecimal = true as never;
-    if (detect.base64.test(p)) (node as { base64?: true }).base64 = true as never;
+    if (detect.base64.test(p)) {
+      (node as { base64?: true }).base64 = true as never;
+    }
     if (detect.ulid.test(p)) (node as { ulid?: true }).ulid = true as never;
-    if (detect.nanoid.test(p)) (node as { nanoid?: true }).nanoid = true as never;
+    if (detect.nanoid.test(p)) {
+      (node as { nanoid?: true }).nanoid = true as never;
+    }
     if (detect.cuid2.test(p)) (node as { cuid2?: true }).cuid2 = true as never;
   }
   // format hints
@@ -458,25 +523,29 @@ export function stringFromJsonSchema(
   if (format === "date-time") return { type: "date" } as const;
   // anyOf ipv4|ipv6 -> ip
   if (Array.isArray((schema as Record<string, unknown>).anyOf)) {
-    const ok = ((schema as Record<string, unknown>).anyOf as Array<Record<string, unknown>>)
+    const ok = ((schema as Record<string, unknown>).anyOf as Array<
+      Record<string, unknown>
+    >)
       .every((s) => s.type === "string" && typeof s.format === "string");
     if (ok) {
       const formats = new Set(
-        ((schema as Record<string, unknown>).anyOf as Array<Record<string, unknown>>)
+        ((schema as Record<string, unknown>).anyOf as Array<
+          Record<string, unknown>
+        >)
           .map((s) => s.format as string),
       );
       if (formats.has("ipv4") && formats.has("ipv6")) node.ip = true;
     }
   }
   return node;
-}
+};
 
 function regexLiteral(pattern: string, flags?: string): string {
   // For code generation we emit `v.regex(...)` call directly
   if (pattern === "") {
     return flags && flags.length > 0
       ? `v.regex(new RegExp(\"\",${JSON.stringify(flags)}))`
-      : "v.regex(new RegExp(\"\"))";
+      : 'v.regex(new RegExp(""))';
   }
   const esc = pattern.replaceAll("/", "\\/");
   return `v.regex(/${esc}/${flags ?? ""})`;
@@ -485,9 +554,4 @@ function regexLiteral(pattern: string, flags?: string): string {
 // Helpers to avoid static import cycles
 // no dynamic imports here; this module is self-contained
 
-// Named export aliases for consistency with module.d.ts
-export const encode: Encoder<"string"> = encodeString;
-export const decode: Decoder<"string"> = decodeString as never;
-export const toCode: ToCode<"string"> = stringToCode as never;
-export const toJsonSchema: ToJsonSchema<"string"> = stringToJsonSchema as never;
-export const fromJsonSchema: FromJsonSchema = stringFromJsonSchema as never;
+// Named export aliases removed; functions are exported inline

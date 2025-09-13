@@ -2,20 +2,31 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
-import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
+import type {
+  Decoder,
+  Encoder,
+  FromJsonSchema,
+  ToCode,
+  ToJsonSchema,
+} from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
 export const typeName = "file" as const;
 
 export function matchesValibotType(any: { type?: string }): boolean {
-  const type = any?.type ?? (JSON.parse(JSON.stringify(any)) as { type?: string }).type;
+  const type = any?.type ??
+    (JSON.parse(JSON.stringify(any)) as { type?: string }).type;
   return type === typeName;
 }
 
-export function encodeFile(any: Record<string, unknown>): Extract<SchemaNode, { type: "file" }>{
+export const encode: Encoder<"file"> = function encodeFile(
+  any,
+): Extract<SchemaNode, { type: "file" }> {
   const node: Extract<SchemaNode, { type: "file" }> = { type: "file" };
-  const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
+  const pipe = (any as { pipe?: unknown[] }).pipe as
+    | Array<Record<string, unknown>>
+    | undefined;
   if (Array.isArray(pipe)) {
     for (const step of pipe) {
       if (!step || typeof step !== "object") continue;
@@ -40,22 +51,24 @@ export function encodeFile(any: Record<string, unknown>): Extract<SchemaNode, { 
     }
   }
   return node;
-}
+};
 
-export function decodeFile(node: Extract<SchemaNode, { type: "file" }>): AnySchema {
+export const decode: Decoder<"file"> = function decodeFile(node): AnySchema {
   let f = v.file();
   const actions: unknown[] = [];
   if (node.minSize !== undefined) actions.push(v.minSize(node.minSize));
   if (node.maxSize !== undefined) actions.push(v.maxSize(node.maxSize));
   if (node.mimeTypes && node.mimeTypes.length > 0) {
-    const mimeType = (v as unknown as { mimeType: (req: string[] | string) => unknown }).mimeType;
+    const mimeType =
+      (v as unknown as { mimeType: (req: string[] | string) => unknown })
+        .mimeType;
     actions.push(mimeType(node.mimeTypes));
   }
   if (actions.length > 0) f = v.pipe(f, ...(actions as never[]));
   return f;
-}
+};
 
-export function fileToCode(node: Extract<SchemaNode, { type: "file" }>): string {
+export const toCode: ToCode<"file"> = function fileToCode(node): string {
   const base = "v.file()";
   const items: string[] = [];
   if (node.minSize !== undefined) items.push(`v.minSize(${node.minSize})`);
@@ -65,9 +78,11 @@ export function fileToCode(node: Extract<SchemaNode, { type: "file" }>): string 
   }
   if (items.length === 0) return base;
   return `v.pipe(${base},${items.join(",")})`;
-}
+};
 
-export function fileToJsonSchema(node: Extract<SchemaNode, { type: "file" }>): JsonSchema {
+export const toJsonSchema: ToJsonSchema<"file"> = function fileToJsonSchema(
+  node,
+): JsonSchema {
   const schema: JsonSchema = { type: "string", contentEncoding: "binary" };
   if (node.mimeTypes && node.mimeTypes.length === 1) {
     (schema as Record<string, unknown>).contentMediaType = node.mimeTypes[0];
@@ -80,15 +95,10 @@ export function fileToJsonSchema(node: Extract<SchemaNode, { type: "file" }>): J
     }));
   }
   return schema;
-}
+};
 
-export function fileFromJsonSchema(_schema: Record<string, unknown>): Extract<SchemaNode, { type: "file" }>{
+export const fromJsonSchema: FromJsonSchema = function fileFromJsonSchema(
+  _schema,
+): Extract<SchemaNode, { type: "file" }> {
   return { type: "file" };
-}
-
-// Named export aliases for consistency with module.d.ts
-export const encode: Encoder<"file"> = encodeFile as never;
-export const decode: Decoder<"file"> = decodeFile as never;
-export const toCode: ToCode<"file"> = fileToCode as never;
-export const toJsonSchema: ToJsonSchema<"file"> = fileToJsonSchema as never;
-export const fromJsonSchema: FromJsonSchema = fileFromJsonSchema as never;
+};

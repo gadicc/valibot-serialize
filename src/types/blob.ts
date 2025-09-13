@@ -2,20 +2,31 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
-import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
+import type {
+  Decoder,
+  Encoder,
+  FromJsonSchema,
+  ToCode,
+  ToJsonSchema,
+} from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
 export const typeName = "blob" as const;
 
 export function matchesValibotType(any: { type?: string }): boolean {
-  const type = any?.type ?? (JSON.parse(JSON.stringify(any)) as { type?: string }).type;
+  const type = any?.type ??
+    (JSON.parse(JSON.stringify(any)) as { type?: string }).type;
   return type === typeName;
 }
 
-export function encodeBlob(any: Record<string, unknown>): Extract<SchemaNode, { type: "blob" }>{
+export const encode: Encoder<"blob"> = function encodeBlob(
+  any,
+): Extract<SchemaNode, { type: "blob" }> {
   const node: Extract<SchemaNode, { type: "blob" }> = { type: "blob" };
-  const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
+  const pipe = (any as { pipe?: unknown[] }).pipe as
+    | Array<Record<string, unknown>>
+    | undefined;
   if (Array.isArray(pipe)) {
     for (const step of pipe) {
       if (!step || typeof step !== "object") continue;
@@ -40,22 +51,24 @@ export function encodeBlob(any: Record<string, unknown>): Extract<SchemaNode, { 
     }
   }
   return node;
-}
+};
 
-export function decodeBlob(node: Extract<SchemaNode, { type: "blob" }>): AnySchema {
+export const decode: Decoder<"blob"> = function decodeBlob(node): AnySchema {
   let b = v.blob();
   const items: unknown[] = [];
   if (node.minSize !== undefined) items.push(v.minSize(node.minSize));
   if (node.maxSize !== undefined) items.push(v.maxSize(node.maxSize));
   if (node.mimeTypes && node.mimeTypes.length > 0) {
-    const mimeType = (v as unknown as { mimeType: (req: string[] | string) => unknown }).mimeType;
+    const mimeType =
+      (v as unknown as { mimeType: (req: string[] | string) => unknown })
+        .mimeType;
     items.push(mimeType(node.mimeTypes));
   }
   if (items.length > 0) b = v.pipe(b, ...(items as never[]));
   return b;
-}
+};
 
-export function blobToCode(node: Extract<SchemaNode, { type: "blob" }>): string {
+export const toCode: ToCode<"blob"> = function blobToCode(node): string {
   const base = "v.blob()";
   const items: string[] = [];
   if (node.minSize !== undefined) items.push(`v.minSize(${node.minSize})`);
@@ -65,9 +78,11 @@ export function blobToCode(node: Extract<SchemaNode, { type: "blob" }>): string 
   }
   if (items.length === 0) return base;
   return `v.pipe(${base},${items.join(",")})`;
-}
+};
 
-export function blobToJsonSchema(node: Extract<SchemaNode, { type: "blob" }>): JsonSchema {
+export const toJsonSchema: ToJsonSchema<"blob"> = function blobToJsonSchema(
+  node,
+): JsonSchema {
   const schema: JsonSchema = { type: "string", contentEncoding: "binary" };
   if (node.mimeTypes && node.mimeTypes.length === 1) {
     (schema as Record<string, unknown>).contentMediaType = node.mimeTypes[0];
@@ -80,15 +95,10 @@ export function blobToJsonSchema(node: Extract<SchemaNode, { type: "blob" }>): J
     }));
   }
   return schema;
-}
+};
 
-export function blobFromJsonSchema(_schema: Record<string, unknown>): Extract<SchemaNode, { type: "blob" }>{
+export const fromJsonSchema: FromJsonSchema = function blobFromJsonSchema(
+  _schema,
+): Extract<SchemaNode, { type: "blob" }> {
   return { type: "blob" };
-}
-
-// Named export aliases for consistency with module.d.ts
-export const encode: Encoder<"blob"> = encodeBlob as never;
-export const decode: Decoder<"blob"> = decodeBlob as never;
-export const toCode: ToCode<"blob"> = blobToCode as never;
-export const toJsonSchema: ToJsonSchema<"blob"> = blobToJsonSchema as never;
-export const fromJsonSchema: FromJsonSchema = blobFromJsonSchema as never;
+};

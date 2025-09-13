@@ -2,7 +2,13 @@ import * as v from "@valibot/valibot";
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../jsonschema.ts";
-import type { Encoder, Decoder, ToCode, ToJsonSchema, FromJsonSchema } from "../type_interfaces.ts";
+import type {
+  Decoder,
+  Encoder,
+  FromJsonSchema,
+  ToCode,
+  ToJsonSchema,
+} from "../type_interfaces.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
@@ -11,14 +17,14 @@ export const typeName = "number" as const;
 export function matchesValibotType(
   any: { type?: string } & Record<string, unknown>,
 ): boolean {
-  const type = (any?.type ?? (JSON.parse(JSON.stringify(any)) as {
+  const type = any?.type ?? (JSON.parse(JSON.stringify(any)) as {
     type?: string;
-  }).type);
+  }).type;
   return type === typeName;
 }
 
-export function encodeNumber(
-  any: { pipe?: unknown[] } & Record<string, unknown>,
+export const encode: Encoder<"number"> = function encodeNumber(
+  any,
 ): Extract<SchemaNode, { type: "number" }> {
   const node: Extract<SchemaNode, { type: "number" }> = { type: "number" };
   const pipe = (any as { pipe?: unknown[] }).pipe as
@@ -67,10 +73,10 @@ export function encodeNumber(
     }
   }
   return node;
-}
+};
 
-export function decodeNumber(
-  node: Extract<SchemaNode, { type: "number" }>,
+export const decode: Decoder<"number"> = function decodeNumber(
+  node,
 ): AnySchema {
   const n = v.number();
   const validators: unknown[] = [];
@@ -80,7 +86,9 @@ export function decodeNumber(
   if (node.lt !== undefined) validators.push(v.ltValue(node.lt));
   if (node.integer) validators.push(v.integer());
   if (node.safeInteger) validators.push(v.safeInteger());
-  if (node.multipleOf !== undefined) validators.push(v.multipleOf(node.multipleOf));
+  if (node.multipleOf !== undefined) {
+    validators.push(v.multipleOf(node.multipleOf));
+  }
   if (node.finite) validators.push(v.finite());
   switch (validators.length) {
     case 0:
@@ -92,9 +100,9 @@ export function decodeNumber(
     default:
       return v.pipe(n, ...(validators as never[]));
   }
-}
+};
 
-export function numberToCode(node: Extract<SchemaNode, { type: "number" }>): string {
+export const toCode: ToCode<"number"> = function numberToCode(node): string {
   const base = "v.number()";
   const validators: string[] = [];
   if (node.min !== undefined) validators.push(`v.minValue(${node.min})`);
@@ -103,41 +111,52 @@ export function numberToCode(node: Extract<SchemaNode, { type: "number" }>): str
   if (node.lt !== undefined) validators.push(`v.ltValue(${node.lt})`);
   if (node.integer) validators.push("v.integer()");
   if (node.safeInteger) validators.push("v.safeInteger()");
-  if (node.multipleOf !== undefined) validators.push(`v.multipleOf(${node.multipleOf})`);
+  if (node.multipleOf !== undefined) {
+    validators.push(`v.multipleOf(${node.multipleOf})`);
+  }
   if (node.finite) validators.push("v.finite()");
   if (validators.length === 0) return base;
   return `v.pipe(${base},${validators.join(",")})`;
-}
+};
 
-export function numberToJsonSchema(
-  node: Extract<SchemaNode, { type: "number" }>,
+export const toJsonSchema: ToJsonSchema<"number"> = function numberToJsonSchema(
+  node,
 ): JsonSchema {
   const schema: JsonSchema = { type: node.integer ? "integer" : "number" };
-  if (node.min !== undefined) (schema as Record<string, unknown>).minimum = node.min;
-  if (node.max !== undefined) (schema as Record<string, unknown>).maximum = node.max;
-  if (node.gt !== undefined) (schema as Record<string, unknown>).exclusiveMinimum = node.gt;
-  if (node.lt !== undefined) (schema as Record<string, unknown>).exclusiveMaximum = node.lt;
-  if (node.multipleOf !== undefined) (schema as Record<string, unknown>).multipleOf = node.multipleOf;
+  if (node.min !== undefined) {
+    (schema as Record<string, unknown>).minimum = node.min;
+  }
+  if (node.max !== undefined) {
+    (schema as Record<string, unknown>).maximum = node.max;
+  }
+  if (node.gt !== undefined) {
+    (schema as Record<string, unknown>).exclusiveMinimum = node.gt;
+  }
+  if (node.lt !== undefined) {
+    (schema as Record<string, unknown>).exclusiveMaximum = node.lt;
+  }
+  if (node.multipleOf !== undefined) {
+    (schema as Record<string, unknown>).multipleOf = node.multipleOf;
+  }
   return schema;
-}
+};
 
-export function numberFromJsonSchema(
-  schema: Record<string, unknown>,
+export const fromJsonSchema: FromJsonSchema = function numberFromJsonSchema(
+  schema,
 ): Extract<SchemaNode, { type: "number" }> {
   const type = schema.type as string | undefined;
   const node: Extract<SchemaNode, { type: "number" }> = { type: "number" };
   if (type === "integer") node.integer = true;
   if (typeof schema.minimum === "number") node.min = schema.minimum as number;
   if (typeof schema.maximum === "number") node.max = schema.maximum as number;
-  if (typeof schema.exclusiveMinimum === "number") node.gt = schema.exclusiveMinimum as number;
-  if (typeof schema.exclusiveMaximum === "number") node.lt = schema.exclusiveMaximum as number;
-  if (typeof schema.multipleOf === "number") node.multipleOf = schema.multipleOf as number;
+  if (typeof schema.exclusiveMinimum === "number") {
+    node.gt = schema.exclusiveMinimum as number;
+  }
+  if (typeof schema.exclusiveMaximum === "number") {
+    node.lt = schema.exclusiveMaximum as number;
+  }
+  if (typeof schema.multipleOf === "number") {
+    node.multipleOf = schema.multipleOf as number;
+  }
   return node;
-}
-
-// Named export aliases for consistency with module.d.ts
-export const encode: Encoder<"number"> = encodeNumber as never;
-export const decode: Decoder<"number"> = decodeNumber as never;
-export const toCode: ToCode<"number"> = numberToCode as never;
-export const toJsonSchema: ToJsonSchema<"number"> = numberToJsonSchema as never;
-export const fromJsonSchema: FromJsonSchema = numberFromJsonSchema as never;
+};

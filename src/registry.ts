@@ -26,7 +26,8 @@ export const stringCodec: TypeCodec<"string"> = {
   decode: (n, ctx) => stringMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => stringMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => stringMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => stringMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    stringMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const numberCodec: TypeCodec<"number"> = {
@@ -36,7 +37,8 @@ export const numberCodec: TypeCodec<"number"> = {
   decode: (n, ctx) => numberMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => numberMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => numberMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => numberMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    numberMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const booleanCodec: TypeCodec<"boolean"> = {
@@ -46,7 +48,8 @@ export const booleanCodec: TypeCodec<"boolean"> = {
   decode: (n, ctx) => booleanMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => booleanMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => booleanMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => booleanMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    booleanMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const dateCodec: TypeCodec<"date"> = {
@@ -56,7 +59,8 @@ export const dateCodec: TypeCodec<"date"> = {
   decode: (n, ctx) => dateMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => dateMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => dateMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => dateMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    dateMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const literalCodec: TypeCodec<"literal"> = {
@@ -66,7 +70,8 @@ export const literalCodec: TypeCodec<"literal"> = {
   decode: (n, ctx) => literalMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => literalMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => literalMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => literalMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    literalMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const enumCodec: TypeCodec<"enum"> = {
@@ -76,7 +81,8 @@ export const enumCodec: TypeCodec<"enum"> = {
   decode: (n, ctx) => enumMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => enumMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => enumMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => enumMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    enumMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const fileCodec: TypeCodec<"file"> = {
@@ -86,7 +92,8 @@ export const fileCodec: TypeCodec<"file"> = {
   decode: (n, ctx) => fileMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => fileMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => fileMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => fileMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    fileMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const blobCodec: TypeCodec<"blob"> = {
@@ -96,7 +103,8 @@ export const blobCodec: TypeCodec<"blob"> = {
   decode: (n, ctx) => blobMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => blobMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => blobMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => blobMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    blobMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const arrayCodec: TypeCodec<"array"> = {
@@ -106,7 +114,8 @@ export const arrayCodec: TypeCodec<"array"> = {
   decode: (n, ctx) => arrayMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => arrayMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => arrayMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => arrayMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    arrayMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const objectCodec: TypeCodec<"object"> = {
@@ -116,7 +125,8 @@ export const objectCodec: TypeCodec<"object"> = {
   decode: (n, ctx) => objectMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => objectMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => objectMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => objectMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    objectMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const optionalCodec: TypeCodec<"optional"> = {
@@ -126,7 +136,8 @@ export const optionalCodec: TypeCodec<"optional"> = {
   decode: (n, ctx) => optionalMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => optionalMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => optionalMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => optionalMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    optionalMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const nullableCodec: TypeCodec<"nullable"> = {
@@ -136,7 +147,8 @@ export const nullableCodec: TypeCodec<"nullable"> = {
   decode: (n, ctx) => nullableMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => nullableMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => nullableMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => nullableMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    nullableMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const nullishCodec: TypeCodec<"nullish"> = {
@@ -146,7 +158,8 @@ export const nullishCodec: TypeCodec<"nullish"> = {
   decode: (n, ctx) => nullishMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => nullishMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => nullishMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => nullishMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    nullishMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const unionCodec: TypeCodec<"union"> = {
@@ -156,7 +169,8 @@ export const unionCodec: TypeCodec<"union"> = {
   decode: (n, ctx) => unionMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => unionMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => unionMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => unionMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    unionMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const tupleCodec: TypeCodec<"tuple"> = {
@@ -166,7 +180,8 @@ export const tupleCodec: TypeCodec<"tuple"> = {
   decode: (n, ctx) => tupleMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => tupleMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => tupleMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => tupleMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    tupleMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const recordCodec: TypeCodec<"record"> = {
@@ -176,7 +191,8 @@ export const recordCodec: TypeCodec<"record"> = {
   decode: (n, ctx) => recordMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => recordMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => recordMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => recordMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    recordMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const setCodec: TypeCodec<"set"> = {
@@ -186,7 +202,8 @@ export const setCodec: TypeCodec<"set"> = {
   decode: (n, ctx) => setMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => setMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => setMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => setMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    setMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const mapCodec: TypeCodec<"map"> = {
@@ -196,7 +213,8 @@ export const mapCodec: TypeCodec<"map"> = {
   decode: (n, ctx) => mapMod.decode(n as never, ctx as never),
   toCode: (n, ctx) => mapMod.toCode(n as never, ctx as never),
   toJsonSchema: (n, ctx) => mapMod.toJsonSchema(n as never, ctx as never),
-  fromJsonSchema: (schema, ctx) => mapMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
+  fromJsonSchema: (schema, ctx) =>
+    mapMod.fromJsonSchema(schema as never, ctx as never) as SchemaNode,
 };
 
 export const codecs = [

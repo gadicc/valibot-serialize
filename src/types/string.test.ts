@@ -1,7 +1,13 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize, deserialize, toJsonSchema, toCode, fromJsonSchema } from "../../main.ts";
+import {
+  deserialize,
+  fromJsonSchema,
+  serialize,
+  toCode,
+  toJsonSchema,
+} from "../../main.ts";
 
 describe("types/string integration", () => {
   it("serialize captures string validators and transforms", () => {
@@ -13,7 +19,10 @@ describe("types/string integration", () => {
     );
     const ser = serialize(schema as never);
     expect(ser.node.type).toBe("string");
-    const s = ser.node as Extract<NonNullable<typeof ser.node>, { type: "string" }>;
+    const s = ser.node as Extract<
+      NonNullable<typeof ser.node>,
+      { type: "string" }
+    >;
     expect(s.minLength).toBe(3);
     expect(s.maxLength).toBe(5);
     expect(s.transforms).toEqual(["trim"]);
@@ -64,4 +73,3 @@ describe("types/string integration", () => {
     expect(back.node.type).toBe("string");
   });
 });
-

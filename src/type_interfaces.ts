@@ -38,4 +38,3 @@ export interface TypeCodec<K extends SchemaNode["type"]> {
   toJsonSchema: ToJsonSchema<K>;
   fromJsonSchema: FromJsonSchema;
 }
-

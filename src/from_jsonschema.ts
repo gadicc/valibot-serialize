@@ -1,7 +1,7 @@
 import type { SchemaNode, SerializedSchema } from "./types.ts";
 import { unescapeRegex } from "./regex_utils.ts";
 import { detect } from "./patterns.ts";
-import { stringCodec, numberCodec } from "./registry.ts";
+import { numberCodec, stringCodec } from "./registry.ts";
 
 type JS = Record<string, unknown>;
 
@@ -18,7 +18,9 @@ export function fromJsonSchema(schema: JS): SerializedSchema {
 function convert(schema: JS): SchemaNode {
   const type = schema.type as string | undefined;
   // Delegate leaf conversions to type codecs where possible
-  if (type === "string") return stringCodec.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
+  if (type === "string") {
+    return stringCodec.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
+  }
   if (schema.const !== undefined) {
     return { type: "literal", value: schema.const as never };
   }

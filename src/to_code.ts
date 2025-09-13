@@ -1,6 +1,25 @@
 import { isSerializedSchema } from "./guard.ts";
 import type { SchemaNode, SerializedSchema } from "./types.ts";
-import { stringCodec, numberCodec, booleanCodec, dateCodec, literalCodec, enumCodec, fileCodec, blobCodec, arrayCodec, objectCodec, optionalCodec, nullableCodec, nullishCodec, unionCodec, tupleCodec, recordCodec, setCodec, mapCodec } from "./registry.ts";
+import {
+  arrayCodec,
+  blobCodec,
+  booleanCodec,
+  dateCodec,
+  enumCodec,
+  fileCodec,
+  literalCodec,
+  mapCodec,
+  nullableCodec,
+  nullishCodec,
+  numberCodec,
+  objectCodec,
+  optionalCodec,
+  recordCodec,
+  setCodec,
+  stringCodec,
+  tupleCodec,
+  unionCodec,
+} from "./registry.ts";
 
 // Generate minimal Valibot builder code from a SerializedSchema.
 // Returns a compact expression string ending with a semicolon, e.g.:

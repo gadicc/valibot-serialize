@@ -1,14 +1,28 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize, deserialize, toJsonSchema, fromJsonSchema, toCode } from "../../main.ts";
+import {
+  deserialize,
+  fromJsonSchema,
+  serialize,
+  toCode,
+  toJsonSchema,
+} from "../../main.ts";
 
 describe("types/number integration", () => {
   it("serialize captures number validators", () => {
-    const schema = v.pipe(v.number(), v.minValue(1), v.maxValue(3), v.integer());
+    const schema = v.pipe(
+      v.number(),
+      v.minValue(1),
+      v.maxValue(3),
+      v.integer(),
+    );
     const ser = serialize(schema as never);
     expect(ser.node.type).toBe("number");
-    const n = ser.node as Extract<NonNullable<typeof ser.node>, { type: "number" }>;
+    const n = ser.node as Extract<
+      NonNullable<typeof ser.node>,
+      { type: "number" }
+    >;
     expect(n.min).toBe(1);
     expect(n.max).toBe(3);
     expect(n.integer).toBe(true);
@@ -54,4 +68,3 @@ describe("types/number integration", () => {
     expect(back.node.type).toBe("number");
   });
 });
-

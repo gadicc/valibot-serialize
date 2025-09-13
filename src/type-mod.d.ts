@@ -9,11 +9,19 @@ declare module "src/types/*" {
   ) => boolean;
   export const encode: (
     schema: { type?: string; pipe?: unknown[] } & Record<string, unknown>,
-    ctx: { encodeNode: (schema: import("./type_interfaces.ts").AnySchema) => SchemaNode },
+    ctx: {
+      encodeNode: (
+        schema: import("./type_interfaces.ts").AnySchema,
+      ) => SchemaNode;
+    },
   ) => Extract<SchemaNode, { type: SchemaNode["type"] }> | SchemaNode;
   export const decode: (
     node: Extract<SchemaNode, { type: SchemaNode["type"] }>,
-    ctx: { decodeNode: (node: SchemaNode) => import("./type_interfaces.ts").AnySchema },
+    ctx: {
+      decodeNode: (
+        node: SchemaNode,
+      ) => import("./type_interfaces.ts").AnySchema;
+    },
   ) => import("./type_interfaces.ts").AnySchema;
   export const toCode: (
     node: Extract<SchemaNode, { type: SchemaNode["type"] }>,
