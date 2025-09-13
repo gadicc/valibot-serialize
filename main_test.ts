@@ -43,6 +43,15 @@ describe("serialize (AST)", () => {
     });
   });
 
+  it("loose/strict/objectWithRest nodes", () => {
+    const loose = serialize(v.looseObject({ a: v.string() }));
+    expect(loose.node).toEqual({ type: "object", entries: { a: { type: "string" } }, policy: "loose" });
+    const strict = serialize(v.strictObject({ a: v.string() }));
+    expect(strict.node).toEqual({ type: "object", entries: { a: { type: "string" } }, policy: "strict" });
+    const rest = serialize(v.objectWithRest({ a: v.string() }, v.number()));
+    expect(rest.node).toEqual({ type: "object", entries: { a: { type: "string" } }, rest: { type: "number" } });
+  });
+
   it("optional and nullable wrappers", () => {
     const opt = serialize(v.optional(v.string()));
     expect(opt.node).toEqual({ type: "optional", base: { type: "string" } });
@@ -70,13 +79,13 @@ describe("serialize (AST)", () => {
   });
 
   it("string formats and anchors", () => {
-    const s = serialize(v.pipe(v.string(), v.email(), v.url(), v.uuid(), v.startsWith("ab"), v.endsWith("yz"), v.length(3)));
-    expect(s.node).toMatchObject({ type: "string", email: true, url: true, uuid: true, startsWith: "ab", endsWith: "yz", length: 3 });
+    const s = serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.url(), v.uuid(), v.ip(), v.ipv4(), v.ipv6(), v.hexColor(), v.slug(), v.startsWith("ab"), v.endsWith("yz"), v.length(3)));
+    expect(s.node).toMatchObject({ type: "string", email: true, rfcEmail: true, url: true, uuid: true, ip: true, ipv4: true, ipv6: true, hexColor: true, slug: true, startsWith: "ab", endsWith: "yz", length: 3 });
   });
 
   it("number extras (integer/safe/multipleOf)", () => {
-    const s = serialize(v.pipe(v.number(), v.integer(), v.safeInteger(), v.multipleOf(3)));
-    expect(s.node).toEqual({ type: "number", integer: true, safeInteger: true, multipleOf: 3 });
+    const s = serialize(v.pipe(v.number(), v.finite(), v.integer(), v.safeInteger(), v.multipleOf(3), v.gtValue(1), v.ltValue(9)));
+    expect(s.node).toEqual({ type: "number", finite: true, integer: true, safeInteger: true, multipleOf: 3, gt: 1, lt: 9 });
   });
 
   it("enum node (union of literals and picklist)", () => {
@@ -91,6 +100,11 @@ describe("serialize (AST)", () => {
     expect(s.node).toEqual({ type: "set", value: { type: "string" } });
     const m = serialize(v.map(v.string(), v.number()));
     expect(m.node).toEqual({ type: "map", key: { type: "string" }, value: { type: "number" } });
+  });
+
+  it("tuple with rest node", () => {
+    const t = serialize(v.tupleWithRest([v.string()], v.number()));
+    expect(t.node).toEqual({ type: "tuple", items: [{ type: "string" }], rest: { type: "number" } });
   });
 
   it("union, tuple, record nodes", () => {
@@ -145,6 +159,19 @@ describe("deserialize", () => {
       .not.toThrow();
     expect(() => v.parse(schema, { a: 1, b: "x" }))
       .toThrow();
+  });
+
+  it("loose/strict/rest behavior", () => {
+    const loose = deserialize(serialize(v.looseObject({ a: v.string() })));
+    expect(() => v.parse(loose, { a: "x", extra: 1 })).not.toThrow();
+
+    const strict = deserialize(serialize(v.strictObject({ a: v.string() })));
+    expect(() => v.parse(strict, { a: "x" })).not.toThrow();
+    expect(() => v.parse(strict, { a: "x", extra: 1 })).toThrow();
+
+    const rest = deserialize(serialize(v.objectWithRest({ a: v.string() }, v.number())));
+    expect(() => v.parse(rest, { a: "x", extra: 1 })).not.toThrow();
+    expect(() => v.parse(rest, { a: "x", extra: "no" })).toThrow();
   });
 
   it("optional string", () => {
@@ -228,11 +255,44 @@ describe("deserialize", () => {
   });
 
   it("string formats behavior", () => {
-    const s = deserialize(serialize(v.pipe(v.string(), v.email(), v.startsWith("a"))));
+    const s = deserialize(serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.startsWith("a"))));
     // This is approximate: just check a couple cases
     expect(() => v.parse(s, "a@test.com")).not.toThrow();
     expect(() => v.parse(s, "test.com")).toThrow();
     expect(() => v.parse(s, "b@test.com")).toThrow();
+  });
+
+  it("set/map constraints behavior", () => {
+    const setSerialized = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: FORMAT_VERSION,
+      node: { type: "set" as const, value: { type: "string" as const }, minSize: 1, maxSize: 2 },
+    };
+    const setSchema = deserialize(setSerialized);
+    expect(() => v.parse(setSchema, new Set(["a"])) ).not.toThrow();
+    expect(() => v.parse(setSchema, new Set())).toThrow();
+    expect(() => v.parse(setSchema, new Set(["a", "b", "c"])) ).toThrow();
+
+    const mapSerialized = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: FORMAT_VERSION,
+      node: { type: "map" as const, key: { type: "string" as const }, value: { type: "number" as const }, minSize: 1 },
+    };
+    const mapSchema = deserialize(mapSerialized);
+    expect(() => v.parse(mapSchema, new Map([["a", 1]]))).not.toThrow();
+    expect(() => v.parse(mapSchema, new Map())).toThrow();
+  });
+
+  it("tuple with rest behavior", () => {
+    const schema = deserialize(serialize(v.tupleWithRest([v.string()], v.number())));
+    expect(() => v.parse(schema, ["a"]) ).not.toThrow();
+    expect(() => v.parse(schema, ["a", 1, 2]) ).not.toThrow();
+    expect(() => v.parse(schema, [1]) ).toThrow();
+    expect(() => v.parse(schema, ["a", "b"]) ).toThrow();
   });
 });
 
