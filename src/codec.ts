@@ -20,17 +20,26 @@ function isSchemaNode(node: unknown): node is SchemaNode {
   const t = (node as { type?: string }).type;
   switch (t) {
     case "string": {
-      const n = node as { minLength?: unknown; maxLength?: unknown; pattern?: unknown; patternFlags?: unknown };
+      const n = node as { minLength?: unknown; maxLength?: unknown; length?: unknown; pattern?: unknown; patternFlags?: unknown; email?: unknown; url?: unknown; uuid?: unknown; startsWith?: unknown; endsWith?: unknown };
       if (n.minLength !== undefined && typeof n.minLength !== "number") return false;
       if (n.maxLength !== undefined && typeof n.maxLength !== "number") return false;
+      if (n.length !== undefined && typeof n.length !== "number") return false;
       if (n.pattern !== undefined && typeof n.pattern !== "string") return false;
       if (n.patternFlags !== undefined && typeof n.patternFlags !== "string") return false;
+      if (n.email !== undefined && n.email !== true) return false;
+      if (n.url !== undefined && n.url !== true) return false;
+      if (n.uuid !== undefined && n.uuid !== true) return false;
+      if (n.startsWith !== undefined && typeof n.startsWith !== "string") return false;
+      if (n.endsWith !== undefined && typeof n.endsWith !== "string") return false;
       return true;
     }
     case "number": {
-      const n = node as { min?: unknown; max?: unknown };
+      const n = node as { min?: unknown; max?: unknown; integer?: unknown; safeInteger?: unknown; multipleOf?: unknown };
       if (n.min !== undefined && typeof n.min !== "number") return false;
       if (n.max !== undefined && typeof n.max !== "number") return false;
+      if (n.integer !== undefined && n.integer !== true) return false;
+      if (n.safeInteger !== undefined && n.safeInteger !== true) return false;
+      if (n.multipleOf !== undefined && typeof n.multipleOf !== "number") return false;
       return true;
     }
     case "boolean":
@@ -42,8 +51,14 @@ function isSchemaNode(node: unknown): node is SchemaNode {
         vt === "string" || vt === "number" || vt === "boolean" || value === null
       );
     }
-    case "array":
-      return isSchemaNode((node as { item?: unknown }).item);
+    case "array": {
+      const n = node as { item?: unknown; minLength?: unknown; maxLength?: unknown; length?: unknown };
+      if (!isSchemaNode(n.item)) return false;
+      if (n.minLength !== undefined && typeof n.minLength !== "number") return false;
+      if (n.maxLength !== undefined && typeof n.maxLength !== "number") return false;
+      if (n.length !== undefined && typeof n.length !== "number") return false;
+      return true;
+    }
     case "object": {
       const entries = (node as { entries?: unknown }).entries;
       if (!entries || typeof entries !== "object") return false;
@@ -56,6 +71,21 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       return isSchemaNode((node as { base?: unknown }).base);
     case "nullable":
       return isSchemaNode((node as { base?: unknown }).base);
+    case "nullish":
+      return isSchemaNode((node as { base?: unknown }).base);
+    case "union": {
+      const options = (node as { options?: unknown }).options;
+      return Array.isArray(options) && options.every((n) => isSchemaNode(n));
+    }
+    case "tuple": {
+      const items = (node as { items?: unknown }).items;
+      return Array.isArray(items) && items.every((n) => isSchemaNode(n));
+    }
+    case "record":
+      return (
+        isSchemaNode((node as { key?: unknown }).key) &&
+        isSchemaNode((node as { value?: unknown }).value)
+      );
     default:
       return false;
   }
@@ -94,9 +124,7 @@ function encodeNode(schema: AnySchema): SchemaNode {
       throw new Error("Only JSON-serializable literal values are supported");
     }
     case "array": {
-      const child = (any as { item?: unknown }).item as AnySchema | undefined;
-      if (!child) throw new Error("Unsupported array schema: missing item schema");
-      return { type: "array", item: encodeNode(child) };
+      return encodeArray(any);
     }
     case "object": {
       const entries = (any as { entries?: Record<string, unknown> }).entries;
@@ -121,13 +149,34 @@ function encodeNode(schema: AnySchema): SchemaNode {
       if (!wrapped) throw new Error("Unsupported nullable schema: missing wrapped schema");
       return { type: "nullable", base: encodeNode(wrapped) };
     }
+    case "nullish": {
+      const wrapped = (any as { wrapped?: unknown }).wrapped as AnySchema | undefined;
+      if (!wrapped) throw new Error("Unsupported nullish schema: missing wrapped schema");
+      return { type: "nullish", base: encodeNode(wrapped) };
+    }
+    case "union": {
+      const options = (any as { options?: unknown[] }).options as AnySchema[] | undefined;
+      if (!Array.isArray(options)) throw new Error("Unsupported union schema: missing options");
+      return { type: "union", options: options.map((o) => encodeNode(o)) };
+    }
+    case "tuple": {
+      const items = (any as { items?: unknown[] }).items as AnySchema[] | undefined;
+      if (!Array.isArray(items)) throw new Error("Unsupported tuple schema: missing items");
+      return { type: "tuple", items: items.map((i) => encodeNode(i)) };
+    }
+    case "record": {
+      const key = (any as { key?: unknown }).key as AnySchema | undefined;
+      const value = (any as { value?: unknown }).value as AnySchema | undefined;
+      if (!key || !value) throw new Error("Unsupported record schema: missing key/value");
+      return { type: "record", key: encodeNode(key), value: encodeNode(value) };
+    }
     default:
       throw new Error(`Unsupported schema type for serialization: ${String(type)}`);
   }
 }
 
 function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): SchemaNode {
-  const node: { type: "string"; minLength?: number; maxLength?: number; pattern?: string; patternFlags?: string } = { type: "string" };
+  const node: { type: "string"; minLength?: number; maxLength?: number; length?: number; pattern?: string; patternFlags?: string; email?: true; url?: true; uuid?: true; startsWith?: string; endsWith?: string } = { type: "string" };
   const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
   if (Array.isArray(pipe)) {
     for (const step of pipe) {
@@ -144,6 +193,11 @@ function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): Sche
           if (typeof req === "number") node.maxLength = req;
           break;
         }
+        case "length": {
+          const req = step.requirement as number | undefined;
+          if (typeof req === "number") node.length = req;
+          break;
+        }
         case "regex": {
           const req = step.requirement as RegExp | undefined;
           if (req instanceof RegExp) {
@@ -153,6 +207,22 @@ function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): Sche
           }
           break;
         }
+        case "email":
+          node.email = true; break;
+        case "url":
+          node.url = true; break;
+        case "uuid":
+          node.uuid = true; break;
+        case "starts_with": {
+          const req = step.requirement as string | undefined;
+          if (typeof req === "string") node.startsWith = req;
+          break;
+        }
+        case "ends_with": {
+          const req = step.requirement as string | undefined;
+          if (typeof req === "string") node.endsWith = req;
+          break;
+        }
       }
     }
   }
@@ -160,7 +230,7 @@ function encodeString(any: { pipe?: unknown[] } & Record<string, unknown>): Sche
 }
 
 function encodeNumber(any: { pipe?: unknown[] } & Record<string, unknown>): SchemaNode {
-  const node: { type: "number"; min?: number; max?: number } = { type: "number" };
+  const node: { type: "number"; min?: number; max?: number; integer?: true; safeInteger?: true; multipleOf?: number } = { type: "number" };
   const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
   if (Array.isArray(pipe)) {
     for (const step of pipe) {
@@ -175,6 +245,46 @@ function encodeNumber(any: { pipe?: unknown[] } & Record<string, unknown>): Sche
         case "max_value": {
           const req = step.requirement as number | undefined;
           if (typeof req === "number") node.max = req;
+          break;
+        }
+        case "integer":
+          node.integer = true; break;
+        case "safe_integer":
+          node.safeInteger = true; break;
+        case "multiple_of": {
+          const req = step.requirement as number | undefined;
+          if (typeof req === "number") node.multipleOf = req;
+          break;
+        }
+      }
+    }
+  }
+  return node;
+}
+
+function encodeArray(any: { item?: unknown; pipe?: unknown[] } & Record<string, unknown>): SchemaNode {
+  const child = (any as { item?: unknown }).item as AnySchema | undefined;
+  if (!child) throw new Error("Unsupported array schema: missing item schema");
+  const node: { type: "array"; item: SchemaNode; minLength?: number; maxLength?: number; length?: number } = { type: "array", item: encodeNode(child) };
+  const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
+  if (Array.isArray(pipe)) {
+    for (const step of pipe) {
+      if (!step || typeof step !== "object") continue;
+      if (step.kind !== "validation") continue;
+      switch (step.type) {
+        case "min_length": {
+          const req = step.requirement as number | undefined;
+          if (typeof req === "number") node.minLength = req;
+          break;
+        }
+        case "max_length": {
+          const req = step.requirement as number | undefined;
+          if (typeof req === "number") node.maxLength = req;
+          break;
+        }
+        case "length": {
+          const req = step.requirement as number | undefined;
+          if (typeof req === "number") node.length = req;
           break;
         }
       }
@@ -202,7 +312,7 @@ function decodeNode(node: SchemaNode): AnySchema {
     case "literal":
       return v.literal(node.value as never);
     case "array":
-      return v.array(decodeNode(node.item));
+      return decodeArray(node);
     case "object": {
       const shape: Record<string, AnySchema> = {};
       for (const key of Object.keys(node.entries)) {
@@ -214,6 +324,14 @@ function decodeNode(node: SchemaNode): AnySchema {
       return v.optional(decodeNode(node.base));
     case "nullable":
       return v.nullable(decodeNode(node.base));
+    case "nullish":
+      return v.nullish(decodeNode(node.base));
+    case "union":
+      return v.union(node.options.map((o) => decodeNode(o)) as never);
+    case "tuple":
+      return v.tuple(node.items.map((i) => decodeNode(i)) as never);
+    case "record":
+      return v.record(decodeNode(node.key) as never, decodeNode(node.value) as never);
     default:
       throw new Error(`Unsupported node type: ${(node as { type: string }).type}`);
   }
@@ -222,16 +340,24 @@ function decodeNode(node: SchemaNode): AnySchema {
 function decodeString(node: Extract<SchemaNode, { type: "string" }>): AnySchema {
   const s = v.string();
   const validators: unknown[] = [];
+  if (node.email) validators.push(v.email());
+  if (node.url) validators.push(v.url());
+  if (node.uuid) validators.push(v.uuid());
   if (node.minLength !== undefined) {
     validators.push(v.minLength(node.minLength));
   }
   if (node.maxLength !== undefined) {
     validators.push(v.maxLength(node.maxLength));
   }
+  if (node.length !== undefined) {
+    validators.push(v.length(node.length));
+  }
   if (node.pattern) {
     const re = new RegExp(node.pattern, node.patternFlags ?? undefined);
     validators.push(v.regex(re));
   }
+  if (node.startsWith !== undefined) validators.push(v.startsWith(node.startsWith));
+  if (node.endsWith !== undefined) validators.push(v.endsWith(node.endsWith));
   switch (validators.length) {
     case 0:
       return s;
@@ -256,6 +382,9 @@ function decodeNumber(node: Extract<SchemaNode, { type: "number" }>): AnySchema 
   if (node.max !== undefined) {
     validators.push(v.maxValue(node.max));
   }
+  if (node.integer) validators.push(v.integer());
+  if (node.safeInteger) validators.push(v.safeInteger());
+  if (node.multipleOf !== undefined) validators.push(v.multipleOf(node.multipleOf));
   switch (validators.length) {
     case 0:
       return n;
@@ -265,6 +394,26 @@ function decodeNumber(node: Extract<SchemaNode, { type: "number" }>): AnySchema 
       return v.pipe(n, validators[0] as never, validators[1] as never);
     default:
       return v.pipe(n, ...(validators as never[]));
+  }
+}
+
+function decodeArray(node: Extract<SchemaNode, { type: "array" }>): AnySchema {
+  const base = v.array(decodeNode(node.item));
+  const validators: unknown[] = [];
+  if (node.minLength !== undefined) validators.push(v.minLength(node.minLength));
+  if (node.maxLength !== undefined) validators.push(v.maxLength(node.maxLength));
+  if (node.length !== undefined) validators.push(v.length(node.length));
+  switch (validators.length) {
+    case 0:
+      return base;
+    case 1:
+      return v.pipe(base, validators[0] as never);
+    case 2:
+      return v.pipe(base, validators[0] as never, validators[1] as never);
+    case 3:
+      return v.pipe(base, validators[0] as never, validators[1] as never, validators[2] as never);
+    default:
+      return v.pipe(base, ...(validators as never[]));
   }
 }
 

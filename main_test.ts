@@ -39,6 +39,8 @@ describe("serialize (AST)", () => {
     expect(opt.node).toEqual({ type: "optional", base: { type: "string" } });
     const nul = serialize(v.nullable(v.number()));
     expect(nul.node).toEqual({ type: "nullable", base: { type: "number" } });
+    const nsh = serialize(v.nullish(v.boolean()));
+    expect(nsh.node).toEqual({ type: "nullish", base: { type: "boolean" } });
   });
 
   it("string constraints (min/max/regex)", () => {
@@ -49,6 +51,32 @@ describe("serialize (AST)", () => {
   it("number constraints (min/max)", () => {
     const s = serialize(v.pipe(v.number(), v.minValue(1), v.maxValue(10)));
     expect(s.node).toEqual({ type: "number", min: 1, max: 10 });
+  });
+
+  it("array constraints (min/max/length)", () => {
+    const s1 = serialize(v.pipe(v.array(v.string()), v.minLength(2), v.maxLength(3)));
+    expect(s1.node).toEqual({ type: "array", item: { type: "string" }, minLength: 2, maxLength: 3 });
+    const s2 = serialize(v.pipe(v.array(v.number()), v.length(2)));
+    expect(s2.node).toEqual({ type: "array", item: { type: "number" }, length: 2 });
+  });
+
+  it("string formats and anchors", () => {
+    const s = serialize(v.pipe(v.string(), v.email(), v.url(), v.uuid(), v.startsWith("ab"), v.endsWith("yz"), v.length(3)));
+    expect(s.node).toMatchObject({ type: "string", email: true, url: true, uuid: true, startsWith: "ab", endsWith: "yz", length: 3 });
+  });
+
+  it("number extras (integer/safe/multipleOf)", () => {
+    const s = serialize(v.pipe(v.number(), v.integer(), v.safeInteger(), v.multipleOf(3)));
+    expect(s.node).toEqual({ type: "number", integer: true, safeInteger: true, multipleOf: 3 });
+  });
+
+  it("union, tuple, record nodes", () => {
+    const u = serialize(v.union([v.string(), v.number()]));
+    expect(u.node).toEqual({ type: "union", options: [{ type: "string" }, { type: "number" }] });
+    const t = serialize(v.tuple([v.string(), v.number()]));
+    expect(t.node).toEqual({ type: "tuple", items: [{ type: "string" }, { type: "number" }] });
+    const r = serialize(v.record(v.string(), v.number()));
+    expect(r.node).toEqual({ type: "record", key: { type: "string" }, value: { type: "number" } });
   });
 });
 
@@ -112,6 +140,15 @@ describe("deserialize", () => {
     expect(() => v.parse(schema, "1")).toThrow();
   });
 
+  it("nullish boolean", () => {
+    const serialized = serialize(v.nullish(v.boolean()));
+    const schema = deserialize(serialized);
+    expect(() => v.parse(schema, null)).not.toThrow();
+    expect(() => v.parse(schema, undefined)).not.toThrow();
+    expect(() => v.parse(schema, true)).not.toThrow();
+    expect(() => v.parse(schema, 1)).toThrow();
+  });
+
   it("string constraints behavior", () => {
     const serialized = serialize(v.pipe(v.string(), v.minLength(2), v.regex(/^a/)));
     const schema = deserialize(serialized);
@@ -126,6 +163,39 @@ describe("deserialize", () => {
     expect(() => v.parse(schema, 2)).not.toThrow();
     expect(() => v.parse(schema, 4)).toThrow();
     expect(() => v.parse(schema, 1)).toThrow();
+  });
+
+  it("union/tuple/record behavior", () => {
+    const u = deserialize(serialize(v.union([v.string(), v.number()])));
+    expect(() => v.parse(u, "ok")).not.toThrow();
+    expect(() => v.parse(u, 123)).not.toThrow();
+    expect(() => v.parse(u, true)).toThrow();
+
+    const t = deserialize(serialize(v.tuple([v.string(), v.number()])));
+    expect(() => v.parse(t, ["a", 1])).not.toThrow();
+    expect(() => v.parse(t, [1, "a"]))
+      .toThrow();
+
+    const r = deserialize(serialize(v.record(v.string(), v.number())));
+    expect(() => v.parse(r, { a: 1, b: 2 })).not.toThrow();
+    expect(() => v.parse(r, { a: "x" }))
+      .toThrow();
+  });
+
+  it("array constraints behavior", () => {
+    const s = deserialize(serialize(v.pipe(v.array(v.number()), v.minLength(1), v.maxLength(2))));
+    expect(() => v.parse(s, [1])).not.toThrow();
+    expect(() => v.parse(s, [1, 2])).not.toThrow();
+    expect(() => v.parse(s, [])).toThrow();
+    expect(() => v.parse(s, [1, 2, 3])).toThrow();
+  });
+
+  it("string formats behavior", () => {
+    const s = deserialize(serialize(v.pipe(v.string(), v.email(), v.startsWith("a"))));
+    // This is approximate: just check a couple cases
+    expect(() => v.parse(s, "a@test.com")).not.toThrow();
+    expect(() => v.parse(s, "test.com")).toThrow();
+    expect(() => v.parse(s, "b@test.com")).toThrow();
   });
 });
 
