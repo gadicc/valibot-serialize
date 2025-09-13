@@ -11,7 +11,7 @@ export type SchemaNode =
   | { type: "blob"; minSize?: number; maxSize?: number; mimeTypes?: string[] }
   | { type: "literal"; value: PrimitiveLiteral }
   | { type: "array"; item: SchemaNode; minLength?: number; maxLength?: number; length?: number }
-  | { type: "object"; entries: Record<string, SchemaNode>; optionalKeys?: string[]; policy?: "loose" | "strict"; rest?: SchemaNode }
+  | { type: "object"; entries: Record<string, SchemaNode>; optionalKeys?: string[]; policy?: "loose" | "strict"; rest?: SchemaNode; minEntries?: number; maxEntries?: number }
   | { type: "optional"; base: SchemaNode }
   | { type: "nullable"; base: SchemaNode }
   | { type: "nullish"; base: SchemaNode }

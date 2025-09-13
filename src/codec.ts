@@ -133,6 +133,10 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       if (policy !== undefined && policy !== "loose" && policy !== "strict") return false;
       const rest = (node as { rest?: unknown }).rest;
       if (rest !== undefined && !isSchemaNode(rest)) return false;
+      const minE = (node as { minEntries?: unknown }).minEntries;
+      if (minE !== undefined && typeof minE !== "number") return false;
+      const maxE = (node as { maxEntries?: unknown }).maxEntries;
+      if (maxE !== undefined && typeof maxE !== "number") return false;
       return true;
     }
     case "optional":
@@ -248,7 +252,20 @@ function encodeNode(schema: AnySchema): SchemaNode {
         out[key] = encoded;
         if (encoded.type === "optional") optionalKeys.push(key);
       }
-      return optionalKeys.length > 0 ? { type: "object", entries: out, optionalKeys } : { type: "object", entries: out };
+      const nodeObj: { type: "object"; entries: Record<string, SchemaNode>; optionalKeys?: string[]; minEntries?: number; maxEntries?: number } = { type: "object", entries: out };
+      if (optionalKeys.length > 0) nodeObj.optionalKeys = optionalKeys;
+      const pipe = (any as { pipe?: unknown[] }).pipe as Array<Record<string, unknown>> | undefined;
+      if (Array.isArray(pipe)) {
+        for (const step of pipe) {
+          if (!step || typeof step !== "object") continue;
+          if (step.kind !== "validation") continue;
+          switch (step.type) {
+            case "min_entries": { const req = step.requirement as number | undefined; if (typeof req === "number") nodeObj.minEntries = req; break; }
+            case "max_entries": { const req = step.requirement as number | undefined; if (typeof req === "number") nodeObj.maxEntries = req; break; }
+          }
+        }
+      }
+      return nodeObj;
     }
     case "loose_object": {
       const entries = (any as { entries?: Record<string, unknown> }).entries;
@@ -649,12 +666,16 @@ function decodeNode(node: SchemaNode): AnySchema {
       for (const key of Object.keys(node.entries)) {
         shape[key] = decodeNode(node.entries[key]);
       }
-      if (node.rest) {
-        return v.objectWithRest(shape, decodeNode(node.rest) as never);
-      }
-      if (node.policy === "strict") return v.strictObject(shape);
-      if (node.policy === "loose") return v.looseObject(shape);
-      return v.object(shape);
+      let obj: AnySchema;
+      if (node.rest) obj = v.objectWithRest(shape, decodeNode(node.rest) as never);
+      else if (node.policy === "strict") obj = v.strictObject(shape);
+      else if (node.policy === "loose") obj = v.looseObject(shape);
+      else obj = v.object(shape);
+      const actions: unknown[] = [];
+      if (node.minEntries !== undefined) actions.push(v.minEntries(node.minEntries));
+      if (node.maxEntries !== undefined) actions.push(v.maxEntries(node.maxEntries));
+      if (actions.length > 0) obj = v.pipe(obj, ...(actions as never[]));
+      return obj;
     }
     case "optional":
       return v.optional(decodeNode(node.base));

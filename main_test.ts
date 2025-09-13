@@ -1,7 +1,7 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize, FORMAT_VERSION, isSerializedSchema, serialize } from "./main.ts";
+import { deserialize, FORMAT_VERSION, isSerializedSchema, serialize, serializedSchemaJson, toJsonSchema } from "./main.ts";
 
 describe("serialize (AST)", () => {
   it("string node shape", () => {
@@ -50,6 +50,8 @@ describe("serialize (AST)", () => {
     expect(strict.node).toEqual({ type: "object", entries: { a: { type: "string" } }, policy: "strict" });
     const rest = serialize(v.objectWithRest({ a: v.string() }, v.number()));
     expect(rest.node).toEqual({ type: "object", entries: { a: { type: "string" } }, rest: { type: "number" } });
+    const withCounts = serialize(v.pipe(v.object({ a: v.string() }), v.minEntries(1), v.maxEntries(2)));
+    expect(withCounts.node).toEqual({ type: "object", entries: { a: { type: "string" } }, minEntries: 1, maxEntries: 2 });
   });
 
   it("optional and nullable wrappers", () => {
@@ -140,6 +142,35 @@ describe("serialize (AST)", () => {
     const r = serialize(v.record(v.string(), v.number()));
     expect(r.node).toEqual({ type: "record", key: { type: "string" }, value: { type: "number" } });
   });
+
+  it("serialized JSON Schema shape", () => {
+    // Weak structural checks without using `any`
+    expect(typeof serializedSchemaJson.$schema).toBe("string");
+    const props = (serializedSchemaJson as Record<string, unknown>).properties as Record<string, unknown>;
+    expect(typeof props).toBe("object");
+    expect(Object.prototype.hasOwnProperty.call(props, "node")).toBe(true);
+    const defs = (serializedSchemaJson as Record<string, unknown>).$defs as Record<string, unknown>;
+    expect(typeof defs).toBe("object");
+    expect(Object.keys(defs).length).toBeGreaterThan(5);
+  });
+
+  it("toJsonSchema basics", () => {
+    const ast = serialize(v.object({ a: v.string(), b: v.optional(v.number()) }));
+    const js = toJsonSchema(ast);
+    const props = (js as Record<string, unknown>).properties as Record<string, unknown>;
+    const req = (js as Record<string, unknown>).required as string[];
+    expect((js as Record<string, unknown>).type).toBe("object");
+    expect(Object.keys(props)).toEqual(["a", "b"]);
+    expect(req).toEqual(["a"]);
+
+    const unionAst = serialize(v.union([v.string(), v.number()]));
+    const unionJs = toJsonSchema(unionAst);
+    expect((unionJs as Record<string, unknown>).anyOf).toBeDefined();
+
+    const enumAst = serialize(v.picklist(["x", "y"]));
+    const enumJs = toJsonSchema(enumAst);
+    expect((enumJs as Record<string, unknown>).enum).toEqual(["x", "y"]);
+  });
 });
 
 describe("type guard", () => {
@@ -212,6 +243,9 @@ describe("deserialize", () => {
     const rest = deserialize(serialize(v.objectWithRest({ a: v.string() }, v.number())));
     expect(() => v.parse(rest, { a: "x", extra: 1 })).not.toThrow();
     expect(() => v.parse(rest, { a: "x", extra: "no" })).toThrow();
+    const counted = deserialize(serialize(v.pipe(v.object({ a: v.string(), b: v.number() }), v.minEntries(2))));
+    expect(() => v.parse(counted, { a: "x", b: 1 })).not.toThrow();
+    expect(() => v.parse(counted, { a: "x" })).toThrow();
   });
 
   it("optional string", () => {
