@@ -22,6 +22,7 @@
     "@std/assert": "jsr:@std/assert@1",
     "@std/expect": "jsr:@std/expect@^1.0.17",
     "@std/testing": "jsr:@std/testing@^1.0.15",
+    "fast-check": "npm:fast-check@^4.3.0",
     "semantic-release": "npm:semantic-release@^24.2.8",
     "@valibot/valibot": "npm:valibot@^1.1.0"
   },

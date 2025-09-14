@@ -35,7 +35,7 @@ const parsed = v.parse(NewLoginSchema, {
 });
 
 // Write this to a file to benefit from dep-free tree-shaking
-const code = toCode(serialize(schema));
+const code = toCode(serialized);
 // "v.object({email:v.string(),password:v.string()});"
 ```
 
