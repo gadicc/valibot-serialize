@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -15,6 +16,10 @@ export const typeName = "literal" as const;
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  return (schema as { const?: unknown }).const !== undefined;
 };
 
 export const encode: Encoder<"literal"> = function encodeLiteral(

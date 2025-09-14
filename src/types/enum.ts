@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -16,6 +17,13 @@ export const typeName = "enum" as const;
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
   return type === "picklist" || type === "enum";
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  if (Array.isArray((schema as { enum?: unknown[] }).enum)) return true;
+  if (!Array.isArray((schema as { anyOf?: unknown[] }).anyOf)) return false;
+  const items = (schema as { anyOf: Array<Record<string, unknown>> }).anyOf;
+  return items.length > 0 && items.every((i) => i.const !== undefined);
 };
 
 export const encode: Encoder<"enum"> = function encodeEnum(
@@ -64,8 +72,18 @@ export const toJsonSchema: ToJsonSchema<"enum"> = function enumToJsonSchema(
 export const fromJsonSchema: FromJsonSchema = function enumFromJsonSchema(
   schema,
 ): Extract<SchemaNode, { type: "enum" }> {
-  return {
-    type: "enum",
-    values: (schema as { enum?: unknown[] }).enum as never,
-  };
+  if (Array.isArray((schema as { enum?: unknown[] }).enum)) {
+    return {
+      type: "enum",
+      values: (schema as { enum: unknown[] }).enum as never,
+    };
+  }
+  const anyOf = (schema as { anyOf?: Array<Record<string, unknown>> }).anyOf;
+  if (Array.isArray(anyOf) && anyOf.length > 0) {
+    const vals = anyOf.map((i) => (i.const as unknown)) as Array<
+      string | number | boolean | null
+    >;
+    return { type: "enum", values: vals } as never;
+  }
+  return { type: "enum", values: [] } as never;
 };

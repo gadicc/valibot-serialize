@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -16,6 +17,10 @@ export const typeName = "tuple" as const;
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
   return type === typeName || type === "tuple_with_rest";
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  return Array.isArray((schema as { prefixItems?: unknown[] }).prefixItems);
 };
 
 export const encode: Encoder<"tuple"> = function encodeTuple(

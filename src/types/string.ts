@@ -9,6 +9,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -19,6 +20,22 @@ export const typeName = "string" as const;
 // Whether a Valibot schema snapshot refers to a string builder
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
+};
+
+// Detection for JSON Schema inputs.
+// Prefer other codecs if const/enum/anyOf-const are present; otherwise
+// recognize explicit string types or act as a fallback when type is absent.
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  if ((schema as { const?: unknown }).const !== undefined) return false;
+  if (Array.isArray((schema as { enum?: unknown[] }).enum)) return false;
+  if (
+    Array.isArray((schema as { anyOf?: unknown[] }).anyOf) &&
+    (schema as { anyOf: Array<Record<string, unknown>> }).anyOf.every((s) =>
+      (s as Record<string, unknown>).const !== undefined
+    )
+  ) return false;
+  const t = (schema as { type?: unknown }).type as string | undefined;
+  return t === "string";
 };
 
 // Encode: Valibot string schema -> SchemaNode("string")

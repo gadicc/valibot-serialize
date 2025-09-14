@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -17,6 +18,10 @@ export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
   return type === "object" || type === "loose_object" ||
     type === "strict_object" || type === "object_with_rest";
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  return (schema as { type?: unknown }).type === "object";
 };
 
 export const encode: Encoder<"object"> = function encodeObject(

@@ -6,6 +6,8 @@ export type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
 export type Matches = (schema: AnySchema) => boolean;
 
+export type MatchesJsonSchema = (schema: Record<string, unknown>) => boolean;
+
 export type Encoder<K extends SchemaNode["type"]> = (
   schema: { type?: string; pipe?: unknown[] } & Record<string, unknown>,
   ctx: { encodeNode: (schema: AnySchema) => SchemaNode },
@@ -34,6 +36,8 @@ export type FromJsonSchema = (
 export interface TypeCodec<K extends SchemaNode["type"]> {
   typeName: K;
   matches: Matches;
+  // Optional detection for JSON Schema inputs
+  matchesJsonSchema?: MatchesJsonSchema;
   encode: Encoder<K>;
   decode: Decoder<K>;
   toCode: ToCode<K>;

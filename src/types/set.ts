@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -15,6 +16,11 @@ export const typeName = "set" as const;
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  return (schema as { type?: unknown }).type === "array" &&
+    (schema as { uniqueItems?: unknown }).uniqueItems === true;
 };
 
 export const encode: Encoder<"set"> = function encodeSet(

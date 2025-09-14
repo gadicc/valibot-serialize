@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -15,6 +16,11 @@ export const typeName = "number" as const;
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  const t = (schema as { type?: unknown }).type as string | undefined;
+  return t === "number" || t === "integer";
 };
 
 export const encode: Encoder<"number"> = function encodeNumber(

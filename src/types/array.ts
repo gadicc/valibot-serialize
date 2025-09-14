@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -15,6 +16,18 @@ export const typeName = "array" as const;
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  const t = (schema as { type?: unknown }).type;
+  if (t !== "array") return false;
+  if (Array.isArray((schema as { prefixItems?: unknown[] }).prefixItems)) {
+    return false; // handled by tuple
+  }
+  if ((schema as { uniqueItems?: unknown }).uniqueItems === true) {
+    return false; // handled by set
+  }
+  return true;
 };
 
 export const encode: Encoder<"array"> = function encodeArray(

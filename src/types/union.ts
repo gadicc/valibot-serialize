@@ -7,6 +7,7 @@ import type {
   Encoder,
   FromJsonSchema,
   Matches,
+  MatchesJsonSchema,
   ToCode,
   ToJsonSchema,
 } from "./lib/type_interfaces.ts";
@@ -15,6 +16,13 @@ export const typeName = "union" as const;
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
+};
+
+export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
+  if (!Array.isArray((schema as { anyOf?: unknown[] }).anyOf)) return false;
+  const items = (schema as { anyOf: Array<Record<string, unknown>> }).anyOf;
+  // Not all consts (those belong to enum)
+  return items.some((i) => i.const === undefined);
 };
 
 export const encode: Encoder<"union"> = function encodeUnion(
