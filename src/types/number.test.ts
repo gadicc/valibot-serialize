@@ -28,6 +28,32 @@ describe("types/number integration", () => {
     expect(n.integer).toBe(true);
   });
 
+  it("serialize captures number extras (finite/integer/safe/multipleOf/gt/lt)", () => {
+    const schema = v.pipe(
+      v.number(),
+      v.finite(),
+      v.integer(),
+      v.safeInteger(),
+      v.multipleOf(3),
+      v.gtValue(1),
+      v.ltValue(9),
+    );
+    const ser = serialize(schema as never);
+    const n = ser.node as Extract<
+      NonNullable<typeof ser.node>,
+      { type: "number" }
+    >;
+    expect(n).toEqual({
+      type: "number",
+      finite: true,
+      integer: true,
+      safeInteger: true,
+      multipleOf: 3,
+      gt: 1,
+      lt: 9,
+    });
+  });
+
   it("deserialize builds working number schema", () => {
     const payload = {
       kind: "schema" as const,

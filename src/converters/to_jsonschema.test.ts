@@ -10,6 +10,64 @@ const env = {
 };
 
 describe("toJsonSchema extra coverage", () => {
+  it("basics: object props/required + union/enum", () => {
+    const ast = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: FORMAT_VERSION,
+      node: {
+        type: "object" as const,
+        entries: {
+          a: { type: "string" as const },
+          b: { type: "optional" as const, base: { type: "number" as const } },
+        },
+        optionalKeys: ["b"],
+      },
+    };
+    const js = toJsonSchema(ast);
+    const props = (js as Record<string, unknown>).properties as Record<
+      string,
+      unknown
+    >;
+    const req = (js as Record<string, unknown>).required as string[];
+    expect((js as Record<string, unknown>).type).toBe("object");
+    expect(Object.keys(props)).toEqual(["a", "b"]);
+    expect(req).toEqual(["a"]);
+
+    const unionJs = toJsonSchema({
+      ...env,
+      node: {
+        type: "union",
+        options: [{ type: "string" }, { type: "number" }],
+      },
+    });
+    expect((unionJs as Record<string, unknown>).anyOf).toBeDefined();
+
+    const enumJs = toJsonSchema({
+      ...env,
+      node: { type: "enum", values: ["x", "y"] },
+    });
+    expect((enumJs as Record<string, unknown>).enum).toEqual(["x", "y"]);
+  });
+
+  it("string ID/validator patterns bucketed", () => {
+    const js = toJsonSchema({
+      ...env,
+      node: {
+        type: "string",
+        ulid: true,
+        nanoid: true,
+        cuid2: true,
+        creditCard: true,
+      },
+    }) as Record<string, unknown>;
+    expect(js.type).toBe("string");
+    expect(
+      Object.prototype.hasOwnProperty.call(js, "pattern") ||
+        Object.prototype.hasOwnProperty.call(js, "allOf"),
+    ).toBe(true);
+  });
   it("object default additionalProperties: true", () => {
     const js = toJsonSchema({
       ...env,

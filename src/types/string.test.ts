@@ -46,6 +46,21 @@ describe("types/string integration", () => {
     expect(() => v.parse(schema, "b")).toThrow();
   });
 
+  it("deserializes transforms: trimStart + trimEnd + normalize", () => {
+    const payload = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: 1 as const,
+      node: {
+        type: "string" as const,
+        transforms: ["trimStart", "trimEnd", "normalize"],
+      },
+    };
+    const schema = deserialize(payload as never);
+    expect(v.parse(schema, "  a  ")).toBe("a");
+  });
+
   it("toCode emits pipe for string validators", () => {
     const expr = toCode({
       kind: "schema",

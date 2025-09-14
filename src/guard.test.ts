@@ -8,7 +8,7 @@ import {
   serialize,
 } from "../main.ts";
 
-describe("codec error paths and guards", () => {
+describe("guards and error paths", () => {
   it("serialize throws on unsupported literal value", () => {
     const fake = {
       type: "literal",
@@ -109,28 +109,36 @@ describe("codec error paths and guards", () => {
     };
     expect(() => deserialize(payload as never)).toThrow();
   });
+});
 
-  it("string transforms: trimStart + trimEnd + normalize", () => {
-    const payload = {
-      kind: "schema" as const,
-      vendor: "valibot" as const,
-      version: 1 as const,
-      format: FORMAT_VERSION,
-      node: {
-        type: "string" as const,
-        transforms: ["trimStart", "trimEnd", "normalize"],
-      },
-    };
-    const schema = deserialize(payload as never);
-    expect(v.parse(schema, "  a  ")).toBe("a");
+describe("isSerializedSchema type guard", () => {
+  it("accepts valid payload", () => {
+    const payload = serialize(v.string());
+    expect(isSerializedSchema(payload)).toBe(true);
   });
 
-  it("type guard accepts comprehensive node shapes", () => {
-    const payload = {
+  it("rejects wrong vendor/version/format", () => {
+    const payload = serialize(v.string());
+    const badVendor = { ...payload, vendor: "other" as const };
+    const badVersion = { ...payload, version: 2 as 1 } as typeof payload;
+    const badFormat = {
+      ...payload,
+      format: (FORMAT_VERSION + 1) as typeof FORMAT_VERSION,
+    } as typeof payload;
+    expect(isSerializedSchema(badVendor)).toBe(false);
+    expect(isSerializedSchema(badVersion)).toBe(false);
+    expect(isSerializedSchema(badFormat)).toBe(false);
+  });
+
+  it("accepts comprehensive node shapes", () => {
+    const base = {
       kind: "schema" as const,
       vendor: "valibot" as const,
       version: 1 as const,
       format: FORMAT_VERSION,
+    };
+    const ok = isSerializedSchema({
+      ...base,
       node: {
         type: "object" as const,
         entries: {
@@ -201,9 +209,9 @@ describe("codec error paths and guards", () => {
         minEntries: 1,
         maxEntries: 3,
       },
-    };
-    expect(isSerializedSchema(payload)).toBe(true);
-    // Add other node kinds for guard execution
+    });
+    expect(ok).toBe(true);
+
     const others = [
       { type: "date" as const },
       {
@@ -257,9 +265,9 @@ describe("codec error paths and guards", () => {
         minSize: 1,
         maxSize: 2,
       },
-    ];
+    ] as const;
     for (const node of others) {
-      const ok = isSerializedSchema(
+      const ok2 = isSerializedSchema(
         {
           kind: "schema",
           vendor: "valibot",
@@ -268,7 +276,7 @@ describe("codec error paths and guards", () => {
           node,
         } as const,
       );
-      expect(ok).toBe(true);
+      expect(ok2).toBe(true);
     }
   });
 });

@@ -15,6 +15,37 @@ describe("fromJsonSchema extra coverage", () => {
     expect((s.node as { ip?: boolean }).ip).toBe(true);
   });
 
+  it("anyOf consts => enum values", () => {
+    const s = fromJsonSchema({ anyOf: [{ const: "a" }, { const: "b" }] });
+    expect(s.node.type).toBe("enum");
+    expect((s.node as { type: string; values: string[] }).values).toEqual([
+      "a",
+      "b",
+    ]);
+  });
+
+  it("subset roundtrip: object props + strict policy", () => {
+    const js = {
+      type: "object",
+      properties: {
+        a: { type: "string", minLength: 1 },
+        b: { type: "number" },
+      },
+      required: ["a"],
+      additionalProperties: false,
+      minProperties: 1,
+    } as const;
+    const serialized = fromJsonSchema(js as unknown as Record<string, unknown>);
+    const node = serialized.node as {
+      type: string;
+      entries: Record<string, unknown>;
+      policy: string;
+    };
+    expect(node.type).toBe("object");
+    expect(Object.keys(node.entries)).toEqual(["a", "b"]);
+    expect(node.policy).toBe("strict");
+  });
+
   it("string patterns map to flags and starts/ends", () => {
     // Provide patterns in the simplified forms recognized by fromJsonSchema
     const ulid = fromJsonSchema({
