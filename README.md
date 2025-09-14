@@ -33,28 +33,23 @@ const parsed = v.parse(NewLoginSchema, {
   email: "hello@example.com",
   password: "password",
 });
-```
 
-### Generate Builder Code
-
-`toCode(serialized: SerializedSchema): string` returns compact Valibot builder
-code that reconstructs the schema (assumes `v` is in scope):
-
-```ts
-import * as v from "@valibot/valibot";
-import { serialize, toCode } from "valibot-serialize";
-
-const schema = v.object({ email: v.string(), password: v.string() });
+// Write this to a file to benefit from dep-free tree-shaking
 const code = toCode(serialize(schema));
 // "v.object({email:v.string(),password:v.string()});"
 ```
 
-You could then write this out to a file as part of your build script, getting a
-way to reconstruct the schema without `valibot-serialize` as a dependency, and
-still benefit from tree shaking.
+#### Important Notes
 
-We may provide some CLI tools in the future to make this easier for common
-cases.
+- Obviously **transforms and callbacks** can't be serialized. You should store
+  these elsewhere and apply after deserialization.
+
+- To avoid requiring `valibot-serialize` as a (non-dev) dependency and pulling
+  in the entire `valibot` library, use `toCode` instead of `deserialize` and
+  write the results to a file. This way you'll still benefit tree-shaking.
+
+  We may provide some CLI tools in the future to make this easier for common
+  cases (e.g. scan a directory and auto-write modules for each detected schema).
 
 ## Motivation
 
