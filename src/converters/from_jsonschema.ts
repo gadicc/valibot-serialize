@@ -1,7 +1,7 @@
 import type { SchemaNode, SerializedSchema } from "../types.ts";
 import { unescapeRegex } from "../util/regex_utils.ts";
 import { detect } from "../util/patterns.ts";
-import { numberCodec, stringCodec } from "../types/lib/registry.ts";
+import { number, string } from "../types/index.ts";
 
 type JS = Record<string, unknown>;
 
@@ -19,7 +19,7 @@ function convert(schema: JS): SchemaNode {
   const type = schema.type as string | undefined;
   // Delegate leaf conversions to type codecs where possible
   if (type === "string") {
-    return stringCodec.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
+    return string.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
   }
   if (schema.const !== undefined) {
     return { type: "literal", value: schema.const as never };
@@ -91,7 +91,7 @@ function convert(schema: JS): SchemaNode {
   }
 
   if (type === "number" || type === "integer") {
-    return numberCodec.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
+    return number.fromJsonSchema(schema as JS, { convert }) as SchemaNode;
   }
 
   if (type === "boolean") return { type: "boolean" };
