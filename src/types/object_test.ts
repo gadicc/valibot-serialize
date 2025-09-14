@@ -2,6 +2,7 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
 import { serialize } from "../../main.ts";
+import { FORMAT_VERSION, toCode, toJsonSchema } from "../../main.ts";
 
 describe("types/object", () => {
   it("serialize object node shape", () => {
@@ -52,5 +53,35 @@ describe("types/object", () => {
       minEntries: 1,
       maxEntries: 2,
     });
+  });
+
+  it("toCode escapes prop keys and toJsonSchema omits empty required", () => {
+    const env = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: FORMAT_VERSION,
+    };
+    const code = toCode({
+      ...env,
+      node: {
+        type: "object",
+        entries: {
+          "a-b": { type: "string" },
+          c: { type: "optional", base: { type: "number" } },
+        },
+      },
+    } as never);
+    expect(code).toContain('{"a-b":v.string(),c:v.optional(v.number())}');
+
+    const js = toJsonSchema({
+      ...env,
+      node: {
+        type: "object",
+        entries: { a: { type: "optional", base: { type: "string" } } },
+      },
+    } as never) as Record<string, unknown>;
+    expect((js as Record<string, unknown>).required).toBeUndefined();
+    expect((js.properties as Record<string, unknown>).a).toBeDefined();
   });
 });

@@ -93,4 +93,60 @@ describe("types/number integration", () => {
     const back = fromJsonSchema(js as never);
     expect(back.node.type).toBe("number");
   });
+
+  it("toJsonSchema outputs integer type when integer flag", () => {
+    const js = toJsonSchema({
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: 1 as const,
+      node: { type: "number" as const, integer: true },
+    } as never) as Record<string, unknown>;
+    expect(js.type).toBe("integer");
+  });
+
+  it("deserialize handles 0,1,2,>2 validator lengths", () => {
+    // 0 validators
+    const zero = deserialize({
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: 1 as const,
+      node: { type: "number" as const },
+    } as never);
+    expect(() => v.parse(zero, 1)).not.toThrow();
+
+    // 1 validator
+    const one = deserialize({
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: 1 as const,
+      node: { type: "number" as const, integer: true },
+    } as never);
+    expect(() => v.parse(one, 2)).not.toThrow();
+    expect(() => v.parse(one, 2.5)).toThrow();
+
+    // 2 validators
+    const two = deserialize({
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: 1 as const,
+      node: { type: "number" as const, min: 1, max: 3 },
+    } as never);
+    expect(() => v.parse(two, 2)).not.toThrow();
+    expect(() => v.parse(two, 4)).toThrow();
+
+    // >2 validators
+    const many = deserialize({
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: 1 as const,
+      node: { type: "number" as const, min: 1, max: 5, multipleOf: 2 },
+    } as never);
+    expect(() => v.parse(many, 4)).not.toThrow();
+    expect(() => v.parse(many, 3)).toThrow();
+  });
 });

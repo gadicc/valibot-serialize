@@ -66,6 +66,19 @@ describe("fromJsonSchema extra coverage", () => {
     expect(s.node.type).toBe("date");
   });
 
+  it("string formats map to flags: email/uri/uuid/ipv4/ipv6", () => {
+    const em = fromJsonSchema({ type: "string", format: "email" });
+    expect((em.node as { email?: boolean }).email).toBe(true);
+    const uri = fromJsonSchema({ type: "string", format: "uri" });
+    expect((uri.node as { url?: boolean }).url).toBe(true);
+    const uuid = fromJsonSchema({ type: "string", format: "uuid" });
+    expect((uuid.node as { uuid?: boolean }).uuid).toBe(true);
+    const v4 = fromJsonSchema({ type: "string", format: "ipv4" });
+    expect((v4.node as { ipv4?: boolean }).ipv4).toBe(true);
+    const v6 = fromJsonSchema({ type: "string", format: "ipv6" });
+    expect((v6.node as { ipv6?: boolean }).ipv6).toBe(true);
+  });
+
   it("numbers including integer and bounds", () => {
     const s = fromJsonSchema({
       type: "integer",

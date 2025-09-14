@@ -2,6 +2,7 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
 import { serialize } from "../../main.ts";
+import { deserialize, FORMAT_VERSION } from "../../main.ts";
 
 describe("types/array", () => {
   it("serialize array node shape", () => {
@@ -25,5 +26,32 @@ describe("types/array", () => {
       item: { type: "number" },
       length: 2,
     });
+  });
+
+  it("serialize nonEmpty maps to minLength >= 1", () => {
+    const s = serialize(v.pipe(v.array(v.string()), v.nonEmpty()));
+    const n = s.node as { type: string; minLength?: number };
+    expect(n.type).toBe("array");
+    expect(n.minLength).toBe(1);
+  });
+
+  it("decode with three validators (min/max/length)", () => {
+    const payload = {
+      kind: "schema" as const,
+      vendor: "valibot" as const,
+      version: 1 as const,
+      format: FORMAT_VERSION,
+      node: {
+        type: "array" as const,
+        item: { type: "number" as const },
+        minLength: 1,
+        maxLength: 3,
+        length: 2,
+      },
+    };
+    const sch = deserialize(payload as never);
+    expect(() => v.parse(sch, [1, 2])).not.toThrow();
+    expect(() => v.parse(sch, [1])).toThrow();
+    expect(() => v.parse(sch, [1, 2, 3])).toThrow();
   });
 });
