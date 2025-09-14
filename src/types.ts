@@ -2,103 +2,45 @@ export const FORMAT_VERSION = 1 as const;
 
 export type PrimitiveLiteral = string | number | boolean | null;
 
+// Build SchemaNode from per-type interfaces
+import type { StringNode } from "./types/string.ts";
+import type { NumberNode } from "./types/number.ts";
+import type { BooleanNode } from "./types/boolean.ts";
+import type { DateNode } from "./types/date.ts";
+import type { FileNode } from "./types/file.ts";
+import type { BlobNode } from "./types/blob.ts";
+import type { LiteralNode } from "./types/literal.ts";
+import type { ArrayNode } from "./types/array.ts";
+import type { ObjectNode } from "./types/object.ts";
+import type { OptionalNode } from "./types/optional.ts";
+import type { NullableNode } from "./types/nullable.ts";
+import type { NullishNode } from "./types/nullish.ts";
+import type { UnionNode } from "./types/union.ts";
+import type { TupleNode } from "./types/tuple.ts";
+import type { RecordNode } from "./types/record.ts";
+import type { EnumNode } from "./types/enum.ts";
+import type { SetNode } from "./types/set.ts";
+import type { MapNode } from "./types/map.ts";
+
 export type SchemaNode =
-  | {
-    type: "string";
-    minLength?: number;
-    maxLength?: number;
-    length?: number;
-    pattern?: string;
-    patternFlags?: string;
-    email?: true;
-    rfcEmail?: true;
-    url?: true;
-    uuid?: true;
-    ip?: true;
-    ipv4?: true;
-    ipv6?: true;
-    hexColor?: true;
-    slug?: true;
-    creditCard?: true;
-    imei?: true;
-    mac?: true;
-    mac48?: true;
-    mac64?: true;
-    base64?: true;
-    ulid?: true;
-    nanoid?: true;
-    cuid2?: true;
-    isoDate?: true;
-    isoDateTime?: true;
-    isoTime?: true;
-    isoTimeSecond?: true;
-    isoTimestamp?: true;
-    isoWeek?: true;
-    digits?: true;
-    emoji?: true;
-    hexadecimal?: true;
-    minGraphemes?: number;
-    maxGraphemes?: number;
-    minWords?: number;
-    maxWords?: number;
-    startsWith?: string;
-    endsWith?: string;
-    transforms?: Array<
-      | "trim"
-      | "trimStart"
-      | "trimEnd"
-      | "toUpperCase"
-      | "toLowerCase"
-      | "normalize"
-    >;
-  }
-  | {
-    type: "number";
-    min?: number;
-    max?: number;
-    gt?: number;
-    lt?: number;
-    integer?: true;
-    safeInteger?: true;
-    multipleOf?: number;
-    finite?: true;
-  }
-  | { type: "boolean" }
-  | { type: "date" }
-  | { type: "file"; minSize?: number; maxSize?: number; mimeTypes?: string[] }
-  | { type: "blob"; minSize?: number; maxSize?: number; mimeTypes?: string[] }
-  | { type: "literal"; value: PrimitiveLiteral }
-  | {
-    type: "array";
-    item: SchemaNode;
-    minLength?: number;
-    maxLength?: number;
-    length?: number;
-  }
-  | {
-    type: "object";
-    entries: Record<string, SchemaNode>;
-    optionalKeys?: string[];
-    policy?: "loose" | "strict";
-    rest?: SchemaNode;
-    minEntries?: number;
-    maxEntries?: number;
-  }
-  | { type: "optional"; base: SchemaNode }
-  | { type: "nullable"; base: SchemaNode }
-  | { type: "nullish"; base: SchemaNode }
-  | { type: "union"; options: SchemaNode[] }
-  | { type: "tuple"; items: SchemaNode[]; rest?: SchemaNode }
-  | { type: "record"; key: SchemaNode; value: SchemaNode }
-  | { type: "enum"; values: PrimitiveLiteral[] }
-  | { type: "set"; value: SchemaNode; minSize?: number; maxSize?: number }
-  | {
-    type: "map";
-    key: SchemaNode;
-    value: SchemaNode;
-    minSize?: number;
-    maxSize?: number;
-  };
+  | StringNode
+  | NumberNode
+  | BooleanNode
+  | DateNode
+  | FileNode
+  | BlobNode
+  | LiteralNode
+  | ArrayNode
+  | ObjectNode
+  | OptionalNode
+  | NullableNode
+  | NullishNode
+  | UnionNode
+  | TupleNode
+  | RecordNode
+  | EnumNode
+  | SetNode
+  | MapNode;
 
 export interface SerializedSchema {
   kind: "schema";

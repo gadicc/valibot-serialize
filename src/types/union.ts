@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -14,6 +14,11 @@ import type {
 
 export const typeName = "union" as const;
 
+// Serialized node shape for "union"
+export interface UnionNode extends BaseNode<typeof typeName> {
+  options: AnyNode[];
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
@@ -25,10 +30,10 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
   return items.some((i) => i.const === undefined);
 };
 
-export const encode: Encoder<"union"> = function encodeUnion(
+export const encode: Encoder<UnionNode> = function encodeUnion(
   any,
   ctx,
-): Extract<SchemaNode, { type: "union" } | { type: "enum" }> {
+): UnionNode | AnyNode {
   const options = (any as { options?: unknown[] }).options as
     | AnySchema[]
     | undefined;
@@ -45,27 +50,27 @@ export const encode: Encoder<"union"> = function encodeUnion(
       ),
     } as never;
   }
-  return { type: "union", options: enc };
+  return { type: typeName, options: enc };
 };
 
-export const decode: Decoder<"union"> = function decodeUnion(node, ctx) {
+export const decode: Decoder<UnionNode> = function decodeUnion(node, ctx) {
   return v.union(node.options.map((o) => ctx.decodeNode(o)) as never);
 };
 
-export const toCode: ToCode<"union"> = function unionToCode(node, ctx) {
+export const toCode: ToCode<UnionNode> = function unionToCode(node, ctx) {
   return `v.union([${node.options.map((o) => ctx.nodeToCode(o)).join(",")}])`;
 };
 
-export const toJsonSchema: ToJsonSchema<"union"> = function unionToJsonSchema(
+export const toJsonSchema: ToJsonSchema<UnionNode> = function unionToJsonSchema(
   node,
   ctx,
 ): JsonSchema {
   const literals = node.options.every((o) => o.type === "literal");
   if (literals) {
     return {
-      enum: (node.options as Extract<SchemaNode, { type: "literal" }>[]).map((
-        o,
-      ) => o.value),
+      enum: (node.options as Array<{ type: "literal"; value: unknown }>).map(
+        (o) => o.value,
+      ),
     } as JsonSchema;
   }
   return { anyOf: node.options.map(ctx.convertNode) } as JsonSchema;
@@ -74,9 +79,9 @@ export const toJsonSchema: ToJsonSchema<"union"> = function unionToJsonSchema(
 export const fromJsonSchema: FromJsonSchema = function unionFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "union" }> {
+): UnionNode {
   return {
-    type: "union",
+    type: typeName,
     options: ((schema as { anyOf?: Record<string, unknown>[] }).anyOf ?? [])
       .map(ctx.convert),
   };

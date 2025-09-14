@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type { AnySchema, Matches } from "./lib/type_interfaces.ts";
 import type {
@@ -12,32 +12,40 @@ import type {
 
 export const typeName = "nullable" as const;
 
+// Serialized node shape for "nullable"
+export interface NullableNode extends BaseNode<typeof typeName> {
+  base: AnyNode;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
 
-export const encode: Encoder<"nullable"> = function encodeNullable(
+export const encode: Encoder<NullableNode> = function encodeNullable(
   any,
   ctx,
-): Extract<SchemaNode, { type: "nullable" }> {
+): NullableNode {
   const wrapped = (any as { wrapped?: unknown }).wrapped as
     | AnySchema
     | undefined;
   if (!wrapped) {
     throw new Error("Unsupported nullable schema: missing wrapped schema");
   }
-  return { type: "nullable", base: ctx.encodeNode(wrapped) };
+  return { type: typeName, base: ctx.encodeNode(wrapped) };
 };
 
-export const decode: Decoder<"nullable"> = function decodeNullable(node, ctx) {
+export const decode: Decoder<NullableNode> = function decodeNullable(
+  node,
+  ctx,
+) {
   return v.nullable(ctx.decodeNode(node.base));
 };
 
-export const toCode: ToCode<"nullable"> = function nullableToCode(node, ctx) {
+export const toCode: ToCode<NullableNode> = function nullableToCode(node, ctx) {
   return `v.nullable(${ctx.nodeToCode(node.base)})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"nullable"> =
+export const toJsonSchema: ToJsonSchema<NullableNode> =
   function nullableToJsonSchema(node, ctx): JsonSchema {
     return {
       anyOf: [ctx.convertNode(node.base), { type: "null" }],
@@ -47,6 +55,6 @@ export const toJsonSchema: ToJsonSchema<"nullable"> =
 export const fromJsonSchema: FromJsonSchema = function nullableFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "nullable" }> {
-  return { type: "nullable", base: ctx.convert(schema) };
+): NullableNode {
+  return { type: typeName, base: ctx.convert(schema) };
 };

@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type { AnySchema, Matches } from "./lib/type_interfaces.ts";
 import type {
@@ -12,32 +12,37 @@ import type {
 
 export const typeName = "nullish" as const;
 
+// Serialized node shape for "nullish"
+export interface NullishNode extends BaseNode<typeof typeName> {
+  base: AnyNode;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
 
-export const encode: Encoder<"nullish"> = function encodeNullish(
+export const encode: Encoder<NullishNode> = function encodeNullish(
   any,
   ctx,
-): Extract<SchemaNode, { type: "nullish" }> {
+): NullishNode {
   const wrapped = (any as { wrapped?: unknown }).wrapped as
     | AnySchema
     | undefined;
   if (!wrapped) {
     throw new Error("Unsupported nullish schema: missing wrapped schema");
   }
-  return { type: "nullish", base: ctx.encodeNode(wrapped) };
+  return { type: typeName, base: ctx.encodeNode(wrapped) };
 };
 
-export const decode: Decoder<"nullish"> = function decodeNullish(node, ctx) {
+export const decode: Decoder<NullishNode> = function decodeNullish(node, ctx) {
   return v.nullish(ctx.decodeNode(node.base));
 };
 
-export const toCode: ToCode<"nullish"> = function nullishToCode(node, ctx) {
+export const toCode: ToCode<NullishNode> = function nullishToCode(node, ctx) {
   return `v.nullish(${ctx.nodeToCode(node.base)})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"nullish"> =
+export const toJsonSchema: ToJsonSchema<NullishNode> =
   function nullishToJsonSchema(node, ctx): JsonSchema {
     return {
       anyOf: [ctx.convertNode(node.base), { type: "null" }],
@@ -47,6 +52,6 @@ export const toJsonSchema: ToJsonSchema<"nullish"> =
 export const fromJsonSchema: FromJsonSchema = function nullishFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "nullish" }> {
-  return { type: "nullish", base: ctx.convert(schema) };
+): NullishNode {
+  return { type: typeName, base: ctx.convert(schema) };
 };

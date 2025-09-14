@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -14,6 +14,18 @@ import type {
 
 export const typeName = "number" as const;
 
+// Serialized node shape for "number"
+export interface NumberNode extends BaseNode<typeof typeName> {
+  min?: number;
+  max?: number;
+  gt?: number;
+  lt?: number;
+  integer?: true;
+  safeInteger?: true;
+  multipleOf?: number;
+  finite?: true;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
@@ -23,10 +35,10 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
   return t === "number" || t === "integer";
 };
 
-export const encode: Encoder<"number"> = function encodeNumber(
+export const encode: Encoder<NumberNode> = function encodeNumber(
   any,
-): Extract<SchemaNode, { type: "number" }> {
-  const node: Extract<SchemaNode, { type: "number" }> = { type: "number" };
+): NumberNode {
+  const node: NumberNode = { type: typeName };
   const pipe = (any as { pipe?: unknown[] }).pipe as
     | Array<Record<string, unknown>>
     | undefined;
@@ -75,7 +87,7 @@ export const encode: Encoder<"number"> = function encodeNumber(
   return node;
 };
 
-export const decode: Decoder<"number"> = function decodeNumber(
+export const decode: Decoder<NumberNode> = function decodeNumber(
   node,
 ): AnySchema {
   const n = v.number();
@@ -102,7 +114,7 @@ export const decode: Decoder<"number"> = function decodeNumber(
   }
 };
 
-export const toCode: ToCode<"number"> = function numberToCode(node): string {
+export const toCode: ToCode<NumberNode> = function numberToCode(node): string {
   const base = "v.number()";
   const validators: string[] = [];
   if (node.min !== undefined) validators.push(`v.minValue(${node.min})`);
@@ -119,33 +131,34 @@ export const toCode: ToCode<"number"> = function numberToCode(node): string {
   return `v.pipe(${base},${validators.join(",")})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"number"> = function numberToJsonSchema(
-  node,
-): JsonSchema {
-  const schema: JsonSchema = { type: node.integer ? "integer" : "number" };
-  if (node.min !== undefined) {
-    (schema as Record<string, unknown>).minimum = node.min;
-  }
-  if (node.max !== undefined) {
-    (schema as Record<string, unknown>).maximum = node.max;
-  }
-  if (node.gt !== undefined) {
-    (schema as Record<string, unknown>).exclusiveMinimum = node.gt;
-  }
-  if (node.lt !== undefined) {
-    (schema as Record<string, unknown>).exclusiveMaximum = node.lt;
-  }
-  if (node.multipleOf !== undefined) {
-    (schema as Record<string, unknown>).multipleOf = node.multipleOf;
-  }
-  return schema;
-};
+export const toJsonSchema: ToJsonSchema<NumberNode> =
+  function numberToJsonSchema(
+    node,
+  ): JsonSchema {
+    const schema: JsonSchema = { type: node.integer ? "integer" : "number" };
+    if (node.min !== undefined) {
+      (schema as Record<string, unknown>).minimum = node.min;
+    }
+    if (node.max !== undefined) {
+      (schema as Record<string, unknown>).maximum = node.max;
+    }
+    if (node.gt !== undefined) {
+      (schema as Record<string, unknown>).exclusiveMinimum = node.gt;
+    }
+    if (node.lt !== undefined) {
+      (schema as Record<string, unknown>).exclusiveMaximum = node.lt;
+    }
+    if (node.multipleOf !== undefined) {
+      (schema as Record<string, unknown>).multipleOf = node.multipleOf;
+    }
+    return schema;
+  };
 
 export const fromJsonSchema: FromJsonSchema = function numberFromJsonSchema(
   schema,
-): Extract<SchemaNode, { type: "number" }> {
+): NumberNode {
   const type = schema.type as string | undefined;
-  const node: Extract<SchemaNode, { type: "number" }> = { type: "number" };
+  const node: NumberNode = { type: typeName };
   if (type === "integer") node.integer = true;
   if (typeof schema.minimum === "number") node.min = schema.minimum as number;
   if (typeof schema.maximum === "number") node.max = schema.maximum as number;

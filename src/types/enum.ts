@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -14,6 +14,11 @@ import type {
 
 export const typeName = "enum" as const;
 
+// Serialized node shape for "enum"
+export interface EnumNode extends BaseNode<typeof typeName> {
+  values: Array<string | number | boolean | null>;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
   return type === "picklist" || type === "enum";
@@ -26,9 +31,9 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
   return items.length > 0 && items.every((i) => i.const !== undefined);
 };
 
-export const encode: Encoder<"enum"> = function encodeEnum(
+export const encode: Encoder<EnumNode> = function encodeEnum(
   any,
-): Extract<SchemaNode, { type: "enum" }> {
+): EnumNode {
   const snap = JSON.parse(JSON.stringify(any)) as {
     options?: unknown[];
     enum?: unknown[];
@@ -46,15 +51,15 @@ export const encode: Encoder<"enum"> = function encodeEnum(
       out.push(val as never);
     } else throw new Error("Unsupported enum value type");
   }
-  return { type: "enum", values: out };
+  return { type: typeName, values: out };
 };
 
-export const decode: Decoder<"enum"> = function decodeEnum(node): AnySchema {
+export const decode: Decoder<EnumNode> = function decodeEnum(node): AnySchema {
   const literals = node.values.map((val) => v.literal(val as never));
   return v.union(literals as never);
 };
 
-export const toCode: ToCode<"enum"> = function enumToCode(node): string {
+export const toCode: ToCode<EnumNode> = function enumToCode(node): string {
   const allStrings = node.values.every((v) => typeof v === "string");
   if (allStrings) return `v.picklist(${JSON.stringify(node.values)})`;
   const lits = node.values.map((v) => `v.literal(${JSON.stringify(v)})`).join(
@@ -63,7 +68,7 @@ export const toCode: ToCode<"enum"> = function enumToCode(node): string {
   return `v.union([${lits}])`;
 };
 
-export const toJsonSchema: ToJsonSchema<"enum"> = function enumToJsonSchema(
+export const toJsonSchema: ToJsonSchema<EnumNode> = function enumToJsonSchema(
   node,
 ): JsonSchema {
   return { enum: node.values.slice() } as JsonSchema;
@@ -71,10 +76,10 @@ export const toJsonSchema: ToJsonSchema<"enum"> = function enumToJsonSchema(
 
 export const fromJsonSchema: FromJsonSchema = function enumFromJsonSchema(
   schema,
-): Extract<SchemaNode, { type: "enum" }> {
+): EnumNode {
   if (Array.isArray((schema as { enum?: unknown[] }).enum)) {
     return {
-      type: "enum",
+      type: typeName,
       values: (schema as { enum: unknown[] }).enum as never,
     };
   }
@@ -83,7 +88,7 @@ export const fromJsonSchema: FromJsonSchema = function enumFromJsonSchema(
     const vals = anyOf.map((i) => (i.const as unknown)) as Array<
       string | number | boolean | null
     >;
-    return { type: "enum", values: vals } as never;
+    return { type: typeName, values: vals } as never;
   }
-  return { type: "enum", values: [] } as never;
+  return { type: typeName, values: [] } as never;
 };

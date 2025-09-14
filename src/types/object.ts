@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -14,6 +14,16 @@ import type {
 
 export const typeName = "object" as const;
 
+// Serialized node shape for "object"
+export interface ObjectNode extends BaseNode<typeof typeName> {
+  entries: Record<string, AnyNode>;
+  optionalKeys?: string[];
+  policy?: "loose" | "strict";
+  rest?: AnyNode;
+  minEntries?: number;
+  maxEntries?: number;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
   return type === "object" || type === "loose_object" ||
@@ -24,10 +34,10 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
   return (schema as { type?: unknown }).type === "object";
 };
 
-export const encode: Encoder<"object"> = function encodeObject(
+export const encode: Encoder<ObjectNode> = function encodeObject(
   any,
   ctx,
-): Extract<SchemaNode, { type: "object" }> {
+): ObjectNode {
   const type = (any?.type ??
     (JSON.parse(JSON.stringify(any)) as { type?: string }).type) as
       | string
@@ -36,7 +46,7 @@ export const encode: Encoder<"object"> = function encodeObject(
   if (!entries || typeof entries !== "object") {
     throw new Error("Unsupported object schema: missing entries");
   }
-  const out: Record<string, SchemaNode> = {};
+  const out: Record<string, AnyNode> = {};
   const optionalKeys: string[] = [];
   for (const key of Object.keys(entries)) {
     const sub = entries[key] as AnySchema | undefined;
@@ -49,8 +59,8 @@ export const encode: Encoder<"object"> = function encodeObject(
     out[key] = encoded;
     if (encoded.type === "optional") optionalKeys.push(key);
   }
-  const node: Extract<SchemaNode, { type: "object" }> = {
-    type: "object",
+  const node: ObjectNode = {
+    type: typeName,
     entries: out,
   };
   if (optionalKeys.length > 0) {
@@ -65,7 +75,7 @@ export const encode: Encoder<"object"> = function encodeObject(
   if (type === "object_with_rest") {
     const rest = (any as { rest?: unknown }).rest as AnySchema | undefined;
     if (!rest) throw new Error("Unsupported object_with_rest: missing rest");
-    (node as { rest?: SchemaNode }).rest = ctx.encodeNode(rest);
+    (node as { rest?: AnyNode }).rest = ctx.encodeNode(rest);
   }
   const pipe = (any as { pipe?: unknown[] }).pipe as
     | Array<Record<string, unknown>>
@@ -95,7 +105,7 @@ export const encode: Encoder<"object"> = function encodeObject(
   return node;
 };
 
-export const decode: Decoder<"object"> = function decodeObject(
+export const decode: Decoder<ObjectNode> = function decodeObject(
   node,
   ctx,
 ): AnySchema {
@@ -120,7 +130,7 @@ export const decode: Decoder<"object"> = function decodeObject(
   return obj;
 };
 
-export const toCode: ToCode<"object"> = function objectToCode(
+export const toCode: ToCode<ObjectNode> = function objectToCode(
   node,
   ctx,
 ): string {
@@ -144,56 +154,58 @@ export const toCode: ToCode<"object"> = function objectToCode(
   return `v.pipe(${base},${validators.join(",")})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"object"> = function objectToJsonSchema(
-  node,
-  ctx,
-): JsonSchema {
-  const properties: Record<string, JsonSchema> = {};
-  const required: string[] = [];
-  for (const key of Object.keys(node.entries)) {
-    const child = node.entries[key];
-    if (child.type === "optional") {
-      properties[key] = ctx.convertNode(child.base);
-    } else {
-      properties[key] = ctx.convertNode(child);
-      required.push(key);
+export const toJsonSchema: ToJsonSchema<ObjectNode> =
+  function objectToJsonSchema(
+    node,
+    ctx,
+  ): JsonSchema {
+    const properties: Record<string, JsonSchema> = {};
+    const required: string[] = [];
+    for (const key of Object.keys(node.entries)) {
+      const child = node.entries[key];
+      if (child.type === "optional") {
+        properties[key] = ctx.convertNode(child.base);
+      } else {
+        properties[key] = ctx.convertNode(child);
+        required.push(key);
+      }
     }
-  }
-  const schema: JsonSchema = { type: "object", properties };
-  if (required.length > 0) {
-    (schema as Record<string, unknown>).required = required;
-  }
-  if (node.rest) {
-    (schema as Record<string, unknown>).additionalProperties = ctx.convertNode(
-      node.rest,
-    );
-  } else if (node.policy === "strict") {
-    (schema as Record<string, unknown>).additionalProperties = false;
-  } else (schema as Record<string, unknown>).additionalProperties = true;
-  if (node.minEntries !== undefined) {
-    (schema as Record<string, unknown>).minProperties = node.minEntries;
-  }
-  if (node.maxEntries !== undefined) {
-    (schema as Record<string, unknown>).maxProperties = node.maxEntries;
-  }
-  return schema;
-};
+    const schema: JsonSchema = { type: "object", properties };
+    if (required.length > 0) {
+      (schema as Record<string, unknown>).required = required;
+    }
+    if (node.rest) {
+      (schema as Record<string, unknown>).additionalProperties = ctx
+        .convertNode(
+          node.rest,
+        );
+    } else if (node.policy === "strict") {
+      (schema as Record<string, unknown>).additionalProperties = false;
+    } else (schema as Record<string, unknown>).additionalProperties = true;
+    if (node.minEntries !== undefined) {
+      (schema as Record<string, unknown>).minProperties = node.minEntries;
+    }
+    if (node.maxEntries !== undefined) {
+      (schema as Record<string, unknown>).maxProperties = node.maxEntries;
+    }
+    return schema;
+  };
 
 export const fromJsonSchema: FromJsonSchema = function objectFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "object" }> {
+): ObjectNode {
   const properties =
     (schema as { properties?: Record<string, Record<string, unknown>> })
       .properties ?? {};
   const required = (schema as { required?: string[] }).required ?? [];
-  const entries: Record<string, SchemaNode> = {};
+  const entries: Record<string, AnyNode> = {};
   for (const key of Object.keys(properties)) {
     const base = ctx.convert(properties[key]);
     entries[key] = required.includes(key) ? base : { type: "optional", base };
   }
-  const node: Extract<SchemaNode, { type: "object" }> = {
-    type: "object",
+  const node: ObjectNode = {
+    type: typeName,
     entries,
   };
   if (
@@ -204,7 +216,7 @@ export const fromJsonSchema: FromJsonSchema = function objectFromJsonSchema(
     typeof (schema as { additionalProperties?: unknown })
       .additionalProperties === "object"
   ) {
-    (node as { rest?: SchemaNode }).rest = ctx.convert(
+    (node as { rest?: AnyNode }).rest = ctx.convert(
       (schema as { additionalProperties: Record<string, unknown> })
         .additionalProperties,
     );

@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -13,14 +13,21 @@ import type {
 
 export const typeName = "file" as const;
 
+// Serialized node shape for "file"
+export interface FileNode extends BaseNode<typeof typeName> {
+  minSize?: number;
+  maxSize?: number;
+  mimeTypes?: string[];
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
 
-export const encode: Encoder<"file"> = function encodeFile(
+export const encode: Encoder<FileNode> = function encodeFile(
   any,
-): Extract<SchemaNode, { type: "file" }> {
-  const node: Extract<SchemaNode, { type: "file" }> = { type: "file" };
+): FileNode {
+  const node: FileNode = { type: typeName };
   const pipe = (any as { pipe?: unknown[] }).pipe as
     | Array<Record<string, unknown>>
     | undefined;
@@ -50,7 +57,7 @@ export const encode: Encoder<"file"> = function encodeFile(
   return node;
 };
 
-export const decode: Decoder<"file"> = function decodeFile(node): AnySchema {
+export const decode: Decoder<FileNode> = function decodeFile(node): AnySchema {
   let f = v.file();
   const actions: unknown[] = [];
   if (node.minSize !== undefined) actions.push(v.minSize(node.minSize));
@@ -65,7 +72,7 @@ export const decode: Decoder<"file"> = function decodeFile(node): AnySchema {
   return f;
 };
 
-export const toCode: ToCode<"file"> = function fileToCode(node): string {
+export const toCode: ToCode<FileNode> = function fileToCode(node): string {
   const base = "v.file()";
   const items: string[] = [];
   if (node.minSize !== undefined) items.push(`v.minSize(${node.minSize})`);
@@ -77,7 +84,7 @@ export const toCode: ToCode<"file"> = function fileToCode(node): string {
   return `v.pipe(${base},${items.join(",")})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"file"> = function fileToJsonSchema(
+export const toJsonSchema: ToJsonSchema<FileNode> = function fileToJsonSchema(
   node,
 ): JsonSchema {
   const schema: JsonSchema = { type: "string", contentEncoding: "binary" };
@@ -96,6 +103,6 @@ export const toJsonSchema: ToJsonSchema<"file"> = function fileToJsonSchema(
 
 export const fromJsonSchema: FromJsonSchema = function fileFromJsonSchema(
   _schema,
-): Extract<SchemaNode, { type: "file" }> {
-  return { type: "file" };
+): FileNode {
+  return { type: typeName };
 };

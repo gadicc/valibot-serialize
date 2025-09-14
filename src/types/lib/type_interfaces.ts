@@ -2,45 +2,53 @@ import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../../types.ts";
 import type { JsonSchema } from "../../converters/to_jsonschema.ts";
 
+// Common base for all serialized node shapes
+export interface BaseNode<T extends string> {
+  type: T;
+}
+
+// Unified node type for codec contexts; uses the library's SchemaNode.
+export type AnyNode = SchemaNode;
+
 export type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
 export type Matches = (schema: AnySchema) => boolean;
 
 export type MatchesJsonSchema = (schema: Record<string, unknown>) => boolean;
 
-export type Encoder<K extends SchemaNode["type"]> = (
+export type Encoder<N extends AnyNode> = (
   schema: { type?: string; pipe?: unknown[] } & Record<string, unknown>,
-  ctx: { encodeNode: (schema: AnySchema) => SchemaNode },
-) => Extract<SchemaNode, { type: K }> | SchemaNode;
+  ctx: { encodeNode: (schema: AnySchema) => AnyNode },
+) => N | AnyNode;
 
-export type Decoder<K extends SchemaNode["type"]> = (
-  node: Extract<SchemaNode, { type: K }>,
-  ctx: { decodeNode: (node: SchemaNode) => AnySchema },
+export type Decoder<N extends AnyNode> = (
+  node: N,
+  ctx: { decodeNode: (node: AnyNode) => AnySchema },
 ) => AnySchema;
 
-export type ToCode<K extends SchemaNode["type"]> = (
-  node: Extract<SchemaNode, { type: K }>,
-  ctx: { nodeToCode: (node: SchemaNode) => string },
+export type ToCode<N extends AnyNode> = (
+  node: N,
+  ctx: { nodeToCode: (node: AnyNode) => string },
 ) => string;
 
-export type ToJsonSchema<K extends SchemaNode["type"]> = (
-  node: Extract<SchemaNode, { type: K }>,
-  ctx: { convertNode: (node: SchemaNode) => JsonSchema },
+export type ToJsonSchema<N extends AnyNode> = (
+  node: N,
+  ctx: { convertNode: (node: AnyNode) => JsonSchema },
 ) => JsonSchema;
 
 export type FromJsonSchema = (
   schema: Record<string, unknown>,
-  ctx: { convert: (js: Record<string, unknown>) => SchemaNode },
-) => SchemaNode;
+  ctx: { convert: (js: Record<string, unknown>) => AnyNode },
+) => AnyNode;
 
-export interface TypeCodec<K extends SchemaNode["type"]> {
-  typeName: K;
+export interface TypeCodec<N extends AnyNode> {
+  typeName: N["type"];
   matches: Matches;
   // Optional detection for JSON Schema inputs
   matchesJsonSchema?: MatchesJsonSchema;
-  encode: Encoder<K>;
-  decode: Decoder<K>;
-  toCode: ToCode<K>;
-  toJsonSchema: ToJsonSchema<K>;
+  encode: Encoder<N>;
+  decode: Decoder<N>;
+  toCode: ToCode<N>;
+  toJsonSchema: ToJsonSchema<N>;
   fromJsonSchema: FromJsonSchema;
 }

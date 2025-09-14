@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -14,6 +14,12 @@ import type {
 
 export const typeName = "tuple" as const;
 
+// Serialized node shape for "tuple"
+export interface TupleNode extends BaseNode<typeof typeName> {
+  items: AnyNode[];
+  rest?: AnyNode;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
   return type === typeName || type === "tuple_with_rest";
@@ -23,28 +29,28 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
   return Array.isArray((schema as { prefixItems?: unknown[] }).prefixItems);
 };
 
-export const encode: Encoder<"tuple"> = function encodeTuple(
+export const encode: Encoder<TupleNode> = function encodeTuple(
   any,
   ctx,
-): Extract<SchemaNode, { type: "tuple" }> {
+): TupleNode {
   const items = (any as { items?: unknown[] }).items as AnySchema[] | undefined;
   if (!Array.isArray(items)) {
     throw new Error("Unsupported tuple schema: missing items");
   }
-  const node: Extract<SchemaNode, { type: "tuple" }> = {
-    type: "tuple",
+  const node: TupleNode = {
+    type: typeName,
     items: items.map((i) => ctx.encodeNode(i)),
   };
   const rest = (any as { rest?: unknown }).rest as AnySchema | undefined;
   const t = any?.type as string | undefined;
-  if (rest) (node as { rest?: SchemaNode }).rest = ctx.encodeNode(rest);
+  if (rest) (node as { rest?: AnyNode }).rest = ctx.encodeNode(rest);
   else if (t === "tuple_with_rest") {
     throw new Error("Unsupported tuple_with_rest schema: missing rest");
   }
   return node;
 };
 
-export const decode: Decoder<"tuple"> = function decodeTuple(node, ctx) {
+export const decode: Decoder<TupleNode> = function decodeTuple(node, ctx) {
   if (node.rest) {
     return v.tupleWithRest(
       node.items.map((i) => ctx.decodeNode(i)) as never,
@@ -54,7 +60,7 @@ export const decode: Decoder<"tuple"> = function decodeTuple(node, ctx) {
   return v.tuple(node.items.map((i) => ctx.decodeNode(i)) as never);
 };
 
-export const toCode: ToCode<"tuple"> = function tupleToCode(node, ctx) {
+export const toCode: ToCode<TupleNode> = function tupleToCode(node, ctx) {
   const items = `[${node.items.map((i) => ctx.nodeToCode(i)).join(",")}]`;
   if (node.rest) {
     return `v.tupleWithRest(${items},${ctx.nodeToCode(node.rest)})`;
@@ -62,7 +68,7 @@ export const toCode: ToCode<"tuple"> = function tupleToCode(node, ctx) {
   return `v.tuple(${items})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"tuple"> = function tupleToJsonSchema(
+export const toJsonSchema: ToJsonSchema<TupleNode> = function tupleToJsonSchema(
   node,
   ctx,
 ): JsonSchema {
@@ -84,13 +90,13 @@ export const toJsonSchema: ToJsonSchema<"tuple"> = function tupleToJsonSchema(
 export const fromJsonSchema: FromJsonSchema = function tupleFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "tuple" }> {
+): TupleNode {
   const items =
     ((schema as { prefixItems?: Record<string, unknown>[] }).prefixItems ?? [])
       .map(ctx.convert);
-  const node: Extract<SchemaNode, { type: "tuple" }> = { type: "tuple", items };
+  const node: TupleNode = { type: typeName, items };
   if (typeof (schema as { items?: unknown }).items === "object") {
-    (node as { rest?: SchemaNode }).rest = ctx.convert(
+    (node as { rest?: AnyNode }).rest = ctx.convert(
       (schema as { items: Record<string, unknown> }).items,
     );
   }

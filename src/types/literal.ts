@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -14,6 +14,11 @@ import type {
 
 export const typeName = "literal" as const;
 
+// Serialized node shape for "literal"
+export interface LiteralNode extends BaseNode<typeof typeName> {
+  value: string | number | boolean | null;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
@@ -22,9 +27,9 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
   return (schema as { const?: unknown }).const !== undefined;
 };
 
-export const encode: Encoder<"literal"> = function encodeLiteral(
+export const encode: Encoder<LiteralNode> = function encodeLiteral(
   any,
-): Extract<SchemaNode, { type: "literal" }> {
+): LiteralNode {
   const snap = JSON.parse(JSON.stringify(any)) as {
     literal?: unknown;
     value?: unknown;
@@ -39,31 +44,33 @@ export const encode: Encoder<"literal"> = function encodeLiteral(
     typeof value === "string" || typeof value === "number" ||
     typeof value === "boolean" || value === null
   ) {
-    return { type: "literal", value };
+    return { type: typeName, value };
   }
   throw new Error("Only JSON-serializable literal values are supported");
 };
 
-export const decode: Decoder<"literal"> = function decodeLiteral(
+export const decode: Decoder<LiteralNode> = function decodeLiteral(
   node,
 ): AnySchema {
   return v.literal(node.value as never);
 };
 
-export const toCode: ToCode<"literal"> = function literalToCode(node): string {
+export const toCode: ToCode<LiteralNode> = function literalToCode(
+  node,
+): string {
   return `v.literal(${lit(node.value)})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"literal"> =
+export const toJsonSchema: ToJsonSchema<LiteralNode> =
   function literalToJsonSchema(node): JsonSchema {
     return { const: node.value } as JsonSchema;
   };
 
 export const fromJsonSchema: FromJsonSchema = function literalFromJsonSchema(
   schema,
-): Extract<SchemaNode, { type: "literal" }> {
+): LiteralNode {
   return {
-    type: "literal",
+    type: typeName,
     value: (schema as { const?: unknown }).const as never,
   };
 };

@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -13,25 +13,28 @@ import type {
 
 export const typeName = "date" as const;
 
+// Serialized node shape for "date"
+export interface DateNode extends BaseNode<typeof typeName> {}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
 
-export const encode: Encoder<"date"> = function encodeDate(
+export const encode: Encoder<DateNode> = function encodeDate(
   _any,
-): Extract<SchemaNode, { type: "date" }> {
-  return { type: "date" };
+): DateNode {
+  return { type: typeName };
 };
 
-export const decode: Decoder<"date"> = function decodeDate(_node): AnySchema {
+export const decode: Decoder<DateNode> = function decodeDate(_node): AnySchema {
   return v.date();
 };
 
-export const toCode: ToCode<"date"> = function dateToCode(_node): string {
+export const toCode: ToCode<DateNode> = function dateToCode(_node): string {
   return "v.date()";
 };
 
-export const toJsonSchema: ToJsonSchema<"date"> = function dateToJsonSchema(
+export const toJsonSchema: ToJsonSchema<DateNode> = function dateToJsonSchema(
   _node,
 ): JsonSchema {
   // Represent as RFC3339 string format
@@ -40,8 +43,8 @@ export const toJsonSchema: ToJsonSchema<"date"> = function dateToJsonSchema(
 
 export const fromJsonSchema: FromJsonSchema = function dateFromJsonSchema(
   _schema,
-): Extract<SchemaNode, { type: "date" }> {
-  return { type: "date" };
+): DateNode {
+  return { type: typeName };
 };
 
 // Named export aliases removed; functions are exported inline

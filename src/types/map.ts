@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -13,21 +13,29 @@ import type {
 
 export const typeName = "map" as const;
 
+// Serialized node shape for "map"
+export interface MapNode extends BaseNode<typeof typeName> {
+  key: AnyNode;
+  value: AnyNode;
+  minSize?: number;
+  maxSize?: number;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
 
-export const encode: Encoder<"map"> = function encodeMap(
+export const encode: Encoder<MapNode> = function encodeMap(
   any,
   ctx,
-): Extract<SchemaNode, { type: "map" }> {
+): MapNode {
   const key = (any as { key?: unknown }).key as AnySchema | undefined;
   const value = (any as { value?: unknown }).value as AnySchema | undefined;
   if (!key || !value) {
     throw new Error("Unsupported map schema: missing key/value");
   }
-  const node: Extract<SchemaNode, { type: "map" }> = {
-    type: "map",
+  const node: MapNode = {
+    type: typeName,
     key: ctx.encodeNode(key),
     value: ctx.encodeNode(value),
   };
@@ -59,7 +67,7 @@ export const encode: Encoder<"map"> = function encodeMap(
   return node;
 };
 
-export const decode: Decoder<"map"> = function decodeMap(node, ctx) {
+export const decode: Decoder<MapNode> = function decodeMap(node, ctx) {
   const base = v.map(
     ctx.decodeNode(node.key) as never,
     ctx.decodeNode(node.value) as never,
@@ -79,7 +87,7 @@ export const decode: Decoder<"map"> = function decodeMap(node, ctx) {
   }
 };
 
-export const toCode: ToCode<"map"> = function mapToCode(node, ctx) {
+export const toCode: ToCode<MapNode> = function mapToCode(node, ctx) {
   const base = `v.map(${ctx.nodeToCode(node.key)},${
     ctx.nodeToCode(node.value)
   })`;
@@ -90,7 +98,7 @@ export const toCode: ToCode<"map"> = function mapToCode(node, ctx) {
   return `v.pipe(${base},${validators.join(",")})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"map"> = function mapToJsonSchema(
+export const toJsonSchema: ToJsonSchema<MapNode> = function mapToJsonSchema(
   node,
   ctx,
 ): JsonSchema {
@@ -110,9 +118,9 @@ export const toJsonSchema: ToJsonSchema<"map"> = function mapToJsonSchema(
 export const fromJsonSchema: FromJsonSchema = function mapFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "map" }> {
+): MapNode {
   return {
-    type: "map",
+    type: typeName,
     key: { type: "string" } as never,
     value: ctx.convert(
       ((schema as { additionalProperties?: Record<string, unknown> })

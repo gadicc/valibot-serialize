@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import { escapeRegex, unescapeRegex } from "../util/regex_utils.ts";
 import { detect, patterns as pat } from "../util/patterns.ts";
@@ -16,6 +16,56 @@ import type {
 
 // Identifier for this type module
 export const typeName = "string" as const;
+
+// Serialized node shape for "string"
+export interface StringNode extends BaseNode<typeof typeName> {
+  minLength?: number;
+  maxLength?: number;
+  length?: number;
+  pattern?: string;
+  patternFlags?: string;
+  email?: true;
+  rfcEmail?: true;
+  url?: true;
+  uuid?: true;
+  ip?: true;
+  ipv4?: true;
+  ipv6?: true;
+  hexColor?: true;
+  slug?: true;
+  creditCard?: true;
+  imei?: true;
+  mac?: true;
+  mac48?: true;
+  mac64?: true;
+  base64?: true;
+  ulid?: true;
+  nanoid?: true;
+  cuid2?: true;
+  isoDate?: true;
+  isoDateTime?: true;
+  isoTime?: true;
+  isoTimeSecond?: true;
+  isoTimestamp?: true;
+  isoWeek?: true;
+  digits?: true;
+  emoji?: true;
+  hexadecimal?: true;
+  minGraphemes?: number;
+  maxGraphemes?: number;
+  minWords?: number;
+  maxWords?: number;
+  startsWith?: string;
+  endsWith?: string;
+  transforms?: Array<
+    | "trim"
+    | "trimStart"
+    | "trimEnd"
+    | "toUpperCase"
+    | "toLowerCase"
+    | "normalize"
+  >;
+}
 
 // Whether a Valibot schema snapshot refers to a string builder
 export const matches: Matches = (any: AnySchema): boolean => {
@@ -39,10 +89,10 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
 };
 
 // Encode: Valibot string schema -> SchemaNode("string")
-export const encode: Encoder<"string"> = function encodeString(
+export const encode: Encoder<StringNode> = function encodeString(
   any,
-): Extract<SchemaNode, { type: "string" }> {
-  const node: Extract<SchemaNode, { type: "string" }> = { type: "string" };
+): StringNode {
+  const node: StringNode = { type: typeName };
   const pipe = (any as { pipe?: unknown[] }).pipe as
     | Array<Record<string, unknown>>
     | undefined;
@@ -223,7 +273,7 @@ export const encode: Encoder<"string"> = function encodeString(
 };
 
 // Decode: SchemaNode("string") -> Valibot schema
-export const decode: Decoder<"string"> = function decodeString(
+export const decode: Decoder<StringNode> = function decodeString(
   node,
 ): AnySchema {
   let s = v.string();
@@ -312,7 +362,7 @@ export const decode: Decoder<"string"> = function decodeString(
 };
 
 // Builder code: SchemaNode("string") -> `v.*` expression
-export const toCode: ToCode<"string"> = function stringToCode(node): string {
+export const toCode: ToCode<StringNode> = function stringToCode(node): string {
   const base = "v.string()";
   const validators: string[] = [];
   if (node.email) validators.push("v.email()");
@@ -400,86 +450,91 @@ export const toCode: ToCode<"string"> = function stringToCode(node): string {
 };
 
 // JSON Schema: SchemaNode("string") -> JSON Schema fragment
-export const toJsonSchema: ToJsonSchema<"string"> = function stringToJsonSchema(
-  node,
-): JsonSchema {
-  const schema: JsonSchema = { type: "string" };
-  if (node.minLength !== undefined) schema.minLength = node.minLength;
-  if (node.maxLength !== undefined) schema.maxLength = node.maxLength;
-  if (node.length !== undefined) {
-    schema.minLength = schema.maxLength = node.length;
-  }
-  const patternsArr: string[] = [];
-  if (node.pattern) patternsArr.push(node.pattern);
-  if (node.startsWith) patternsArr.push(`^${escapeRegex(node.startsWith)}.*`);
-  if (node.endsWith) patternsArr.push(`.*${escapeRegex(node.endsWith)}$`);
-  if (node.hexColor) patternsArr.push(pat.hexColor);
-  if (node.slug) patternsArr.push(pat.slug);
-  if (node.digits) patternsArr.push(pat.digits);
-  if (node.hexadecimal) patternsArr.push(pat.hexadecimal);
-  if ((node as { creditCard?: true }).creditCard) {
-    patternsArr.push("^[0-9]{12,19}$");
-  }
-  if ((node as { imei?: true }).imei) patternsArr.push("^\\d{15}$");
-  if ((node as { mac?: true }).mac) patternsArr.push(pat.mac);
-  if ((node as { mac48?: true }).mac48) patternsArr.push(pat.mac48);
-  if ((node as { mac64?: true }).mac64) patternsArr.push(pat.mac64);
-  if ((node as { base64?: true }).base64) patternsArr.push(pat.base64);
-  if ((node as { ulid?: true }).ulid) patternsArr.push(pat.ulid);
-  if ((node as { nanoid?: true }).nanoid) patternsArr.push(pat.nanoid);
-  if ((node as { cuid2?: true }).cuid2) patternsArr.push(pat.cuid2);
-  if (node.isoDate) patternsArr.push(pat.isoDate);
-  if (node.isoTime) patternsArr.push(pat.isoTime);
-  if (node.isoTimeSecond) patternsArr.push(pat.isoTimeSecond);
-  if (node.isoDateTime || node.isoTimestamp) patternsArr.push(pat.isoDateTime);
-  if (node.isoWeek) patternsArr.push(pat.isoWeek);
-  if ((node as { minWords?: number }).minWords !== undefined) {
-    const n = (node as { minWords: number }).minWords;
-    patternsArr.push(`^(?:\\S+\\s+){${Math.max(0, n - 1)}}\\S+(?:\\s+\\S+)*$`);
-  }
-  if ((node as { maxWords?: number }).maxWords !== undefined) {
-    const m = (node as { maxWords: number }).maxWords;
-    patternsArr.push(`^\\s*(?:\\S+(?:\\s+|$)){0,${m}}$`);
-  }
-  if (patternsArr.length === 1) {
-    (schema as Record<string, unknown>).pattern = patternsArr[0];
-  } else if (patternsArr.length > 1) {
-    (schema as Record<string, unknown>).allOf = patternsArr.map((p) => ({
-      pattern: p,
-    }));
-  }
-  const formats: string[] = [];
-  if (node.email) formats.push("email");
-  if (node.url) formats.push("uri");
-  if (node.uuid) formats.push("uuid");
-  if (node.ipv4) formats.push("ipv4");
-  if (node.ipv6) formats.push("ipv6");
-  if (node.ip && !node.ipv4 && !node.ipv6) {
-    (schema as Record<string, unknown>).anyOf = [
-      { type: "string", format: "ipv4" },
-      { type: "string", format: "ipv6" },
-    ];
-  }
-  if (formats.length === 1) {
-    (schema as Record<string, unknown>).format = formats[0];
-  } else if (formats.length > 1) {
-    (schema as Record<string, unknown>).anyOf = formats.map((f) => ({
-      type: "string",
-      format: f,
-    }));
-  }
-  return schema;
-};
+export const toJsonSchema: ToJsonSchema<StringNode> =
+  function stringToJsonSchema(
+    node,
+  ): JsonSchema {
+    const schema: JsonSchema = { type: "string" };
+    if (node.minLength !== undefined) schema.minLength = node.minLength;
+    if (node.maxLength !== undefined) schema.maxLength = node.maxLength;
+    if (node.length !== undefined) {
+      schema.minLength = schema.maxLength = node.length;
+    }
+    const patternsArr: string[] = [];
+    if (node.pattern) patternsArr.push(node.pattern);
+    if (node.startsWith) patternsArr.push(`^${escapeRegex(node.startsWith)}.*`);
+    if (node.endsWith) patternsArr.push(`.*${escapeRegex(node.endsWith)}$`);
+    if (node.hexColor) patternsArr.push(pat.hexColor);
+    if (node.slug) patternsArr.push(pat.slug);
+    if (node.digits) patternsArr.push(pat.digits);
+    if (node.hexadecimal) patternsArr.push(pat.hexadecimal);
+    if ((node as { creditCard?: true }).creditCard) {
+      patternsArr.push("^[0-9]{12,19}$");
+    }
+    if ((node as { imei?: true }).imei) patternsArr.push("^\\d{15}$");
+    if ((node as { mac?: true }).mac) patternsArr.push(pat.mac);
+    if ((node as { mac48?: true }).mac48) patternsArr.push(pat.mac48);
+    if ((node as { mac64?: true }).mac64) patternsArr.push(pat.mac64);
+    if ((node as { base64?: true }).base64) patternsArr.push(pat.base64);
+    if ((node as { ulid?: true }).ulid) patternsArr.push(pat.ulid);
+    if ((node as { nanoid?: true }).nanoid) patternsArr.push(pat.nanoid);
+    if ((node as { cuid2?: true }).cuid2) patternsArr.push(pat.cuid2);
+    if (node.isoDate) patternsArr.push(pat.isoDate);
+    if (node.isoTime) patternsArr.push(pat.isoTime);
+    if (node.isoTimeSecond) patternsArr.push(pat.isoTimeSecond);
+    if (node.isoDateTime || node.isoTimestamp) {
+      patternsArr.push(pat.isoDateTime);
+    }
+    if (node.isoWeek) patternsArr.push(pat.isoWeek);
+    if ((node as { minWords?: number }).minWords !== undefined) {
+      const n = (node as { minWords: number }).minWords;
+      patternsArr.push(
+        `^(?:\\S+\\s+){${Math.max(0, n - 1)}}\\S+(?:\\s+\\S+)*$`,
+      );
+    }
+    if ((node as { maxWords?: number }).maxWords !== undefined) {
+      const m = (node as { maxWords: number }).maxWords;
+      patternsArr.push(`^\\s*(?:\\S+(?:\\s+|$)){0,${m}}$`);
+    }
+    if (patternsArr.length === 1) {
+      (schema as Record<string, unknown>).pattern = patternsArr[0];
+    } else if (patternsArr.length > 1) {
+      (schema as Record<string, unknown>).allOf = patternsArr.map((p) => ({
+        pattern: p,
+      }));
+    }
+    const formats: string[] = [];
+    if (node.email) formats.push("email");
+    if (node.url) formats.push("uri");
+    if (node.uuid) formats.push("uuid");
+    if (node.ipv4) formats.push("ipv4");
+    if (node.ipv6) formats.push("ipv6");
+    if (node.ip && !node.ipv4 && !node.ipv6) {
+      (schema as Record<string, unknown>).anyOf = [
+        { type: "string", format: "ipv4" },
+        { type: "string", format: "ipv6" },
+      ];
+    }
+    if (formats.length === 1) {
+      (schema as Record<string, unknown>).format = formats[0];
+    } else if (formats.length > 1) {
+      (schema as Record<string, unknown>).anyOf = formats.map((f) => ({
+        type: "string",
+        format: f,
+      }));
+    }
+    return schema;
+  };
 
 // From JSON Schema: string-like JSON Schema -> SchemaNode("string") or Date fallback
 export const fromJsonSchema: FromJsonSchema = function stringFromJsonSchema(
   schema,
 ):
-  | Extract<SchemaNode, { type: "string" }>
-  | Extract<SchemaNode, { type: "date" }> {
+  | StringNode
+  | AnyNode {
   const type = schema.type as string | undefined;
-  if (type !== "string") return { type: "string" } as const;
-  const node: Extract<SchemaNode, { type: "string" }> = { type: "string" };
+  if (type !== "string") return { type: typeName } as const;
+  const node: StringNode = { type: typeName };
   if (typeof schema.minLength === "number") {
     node.minLength = schema.minLength as number;
   }

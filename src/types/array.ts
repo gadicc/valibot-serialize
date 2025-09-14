@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -13,6 +13,14 @@ import type {
 } from "./lib/type_interfaces.ts";
 
 export const typeName = "array" as const;
+
+// Serialized node shape for "array"
+export interface ArrayNode extends BaseNode<typeof typeName> {
+  item: AnyNode;
+  minLength?: number;
+  maxLength?: number;
+  length?: number;
+}
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
@@ -30,14 +38,14 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
   return true;
 };
 
-export const encode: Encoder<"array"> = function encodeArray(
+export const encode: Encoder<ArrayNode> = function encodeArray(
   any,
   ctx,
-): Extract<SchemaNode, { type: "array" }> {
+): ArrayNode {
   const child = (any as { item?: unknown }).item as AnySchema | undefined;
   if (!child) throw new Error("Unsupported array schema: missing item schema");
-  const node: Extract<SchemaNode, { type: "array" }> = {
-    type: "array",
+  const node: ArrayNode = {
+    type: typeName,
     item: ctx.encodeNode(child),
   };
   const pipe = (any as { pipe?: unknown[] }).pipe as
@@ -73,7 +81,7 @@ export const encode: Encoder<"array"> = function encodeArray(
   return node;
 };
 
-export const decode: Decoder<"array"> = function decodeArray(
+export const decode: Decoder<ArrayNode> = function decodeArray(
   node,
   ctx,
 ): AnySchema {
@@ -105,7 +113,10 @@ export const decode: Decoder<"array"> = function decodeArray(
   }
 };
 
-export const toCode: ToCode<"array"> = function arrayToCode(node, ctx): string {
+export const toCode: ToCode<ArrayNode> = function arrayToCode(
+  node,
+  ctx,
+): string {
   const base = `v.array(${ctx.nodeToCode(node.item)})`;
   const validators: string[] = [];
   if (node.minLength !== undefined) {
@@ -119,7 +130,7 @@ export const toCode: ToCode<"array"> = function arrayToCode(node, ctx): string {
   return `v.pipe(${base},${validators.join(",")})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"array"> = function arrayToJsonSchema(
+export const toJsonSchema: ToJsonSchema<ArrayNode> = function arrayToJsonSchema(
   node,
   ctx,
 ): JsonSchema {
@@ -143,9 +154,9 @@ export const toJsonSchema: ToJsonSchema<"array"> = function arrayToJsonSchema(
 export const fromJsonSchema: FromJsonSchema = function arrayFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "array" }> {
+): ArrayNode {
   return {
-    type: "array",
+    type: typeName,
     item: ctx.convert(
       ((schema as { items?: unknown }).items ?? {}) as Record<string, unknown>,
     ),

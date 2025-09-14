@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -14,6 +14,13 @@ import type {
 
 export const typeName = "set" as const;
 
+// Serialized node shape for "set"
+export interface SetNode extends BaseNode<typeof typeName> {
+  value: AnyNode;
+  minSize?: number;
+  maxSize?: number;
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
@@ -23,14 +30,14 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
     (schema as { uniqueItems?: unknown }).uniqueItems === true;
 };
 
-export const encode: Encoder<"set"> = function encodeSet(
+export const encode: Encoder<SetNode> = function encodeSet(
   any,
   ctx,
-): Extract<SchemaNode, { type: "set" }> {
+): SetNode {
   const value = (any as { value?: unknown }).value as AnySchema | undefined;
   if (!value) throw new Error("Unsupported set schema: missing value");
-  const node: Extract<SchemaNode, { type: "set" }> = {
-    type: "set",
+  const node: SetNode = {
+    type: typeName,
     value: ctx.encodeNode(value),
   };
   const pipe = (any as { pipe?: unknown[] }).pipe as
@@ -61,7 +68,7 @@ export const encode: Encoder<"set"> = function encodeSet(
   return node;
 };
 
-export const decode: Decoder<"set"> = function decodeSet(node, ctx) {
+export const decode: Decoder<SetNode> = function decodeSet(node, ctx) {
   const base = v.set(ctx.decodeNode(node.value) as never);
   const validators: unknown[] = [];
   if (node.minSize !== undefined) validators.push(v.minSize(node.minSize));
@@ -78,7 +85,7 @@ export const decode: Decoder<"set"> = function decodeSet(node, ctx) {
   }
 };
 
-export const toCode: ToCode<"set"> = function setToCode(node, ctx) {
+export const toCode: ToCode<SetNode> = function setToCode(node, ctx) {
   const base = `v.set(${ctx.nodeToCode(node.value)})`;
   const validators: string[] = [];
   if (node.minSize !== undefined) validators.push(`v.minSize(${node.minSize})`);
@@ -87,7 +94,7 @@ export const toCode: ToCode<"set"> = function setToCode(node, ctx) {
   return `v.pipe(${base},${validators.join(",")})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"set"> = function setToJsonSchema(
+export const toJsonSchema: ToJsonSchema<SetNode> = function setToJsonSchema(
   node,
   ctx,
 ): JsonSchema {
@@ -108,9 +115,9 @@ export const toJsonSchema: ToJsonSchema<"set"> = function setToJsonSchema(
 export const fromJsonSchema: FromJsonSchema = function setFromJsonSchema(
   schema,
   ctx,
-): Extract<SchemaNode, { type: "set" }> {
+): SetNode {
   return {
-    type: "set",
+    type: typeName,
     value: ctx.convert(
       ((schema as { items?: Record<string, unknown> }).items ?? {}) as Record<
         string,

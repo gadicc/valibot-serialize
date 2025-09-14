@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { SchemaNode } from "../types.ts";
+import type { BaseNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -13,14 +13,21 @@ import type {
 
 export const typeName = "blob" as const;
 
+// Serialized node shape for "blob"
+export interface BlobNode extends BaseNode<typeof typeName> {
+  minSize?: number;
+  maxSize?: number;
+  mimeTypes?: string[];
+}
+
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;
 };
 
-export const encode: Encoder<"blob"> = function encodeBlob(
+export const encode: Encoder<BlobNode> = function encodeBlob(
   any,
-): Extract<SchemaNode, { type: "blob" }> {
-  const node: Extract<SchemaNode, { type: "blob" }> = { type: "blob" };
+): BlobNode {
+  const node: BlobNode = { type: typeName };
   const pipe = (any as { pipe?: unknown[] }).pipe as
     | Array<Record<string, unknown>>
     | undefined;
@@ -50,7 +57,7 @@ export const encode: Encoder<"blob"> = function encodeBlob(
   return node;
 };
 
-export const decode: Decoder<"blob"> = function decodeBlob(node): AnySchema {
+export const decode: Decoder<BlobNode> = function decodeBlob(node): AnySchema {
   let b = v.blob();
   const items: unknown[] = [];
   if (node.minSize !== undefined) items.push(v.minSize(node.minSize));
@@ -65,7 +72,7 @@ export const decode: Decoder<"blob"> = function decodeBlob(node): AnySchema {
   return b;
 };
 
-export const toCode: ToCode<"blob"> = function blobToCode(node): string {
+export const toCode: ToCode<BlobNode> = function blobToCode(node): string {
   const base = "v.blob()";
   const items: string[] = [];
   if (node.minSize !== undefined) items.push(`v.minSize(${node.minSize})`);
@@ -77,7 +84,7 @@ export const toCode: ToCode<"blob"> = function blobToCode(node): string {
   return `v.pipe(${base},${items.join(",")})`;
 };
 
-export const toJsonSchema: ToJsonSchema<"blob"> = function blobToJsonSchema(
+export const toJsonSchema: ToJsonSchema<BlobNode> = function blobToJsonSchema(
   node,
 ): JsonSchema {
   const schema: JsonSchema = { type: "string", contentEncoding: "binary" };
@@ -96,6 +103,6 @@ export const toJsonSchema: ToJsonSchema<"blob"> = function blobToJsonSchema(
 
 export const fromJsonSchema: FromJsonSchema = function blobFromJsonSchema(
   _schema,
-): Extract<SchemaNode, { type: "blob" }> {
-  return { type: "blob" };
+): BlobNode {
+  return { type: typeName };
 };
