@@ -18,7 +18,7 @@ import {
   stringCodec,
   tupleCodec,
   unionCodec,
-} from "../registry.ts";
+} from "../types/lib/registry.ts";
 
 type JsonSchema = Record<string, unknown>;
 

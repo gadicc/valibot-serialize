@@ -1,6 +1,6 @@
 import type { BaseIssue, BaseSchema } from "@valibot/valibot";
-import type { SchemaNode } from "./types.ts";
-import type { JsonSchema } from "./converters/to_jsonschema.ts";
+import type { SchemaNode } from "../../types.ts";
+import type { JsonSchema } from "../../converters/to_jsonschema.ts";
 
 export type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 

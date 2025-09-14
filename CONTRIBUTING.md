@@ -9,7 +9,12 @@ side‑effect free.
 - `src/` — Implementation and tests.
   - Converters: `src/converters/` (`encode.ts`, `decode.ts`, `to_code.ts`,
     `to_jsonschema.ts`, `from_jsonschema.ts`) with colocated tests.
-  - Core: `guard.ts`, `types.ts`, `registry.ts`, and `src/types/*` codecs.
+  - Core: `src/util/*` helpers (e.g., `guard.ts`, `patterns.ts`,
+    `serialized_json_schema.ts`).
+  - Types: `src/types/` contains only the type codec modules (`string.ts`,
+    `number.ts`, …) and a single `index.ts` that re-exports them. Shared type
+    plumbing lives in `src/types/lib/` (e.g., `registry.ts`,
+    `type_interfaces.ts`).
   - Tests colocated: `*_test.ts` (e.g., `codec_test.ts`).
 - `tools/` — Small scripts used for local development or docs.
 

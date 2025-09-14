@@ -1,4 +1,4 @@
-import { isSerializedSchema } from "../guard.ts";
+import { isSerializedSchema } from "../util/guard.ts";
 import type { SchemaNode, SerializedSchema } from "../types.ts";
 import {
   arrayCodec,
@@ -19,7 +19,7 @@ import {
   stringCodec,
   tupleCodec,
   unionCodec,
-} from "../registry.ts";
+} from "../types/lib/registry.ts";
 
 // Generate minimal Valibot builder code from a SerializedSchema.
 // Returns a compact expression string ending with a semicolon, e.g.:

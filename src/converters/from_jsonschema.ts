@@ -1,7 +1,7 @@
 import type { SchemaNode, SerializedSchema } from "../types.ts";
-import { unescapeRegex } from "../regex_utils.ts";
-import { detect } from "../patterns.ts";
-import { numberCodec, stringCodec } from "../registry.ts";
+import { unescapeRegex } from "../util/regex_utils.ts";
+import { detect } from "../util/patterns.ts";
+import { numberCodec, stringCodec } from "../types/lib/registry.ts";
 
 type JS = Record<string, unknown>;
 

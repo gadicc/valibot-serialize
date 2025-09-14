@@ -1,14 +1,14 @@
 import * as v from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
-import type { AnySchema, Matches } from "../type_interfaces.ts";
+import type { AnySchema, Matches } from "./lib/type_interfaces.ts";
 import type {
   Decoder,
   Encoder,
   FromJsonSchema,
   ToCode,
   ToJsonSchema,
-} from "../type_interfaces.ts";
+} from "./lib/type_interfaces.ts";
 
 export const typeName = "nullish" as const;
 

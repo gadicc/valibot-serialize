@@ -2,7 +2,7 @@ import {
   FORMAT_VERSION,
   type SchemaNode,
   type SerializedSchema,
-} from "./types.ts";
+} from "../types.ts";
 
 export function isSerializedSchema(value: unknown): value is SerializedSchema {
   if (!value || typeof value !== "object") return false;

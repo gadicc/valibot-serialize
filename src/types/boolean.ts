@@ -9,7 +9,7 @@ import type {
   Matches,
   ToCode,
   ToJsonSchema,
-} from "../type_interfaces.ts";
+} from "./lib/type_interfaces.ts";
 
 export const typeName = "boolean" as const;
 

@@ -1,8 +1,8 @@
 import * as v from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
-import { escapeRegex, unescapeRegex } from "../regex_utils.ts";
-import { detect, patterns as pat } from "../patterns.ts";
+import { escapeRegex, unescapeRegex } from "../util/regex_utils.ts";
+import { detect, patterns as pat } from "../util/patterns.ts";
 import type {
   AnySchema,
   Decoder,
@@ -11,7 +11,7 @@ import type {
   Matches,
   ToCode,
   ToJsonSchema,
-} from "../type_interfaces.ts";
+} from "./lib/type_interfaces.ts";
 
 // Identifier for this type module
 export const typeName = "string" as const;

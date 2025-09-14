@@ -1,23 +1,23 @@
-import type { SchemaNode } from "./types.ts";
+import type { SchemaNode } from "../../types.ts";
 import type { TypeCodec } from "./type_interfaces.ts";
-import * as stringMod from "./types/string.ts";
-import * as numberMod from "./types/number.ts";
-import * as booleanMod from "./types/boolean.ts";
-import * as dateMod from "./types/date.ts";
-import * as literalMod from "./types/literal.ts";
-import * as enumMod from "./types/enum.ts";
-import * as fileMod from "./types/file.ts";
-import * as blobMod from "./types/blob.ts";
-import * as arrayMod from "./types/array.ts";
-import * as objectMod from "./types/object.ts";
-import * as optionalMod from "./types/optional.ts";
-import * as nullableMod from "./types/nullable.ts";
-import * as nullishMod from "./types/nullish.ts";
-import * as unionMod from "./types/union.ts";
-import * as tupleMod from "./types/tuple.ts";
-import * as recordMod from "./types/record.ts";
-import * as setMod from "./types/set.ts";
-import * as mapMod from "./types/map.ts";
+import * as stringMod from "../string.ts";
+import * as numberMod from "../number.ts";
+import * as booleanMod from "../boolean.ts";
+import * as dateMod from "../date.ts";
+import * as literalMod from "../literal.ts";
+import * as enumMod from "../enum.ts";
+import * as fileMod from "../file.ts";
+import * as blobMod from "../blob.ts";
+import * as arrayMod from "../array.ts";
+import * as objectMod from "../object.ts";
+import * as optionalMod from "../optional.ts";
+import * as nullableMod from "../nullable.ts";
+import * as nullishMod from "../nullish.ts";
+import * as unionMod from "../union.ts";
+import * as tupleMod from "../tuple.ts";
+import * as recordMod from "../record.ts";
+import * as setMod from "../set.ts";
+import * as mapMod from "../map.ts";
 
 export const stringCodec: TypeCodec<"string"> = {
   typeName: stringMod.typeName,

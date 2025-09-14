@@ -24,7 +24,7 @@ import {
   stringCodec,
   tupleCodec,
   unionCodec,
-} from "../registry.ts";
+} from "../types/lib/registry.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
