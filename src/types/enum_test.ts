@@ -1,7 +1,8 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize, toCode } from "../../main.ts";
+import { serialize } from "../converters/encode.ts";
+import { toCode } from "../converters/to_code.ts";
 
 describe("types/enum", () => {
   it("serialize union of literals to enum node", () => {

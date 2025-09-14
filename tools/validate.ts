@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --quiet
-import { isSerializedSchema } from "../main.ts";
+import { isSerializedSchema } from "../src/util/guard.ts";
 
 const [path] = Deno.args;
 const decoder = new TextDecoder();

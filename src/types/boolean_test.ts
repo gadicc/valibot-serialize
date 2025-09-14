@@ -1,7 +1,7 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../../main.ts";
+import { serialize } from "../converters/encode.ts";
 
 describe("types/boolean", () => {
   it("serialize boolean node shape", () => {

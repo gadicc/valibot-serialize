@@ -1,6 +1,6 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { serializedSchemaJson } from "../../main.ts";
+import { serializedSchemaJson } from "./serialized_json_schema.ts";
 
 describe("serialized JSON Schema shape", () => {
   it("has properties and $defs", () => {

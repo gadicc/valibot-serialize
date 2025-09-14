@@ -1,8 +1,9 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../../main.ts";
-import { deserialize, FORMAT_VERSION } from "../../main.ts";
+import { serialize } from "../converters/encode.ts";
+import { deserialize } from "../converters/decode.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/array", () => {
   it("serialize array node shape", () => {

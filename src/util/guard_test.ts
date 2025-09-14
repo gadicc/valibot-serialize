@@ -1,12 +1,10 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import {
-  deserialize,
-  FORMAT_VERSION,
-  isSerializedSchema,
-  serialize,
-} from "../../main.ts";
+import { deserialize } from "../converters/decode.ts";
+import { serialize } from "../converters/encode.ts";
+import { FORMAT_VERSION } from "../types.ts";
+import { isSerializedSchema } from "./guard.ts";
 
 describe("guards and error paths", () => {
   it("serialize throws on unsupported literal value", () => {

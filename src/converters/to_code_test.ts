@@ -1,7 +1,9 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { FORMAT_VERSION, serialize, toCode } from "../../main.ts";
+import { serialize } from "./encode.ts";
+import { toCode } from "./to_code.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 describe("toCode", () => {
   it("rejects invalid payload and unknown node", () => {

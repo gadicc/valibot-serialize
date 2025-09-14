@@ -1,8 +1,10 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../../main.ts";
-import { FORMAT_VERSION, toCode, toJsonSchema } from "../../main.ts";
+import { serialize } from "../converters/encode.ts";
+import { toCode } from "../converters/to_code.ts";
+import { toJsonSchema } from "../converters/to_jsonschema.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/object", () => {
   it("serialize object node shape", () => {

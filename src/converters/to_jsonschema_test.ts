@@ -1,6 +1,7 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { FORMAT_VERSION, toJsonSchema } from "../../main.ts";
+import { toJsonSchema } from "./to_jsonschema.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 const env = {
   kind: "schema" as const,

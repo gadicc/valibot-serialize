@@ -1,14 +1,12 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import {
-  deserialize,
-  FORMAT_VERSION,
-  fromJsonSchema,
-  serialize,
-  toCode,
-  toJsonSchema,
-} from "../../main.ts";
+import { deserialize } from "../converters/decode.ts";
+import { fromJsonSchema } from "../converters/from_jsonschema.ts";
+import { serialize } from "../converters/encode.ts";
+import { toCode } from "../converters/to_code.ts";
+import { toJsonSchema } from "../converters/to_jsonschema.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/string integration", () => {
   it("serialize captures string validators and transforms", () => {

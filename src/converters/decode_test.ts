@@ -1,7 +1,9 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize, FORMAT_VERSION, serialize } from "../../main.ts";
+import { deserialize } from "./decode.ts";
+import { serialize } from "./encode.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 describe("converters/decode behavior", () => {
   it("string", () => {

@@ -1,7 +1,10 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../../main.ts";
+import { serialize } from "../converters/encode.ts";
+import { toCode } from "../converters/to_code.ts";
+import { toJsonSchema } from "../converters/to_jsonschema.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/wrappers", () => {
   it("serialize optional/nullable/nullish wrappers", () => {
@@ -13,10 +16,7 @@ describe("types/wrappers", () => {
     expect(nsh.node).toEqual({ type: "nullish", base: { type: "boolean" } });
   });
 
-  it("toCode and toJsonSchema for wrappers", async () => {
-    const { toCode, toJsonSchema, FORMAT_VERSION } = await import(
-      "../../main.ts"
-    );
+  it("toCode and toJsonSchema for wrappers", () => {
     const env = {
       kind: "schema" as const,
       vendor: "valibot" as const,

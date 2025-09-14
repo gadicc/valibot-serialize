@@ -1,7 +1,9 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../../main.ts";
+import { serialize } from "../converters/encode.ts";
+import { toJsonSchema } from "../converters/to_jsonschema.ts";
+import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/union", () => {
   it("serialize union node", () => {
@@ -12,8 +14,7 @@ describe("types/union", () => {
     });
   });
 
-  it("toJsonSchema collapses all-literals to enum", async () => {
-    const { FORMAT_VERSION, toJsonSchema } = await import("../../main.ts");
+  it("toJsonSchema collapses all-literals to enum", () => {
     const env = {
       kind: "schema" as const,
       vendor: "valibot" as const,

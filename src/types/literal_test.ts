@@ -1,12 +1,10 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import {
-  deserialize,
-  fromJsonSchema,
-  serialize,
-  toJsonSchema,
-} from "../../main.ts";
+import { deserialize } from "../converters/decode.ts";
+import { fromJsonSchema } from "../converters/from_jsonschema.ts";
+import { serialize } from "../converters/encode.ts";
+import { toJsonSchema } from "../converters/to_jsonschema.ts";
 
 describe("types/literal", () => {
   it("serialize/deserialize literal values", () => {

@@ -1,7 +1,8 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize, serialize } from "../../main.ts";
+import { deserialize } from "../converters/decode.ts";
+import { serialize } from "../converters/encode.ts";
 
 describe("types/set & map", () => {
   it("serialize set node", () => {

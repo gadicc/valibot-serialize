@@ -1,5 +1,6 @@
 #!/usr/bin/env -S deno run --quiet
-import { isSerializedSchema, toCode } from "../main.ts";
+import { isSerializedSchema } from "../src/util/guard.ts";
+import { toCode } from "../src/converters/to_code.ts";
 
 const input = await new Response(Deno.stdin.readable).text();
 try {

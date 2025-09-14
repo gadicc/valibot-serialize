@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run --allow-write=docs/MAPPINGS.md
 import * as v from "@valibot/valibot";
-import { serialize, toJsonSchema } from "../main.ts";
+import { serialize } from "../src/converters/encode.ts";
+import { toJsonSchema } from "../src/converters/to_jsonschema.ts";
 
 type Sample = {
   title: string;

@@ -35,8 +35,9 @@ Currently you should do run this by hand but we might add a hook for it.
   from `@std/expect`.
 - Tests are permission‑free and deterministic (no network/fs access).
 - Name tests `file_test.ts` colocated next to the code under `src/`.
-- When tests need the public API, import from the entry point:
-  - `import { ... } from "../main.ts";`
+- For tests and tools, prefer importing from specific `src/*` modules directly
+  (e.g., `import { serialize } from "../converters/encode.ts";`). The `main.ts`
+  barrel remains the public entry for external consumers.
 - Prefer structural/behavioral assertions over implementation details.
 
 ## Coding Style

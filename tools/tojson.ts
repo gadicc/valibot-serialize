@@ -1,5 +1,6 @@
 #!/usr/bin/env -S deno run --quiet
-import { isSerializedSchema, toJsonSchema } from "../main.ts";
+import { isSerializedSchema } from "../src/util/guard.ts";
+import { toJsonSchema } from "../src/converters/to_jsonschema.ts";
 
 const input = await new Response(Deno.stdin.readable).text();
 try {
