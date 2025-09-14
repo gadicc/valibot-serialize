@@ -1,0 +1,35 @@
+name: Setup Deno && Node + npm
+description: Reusable setup for CI, CoPilot, etc.
+runs-on: ubuntu-latest
+runs:
+  using: composite
+  steps:
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: v2.x
+        cache: true
+
+    - name: Install dependencies
+      run: deno install
+      shell: bash
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        # No 'cache' here, since now project lockfile for npm
+        # We'll handle this manually.
+
+    # Cache npm's global/content-addressable cache
+    - uses: actions/cache@v4
+      with:
+        path: ~/.npm/_cacache
+        key: npm-cache-${{ runner.os }}-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          npm-cache-${{ runner.os }}-
+
+    # And for npx
+    - uses: actions/cache@v4
+      with:
+        path: ~/.npm/_npx
+        key: npx-cache-${{ runner.os }}
