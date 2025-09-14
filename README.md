@@ -16,7 +16,8 @@ Copyright (c) 2025 by Gadi Cohen. [MIT licensed](./LICENSE.txt).
 ## Quick Start
 
 ```ts
-import * as v from "@valibot/valibot";
+// On JSR, it's @valibot/valibot and @gadicc/valibot-seriazlie
+import * as v from "valibot";
 import { deserialize, serialize, toCode } from "valibot-serialize";
 
 const LoginSchema = v.object({
@@ -46,13 +47,14 @@ import { serialize, toCode } from "valibot-serialize";
 const schema = v.object({ email: v.string(), password: v.string() });
 const code = toCode(serialize(schema));
 // "v.object({email:v.string(),password:v.string()});"
-
-// You can eval it if you want a runtime instance:
-const factory = new Function("v", "return " + code) as (
-  vx: typeof v,
-) => unknown;
-const rebuilt = factory(v);
 ```
+
+You could then write this out to a file as part of your build script, getting a
+way to reconstruct the schema without `valibot-serialize` as a dependency, and
+still benefit from tree shaking.
+
+We may provide some CLI tools in the future to make this easier for common
+cases.
 
 ## Motivation
 
@@ -66,7 +68,6 @@ create dep-free versions of those schemas.
 
 - [Issue #30: Allow schema serialization](https://github.com/fabian-hiller/valibot/issues/30)
 - [Discussion #733: Can you generate a schema from the Reflection API?](https://github.com/fabian-hiller/valibot/discussions/733)
--
 
 ## API
 
@@ -119,6 +120,14 @@ create dep-free versions of those schemas.
   `maxSize`, `mimeTypes`)
 
 ### JSON Schema conversion
+
+This was never a main goal for the project especially since other, mature tools
+exist for this purpose (i.e.
+[`@valibot/to-json-schema`](https://www.npmjs.com/package/@valibot/to-json-schema)
+and
+[`json-schema-to-valibot`](https://www.npmjs.com/package/json-schema-to-valibot),
+however, the AI offered to implement it and I said why not :) Let us know if you
+find it useful.
 
 - `toJsonSchema` converts:
   - Strings to string schemas, mapping common formats and adding regexes for
@@ -198,34 +207,23 @@ v.object({email:v.string(),password:v.string()});
 | date                       | string (format: date-time)            | approximated        |
 | file/blob                  | string binary (+ mediaType)           | approximated        |
 
+## Creation Notes
+
+This was "vibe-coded" (with AI) over a weekend. I set up minimalist structure
+with a test case for how I wanted the code to work, and some empty functions
+with signatures. I then asked OpenAI Codex to complete the code.
+
+Codex did so, and consistently gave some great suggestions on what to do next,
+and I kept saying yes to see where it would go. Eventually then I moved on to
+prompts for cleanup, refactoring, project structure, etc, but definitely more is
+needed.
+
+Please do bring any weird issues to our attention, and feel free to request
+clearer docs, examples, etc. Working on that next.
+
 ## Development
 
-- `deno task lint`
-- `deno task test`
-- `deno task fmt`
-
 See CONTRIBUTING.md for project layout, test naming, and workflow conventions.
-
-### Developer Notes
-
-- Internal registry lives at `src/types/lib/registry.ts` and wires codecs from
-  `src/types/*`.
-- Converter modules live under `src/converters/`: `encode.ts`, `decode.ts`,
-  `to_code.ts`, `to_jsonschema.ts`, `from_jsonschema.ts`.
-- Each `src/types/<name>.ts` module exports a consistent API:
-  - `typeName`, `matchesValibotType`, `encode`, `decode`, `toCode`,
-    `toJsonSchema`, `fromJsonSchema`.
-  - The common function shapes are defined in
-    `src/types/lib/type_interfaces.ts`.
-- Ambient module typings for `src/types/*` are in `src/type-mod.d.ts`.
-- For convenience, `src/types/index.ts` re-exports each type module as a
-  namespace (e.g., `string`, `number`, ...). Example usage in internal tooling:
-  `import { string as stringMod } from "./src/types/index.ts"`.
-
-- Directory policy: the `src/types/` folder only contains the individual type
-  modules and a single `index.ts` that re-exports them. Shared helpers live in
-  `src/util/`, and type-specific shared plumbing (like the codec registry and
-  interfaces) live in `src/types/lib/`.
 
 ## License
 
