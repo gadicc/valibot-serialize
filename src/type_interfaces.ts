@@ -4,6 +4,8 @@ import type { JsonSchema } from "./converters/to_jsonschema.ts";
 
 export type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
+export type Matches = (schema: AnySchema) => boolean;
+
 export type Encoder<K extends SchemaNode["type"]> = (
   schema: { type?: string; pipe?: unknown[] } & Record<string, unknown>,
   ctx: { encodeNode: (schema: AnySchema) => SchemaNode },
@@ -31,7 +33,7 @@ export type FromJsonSchema = (
 
 export interface TypeCodec<K extends SchemaNode["type"]> {
   typeName: K;
-  matches: (schema: { type?: string } & Record<string, unknown>) => boolean;
+  matches: Matches;
   encode: Encoder<K>;
   decode: Decoder<K>;
   toCode: ToCode<K>;

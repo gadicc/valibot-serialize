@@ -1,26 +1,21 @@
 import * as v from "@valibot/valibot";
-import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
+  AnySchema,
   Decoder,
   Encoder,
   FromJsonSchema,
+  Matches,
   ToCode,
   ToJsonSchema,
 } from "../type_interfaces.ts";
 
-type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
-
 export const typeName = "literal" as const;
 
-export function matchesValibotType(
-  any: { type?: string } & Record<string, unknown>,
-): boolean {
-  const type = any?.type ??
-    (JSON.parse(JSON.stringify(any)) as { type?: string }).type;
-  return type === typeName;
-}
+export const matches: Matches = (any: AnySchema): boolean => {
+  return any?.type === typeName;
+};
 
 export const encode: Encoder<"literal"> = function encodeLiteral(
   any,

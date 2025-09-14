@@ -4,8 +4,8 @@ import type { JsonSchema } from "./converters/to_jsonschema.ts";
 
 declare module "src/types/*" {
   export const typeName: SchemaNode["type"];
-  export const matchesValibotType: (
-    schema: { type?: string } & Record<string, unknown>,
+  export const matches: (
+    schema: import("./type_interfaces.ts").AnySchema,
   ) => boolean;
   export const encode: (
     schema: { type?: string; pipe?: unknown[] } & Record<string, unknown>,

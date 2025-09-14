@@ -50,7 +50,9 @@ function encodeNode(schema: AnySchema): SchemaNode {
   // Dispatch to codecs that can detect from Valibot schema
   for (const c of codecs) {
     try {
-      if (c.matches(any)) return c.encode(any as never, { encodeNode });
+      if (c.matches(schema as never)) {
+        return c.encode(any as never, { encodeNode });
+      }
     } catch (_) {
       // ignore and continue
     }

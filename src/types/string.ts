@@ -1,31 +1,25 @@
 import * as v from "@valibot/valibot";
-import type { BaseIssue, BaseSchema } from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import { escapeRegex, unescapeRegex } from "../regex_utils.ts";
 import { detect, patterns as pat } from "../patterns.ts";
 import type {
+  AnySchema,
   Decoder,
   Encoder,
   FromJsonSchema,
+  Matches,
   ToCode,
   ToJsonSchema,
 } from "../type_interfaces.ts";
-
-type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
 // Identifier for this type module
 export const typeName = "string" as const;
 
 // Whether a Valibot schema snapshot refers to a string builder
-export function matchesValibotType(
-  any: { type?: string } & Record<string, unknown>,
-): boolean {
-  const type = any?.type ?? (JSON.parse(JSON.stringify(any)) as {
-    type?: string;
-  }).type;
-  return type === typeName;
-}
+export const matches: Matches = (any: AnySchema): boolean => {
+  return any?.type === typeName;
+};
 
 // Encode: Valibot string schema -> SchemaNode("string")
 export const encode: Encoder<"string"> = function encodeString(

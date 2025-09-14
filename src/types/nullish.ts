@@ -1,7 +1,7 @@
 import * as v from "@valibot/valibot";
 import type { SchemaNode } from "../types.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
-import type { AnySchema } from "../type_interfaces.ts";
+import type { AnySchema, Matches } from "../type_interfaces.ts";
 import type {
   Decoder,
   Encoder,
@@ -12,11 +12,9 @@ import type {
 
 export const typeName = "nullish" as const;
 
-export function matchesValibotType(any: { type?: string }): boolean {
-  const t = any?.type ??
-    (JSON.parse(JSON.stringify(any)) as { type?: string }).type;
-  return t === typeName;
-}
+export const matches: Matches = (any: AnySchema): boolean => {
+  return any?.type === typeName;
+};
 
 export const encode: Encoder<"nullish"> = function encodeNullish(
   any,
