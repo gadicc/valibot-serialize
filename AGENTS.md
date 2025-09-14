@@ -11,12 +11,14 @@
 
 ## Build, Test, and Development Commands
 
+Always use the `task` variants (e.g. always run `deno task test` vs `deno test`
+as we may use particular options there).
+
 - `deno task dev` — Run locally with file watching (`main.ts`).
-- `deno task test` — Run all tests.
+- `deno task test` — Runs all tests in parallel.
+- `deno task coverage` — as above with coverage + creates `coverage.lcov`.
 - `deno task lint` — Static analysis via Deno Lint.
 - `deno task fmt` — Format the codebase with Deno Fmt.
-- Examples: `deno test main_test.ts`,
-  `deno test --coverage=coverage && deno coverage coverage --lcov > coverage.lcov`.
 
 ## Coding Style & Naming Conventions
 
@@ -33,7 +35,8 @@
 
 - Use Deno’s built‑in test runner with BDD utilities: `describe/it` and `expect`
   from the standard library.
-- Name tests `*_test.ts` beside the source.
+- Name tests `*_test.ts` beside the matching source, thereby co-locating tests
+  whenever possible.
 - Keep tests deterministic and permission‑free (no network/fs). Aim for
   meaningful coverage.
 - Run full suite with `deno task test`; add focused tests for new behavior.
@@ -53,3 +56,8 @@
 - Keep the library side‑effect free; avoid runtime permissions.
 - Prefer JSR imports; do not introduce `package.json` or Node‑specific tooling.
 - Update `deno.lock` by running tasks locally when dependencies change.
+
+## Work Guidelines for User Requests
+
+- After any work, run `deno task pre-commit` (which runs lint, tests, fmt).
+  Everything should pass before returning control back to the user.

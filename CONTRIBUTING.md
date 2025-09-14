@@ -26,6 +26,9 @@ side‑effect free.
 - Format: `deno task fmt`
 - Dev (watch main entry): `deno task dev`
 
+Most NB: `deno task pre-commit` - will run the lint, test and fmt tasks.
+Currently you should do run this by hand but we might add a hook for it.
+
 ## Testing Guidelines
 
 - Use Deno’s built-in test runner with BDD helpers (`describe/it`) and `expect`
