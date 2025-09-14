@@ -10,7 +10,7 @@ side‑effect free.
   - Converters: `src/converters/` (`encode.ts`, `decode.ts`, `to_code.ts`,
     `to_jsonschema.ts`, `from_jsonschema.ts`) with colocated tests.
   - Core: `guard.ts`, `types.ts`, `registry.ts`, and `src/types/*` codecs.
-  - Tests colocated: `*.test.ts` (e.g., `codec.test.ts`).
+  - Tests colocated: `*_test.ts` (e.g., `codec_test.ts`).
 - `tools/` — Small scripts used for local development or docs.
 
 ## Development
@@ -26,7 +26,7 @@ side‑effect free.
 - Use Deno’s built-in test runner with BDD helpers (`describe/it`) and `expect`
   from `@std/expect`.
 - Tests are permission‑free and deterministic (no network/fs access).
-- Name tests `file.test.ts` colocated next to the code under `src/`.
+- Name tests `file_test.ts` colocated next to the code under `src/`.
 - When tests need the public API, import from the entry point:
   - `import { ... } from "../main.ts";`
 - Prefer structural/behavioral assertions over implementation details.
