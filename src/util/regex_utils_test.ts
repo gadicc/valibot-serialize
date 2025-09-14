@@ -1,6 +1,6 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { escapeRegex, unescapeRegex } from "./util/regex_utils.ts";
+import { escapeRegex, unescapeRegex } from "./regex_utils.ts";
 
 describe("regex utils", () => {
   it("escape/unescape roundtrip", () => {

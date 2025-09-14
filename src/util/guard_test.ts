@@ -6,7 +6,7 @@ import {
   FORMAT_VERSION,
   isSerializedSchema,
   serialize,
-} from "../main.ts";
+} from "../../main.ts";
 
 describe("guards and error paths", () => {
   it("serialize throws on unsupported literal value", () => {
