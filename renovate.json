@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+  "timezone": "UTC",
+  "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["valibot"],
+      "groupName": "valibot",
+      "automerge": false
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^deno\\.json$"],
+      "matchStrings": [
+        "\"@valibot/valibot\"\\s*:\\s*\"npm:valibot@(?<currentValue>[^\\\"]+)\""
+      ],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "valibot"
+    }
+  ]
+}

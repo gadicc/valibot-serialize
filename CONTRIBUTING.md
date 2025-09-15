@@ -54,6 +54,30 @@ Currently you should do run this by hand but we might add a hook for it.
 - Prefer JSR imports for dev dependencies, and NPM imports for dependencies. Add
   new deps to `deno.json` `imports` and update the lock file locally.
 
+### Dependency Updates (Renovate)
+
+- This repo includes a basic `renovate.json` that watches `deno.json` for the
+  `@valibot/valibot` mapping and opens PRs when new versions are available.
+- Renovate groups Valibot bumps under a single PR. When such a PR opens:
+  - Run `deno task pre-commit` locally to update `deno.lock` and validate.
+  - If tests fail due to new schema types, add support as described below.
+
+### Schema Type Parity
+
+- The test `tests/types_parity_test.ts` asserts that all Valibot base schema
+  types are supported by our codecs. If Valibot adds a new type, this test will
+  fail.
+- To satisfy the test when adding a new type or bumping Valibot:
+  - Implement a new codec in `src/types/<name>.ts` that exports `typeName`,
+    `matches`, `encode`, `decode`, `toCode`, `toJsonSchema`, and
+    `fromJsonSchema` (see existing modules for reference).
+  - Export it from `src/types/index.ts` and include it in the `SchemaNode` union
+    in `src/types.ts`.
+  - If the new Valibot builder requires arguments to construct, add a minimal
+    sample to the seeded list inside `tests/types_parity_test.ts` so it can be
+    detected at runtime.
+  - Run `deno task pre-commit` to ensure lint, tests, and formatting pass.
+
 ## Pull Requests
 
 - Keep PRs small and focused with a clear rationale.
