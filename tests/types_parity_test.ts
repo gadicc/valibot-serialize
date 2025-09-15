@@ -5,8 +5,6 @@ import * as codecs from "../src/types/index.ts";
 
 // Types intentionally skipped from parity detection/logging
 const PARITY_IGNORED = new Set<string>([
-  "unknown",
-  "never",
   // Some Valibot exports are language keywords or helpers
   "await",
   "readonly",
@@ -44,6 +42,8 @@ function collectValibotTypes(): {
   pushIfFn("bigint");
   pushIfFn("symbol");
   pushIfFn("any");
+  pushIfFn("unknown");
+  pushIfFn("never");
   pushIfFn("undefined");
   pushIfFn("void");
   pushIfFn("date");

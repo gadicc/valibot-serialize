@@ -33,12 +33,16 @@ import type { MapNode } from "./types/map.ts";
 import type { UndefinedNode } from "./types/undefined.ts";
 import type { VoidNode } from "./types/void.ts";
 import type { AnyNode } from "./types/any.ts";
+import type { UnknownNode } from "./types/unknown.ts";
+import type { NeverNode } from "./types/never.ts";
 
 /**
  * Union of all AST node variants used by serialized Valibot schemas.
  */
 export type SchemaNode =
   | AnyNode
+  | UnknownNode
+  | NeverNode
   | StringNode
   | NumberNode
   | BooleanNode

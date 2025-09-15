@@ -25,3 +25,5 @@ export * as nullType from "./null.ts";
 export * as file from "./file.ts";
 export * as blob from "./blob.ts";
 export * as anyType from "./any.ts";
+export * as unknownType from "./unknown.ts";
+export * as neverType from "./never.ts";
