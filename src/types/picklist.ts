@@ -35,10 +35,7 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema): boolean => {
 };
 
 export const encode: Encoder<PicklistNode> = function encodePicklist(any) {
-  const snap = JSON.parse(JSON.stringify(any)) as {
-    options?: unknown[];
-  };
-  const values = (snap.options ?? (any as { options?: unknown[] }).options) as
+  const values = ((any as { options?: unknown[] }).options) as
     | unknown[]
     | undefined;
   if (!Array.isArray(values)) {

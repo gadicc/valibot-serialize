@@ -39,14 +39,8 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
 export const encode: Encoder<EnumNode> = function encodeEnum(
   any,
 ): EnumNode {
-  const snap = JSON.parse(JSON.stringify(any)) as {
-    options?: unknown[];
-    enum?: unknown[];
-    type?: string;
-  };
-  const values =
-    (snap.options ?? snap.enum ?? (any as { options?: unknown[] }).options ??
-      (any as { enum?: unknown[] }).enum) as unknown[] | undefined;
+  const values = ((any as { options?: unknown[] }).options ??
+    (any as { enum?: unknown[] }).enum) as unknown[] | undefined;
   if (!Array.isArray(values)) {
     throw new Error("Unsupported enum schema: missing options");
   }

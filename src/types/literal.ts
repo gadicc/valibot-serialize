@@ -30,12 +30,7 @@ export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
 export const encode: Encoder<LiteralNode> = function encodeLiteral(
   any,
 ): LiteralNode {
-  const snap = JSON.parse(JSON.stringify(any)) as {
-    literal?: unknown;
-    value?: unknown;
-  };
-  const value = snap.literal ?? snap.value ??
-    (any as { literal?: unknown; value?: unknown }).literal ??
+  const value = (any as { literal?: unknown; value?: unknown }).literal ??
     (any as { value?: unknown }).value;
   if (value === undefined) {
     throw new Error("Unsupported literal schema without value");

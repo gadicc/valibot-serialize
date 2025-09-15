@@ -480,6 +480,11 @@ describe("isSerializedSchema type guard", () => {
     expect(ok).toBe(true);
 
     const others = [
+      { type: "bigint" as const },
+      { type: "boolean" as const },
+      { type: "undefined" as const },
+      { type: "void" as const },
+      { type: "symbol" as const },
       { type: "date" as const },
       {
         type: "file" as const,

@@ -38,10 +38,9 @@ export const encode: Encoder<ObjectNode> = function encodeObject(
   any,
   ctx,
 ): ObjectNode {
-  const type = (any?.type ??
-    (JSON.parse(JSON.stringify(any)) as { type?: string }).type) as
-      | string
-      | undefined;
+  const type = (any?.type) as
+    | string
+    | undefined;
   const entries = (any as { entries?: Record<string, unknown> }).entries;
   if (!entries || typeof entries !== "object") {
     throw new Error("Unsupported object schema: missing entries");

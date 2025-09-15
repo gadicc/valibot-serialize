@@ -30,12 +30,9 @@ export function serialize<T extends AnySchema>(schema: T): SerializedSchema {
 }
 
 function encodeNode(schema: AnySchema): SchemaNode {
-  // Snapshot strips functions, keeping stable metadata for detection
-  const snap = JSON.parse(JSON.stringify(schema)) as
-    & { type?: string }
-    & Record<string, unknown>;
+  // Read type directly to avoid JSON.stringify BigInt errors
   const any = schema as unknown as { type?: string } & Record<string, unknown>;
-  const type = snap.type ?? any.type;
+  const type = any.type;
   // Dispatch to codecs that can detect from Valibot schema
   for (const c of Object.values(codecs)) {
     if (c.matches(schema as never)) {

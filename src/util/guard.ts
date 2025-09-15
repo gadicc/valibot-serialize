@@ -163,6 +163,8 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       }
       return true;
     }
+    case "bigint":
+      return true;
     case "null":
       return true;
     case "file": {
@@ -230,7 +232,13 @@ function isSchemaNode(node: unknown): node is SchemaNode {
     }
     case "boolean":
       return true;
+    case "symbol":
+      return true;
     case "date":
+      return true;
+    case "undefined":
+      return true;
+    case "void":
       return true;
     case "literal": {
       const value = (node as { value?: unknown }).value;
