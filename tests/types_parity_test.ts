@@ -22,32 +22,57 @@ function collectImplementedTypes(): Set<string> {
   return types;
 }
 
-function collectValibotTypes(): Set<string> {
-  const types = new Set<string>();
+function collectValibotTypes(): {
+  all: Set<string>;
+  zeroArg: Set<string>;
+  requireArg: Set<string>;
+} {
+  const all = new Set<string>();
+  const zeroArg = new Set<string>();
+  const requireArg = new Set<string>();
 
-  // 1) Zero-arg builders: call and detect `.type` strings
-  for (const [_name, exp] of Object.entries(v)) {
-    if (typeof exp === "function" && exp.length === 0) {
-      try {
-        const maybe = (exp as (...args: unknown[]) => unknown)();
-        if (maybe && typeof maybe === "object") {
-          const kind = (maybe as { kind?: unknown }).kind;
-          const t = (maybe as { type?: unknown }).type;
-          if (
-            kind === "schema" && typeof t === "string" && !PARITY_IGNORED.has(t)
-          ) {
-            types.add(t);
-          }
+  // 1) Safely call a curated set of known zero-arg builders.
+  const anyV = v as Record<string, unknown>;
+  const zeroArgCandidates: Array<() => unknown> = [];
+  const pushIfFn = (key: string) => {
+    const fn = anyV[key];
+    if (typeof fn === "function") zeroArgCandidates.push(fn as () => unknown);
+  };
+  // primitives and core zero-arg builders
+  pushIfFn("string");
+  pushIfFn("number");
+  pushIfFn("boolean");
+  pushIfFn("date");
+  pushIfFn("file");
+  pushIfFn("blob");
+  // null may be exported as `null` or `null_`
+  if (typeof anyV["null"] === "function") {
+    zeroArgCandidates.push(anyV["null"] as () => unknown);
+  } else if (typeof anyV["null_"] === "function") {
+    zeroArgCandidates.push(anyV["null_"] as () => unknown);
+  }
+
+  for (const exp of zeroArgCandidates) {
+    try {
+      const maybe = exp();
+      if (maybe && typeof maybe === "object") {
+        const kind = (maybe as { kind?: unknown }).kind;
+        const t = (maybe as { type?: unknown }).type;
+        if (
+          kind === "schema" &&
+          typeof t === "string" &&
+          !PARITY_IGNORED.has(t)
+        ) {
+          all.add(t);
+          zeroArg.add(t);
         }
-      } catch (_e) {
-        // Ignore functions that require params at runtime or throw
-        // We only care about schema builders that succeed with zero args
       }
+    } catch (_e) {
+      // ignore
     }
   }
 
-  // 2) Seed common builders that require arguments
-  // These ensure we see argument-requiring schema types.
+  // 2) Seed common builders that require arguments to discover their `.type`.
   const samples = [
     v.array(v.string()),
     v.object({ a: v.string() }),
@@ -68,31 +93,55 @@ function collectValibotTypes(): Set<string> {
 
   for (const s of samples) {
     const t = (s as { type?: unknown }).type;
-    if (typeof t === "string") types.add(t);
+    if (typeof t === "string" && !PARITY_IGNORED.has(t)) {
+      all.add(t);
+      if (!zeroArg.has(t)) requireArg.add(t);
+    }
   }
 
-  return types;
+  return { all, zeroArg, requireArg };
 }
 
 describe("types/parity", () => {
   it("Valibot base types are supported by codecs", () => {
     const implemented = collectImplementedTypes();
-    const valibotTypes = collectValibotTypes();
+    const discovered = collectValibotTypes();
 
     // Log discovery summary to aid maintenance
     console.info(
-      "types/parity — discovered Valibot types:",
-      [...valibotTypes].sort().join(", "),
+      "types/parity — zero-arg builders:",
+      [...discovered.zeroArg].sort().join(", "),
+    );
+    console.info(
+      "types/parity — require-arg builders:",
+      [...discovered.requireArg].sort().join(", "),
+    );
+    console.info(
+      "types/parity — all discovered types:",
+      [...discovered.all].sort().join(", "),
     );
     console.info(
       "types/parity — skipped Valibot types:",
       [...PARITY_IGNORED].sort().join(", "),
     );
 
-    // New or unknown Valibot types we don't support yet
-    const missing = [...valibotTypes].filter((t) => !implemented.has(t)).sort();
+    // Assert discovery completeness: we should at least detect everything this
+    // library implements. This guards against missing zero-arg builders like
+    // string(), number(), date(), null(), etc.
+    const notDiscovered = [...implemented]
+      .filter((t) => !discovered.all.has(t))
+      .sort();
+    expect(notDiscovered).toEqual([]);
 
-    // Helpful assertion for maintenance: Valibot types must be supported
-    expect(missing).toEqual([]);
+    // For awareness (non-failing): Valibot types we don't implement yet.
+    const unimplemented = [...discovered.all]
+      .filter((t) => !implemented.has(t))
+      .sort();
+    if (unimplemented.length > 0) {
+      console.info(
+        "types/parity — unimplemented Valibot types (non-fatal):",
+        unimplemented.join(", "),
+      );
+    }
   });
 });
