@@ -17,5 +17,6 @@ export * as string from "./string.ts";
 export * as optional from "./optional.ts";
 export * as nullable from "./nullable.ts";
 export * as nullish from "./nullish.ts";
+export * as nullType from "./null.ts";
 export * as file from "./file.ts";
 export * as blob from "./blob.ts";

@@ -15,6 +15,7 @@ import type { ObjectNode } from "./types/object.ts";
 import type { OptionalNode } from "./types/optional.ts";
 import type { NullableNode } from "./types/nullable.ts";
 import type { NullishNode } from "./types/nullish.ts";
+import type { NullNode } from "./types/null.ts";
 import type { UnionNode } from "./types/union.ts";
 import type { TupleNode } from "./types/tuple.ts";
 import type { RecordNode } from "./types/record.ts";
@@ -36,6 +37,7 @@ export type SchemaNode =
   | OptionalNode
   | NullableNode
   | NullishNode
+  | NullNode
   | UnionNode
   | TupleNode
   | RecordNode

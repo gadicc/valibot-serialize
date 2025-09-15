@@ -155,6 +155,8 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       }
       return true;
     }
+    case "null":
+      return true;
     case "file": {
       const n = node as {
         minSize?: unknown;
