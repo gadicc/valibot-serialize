@@ -43,4 +43,3 @@ function encodeNode(schema: AnySchema): SchemaNode {
     `Unsupported schema type for serialization: ${String(type)}`,
   );
 }
-

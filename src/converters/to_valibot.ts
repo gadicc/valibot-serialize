@@ -34,4 +34,3 @@ function decodeNode(node: SchemaNode): AnySchema {
     `Unsupported node type: ${(node as { type: string }).type}`,
   );
 }
-
