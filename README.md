@@ -16,7 +16,7 @@ Copyright (c) 2025 by Gadi Cohen. [MIT licensed](./LICENSE.txt).
 ## Quick Start
 
 ```ts
-// On JSR, it's @valibot/valibot and @gadicc/valibot-seriazlie
+// On JSR, it's @valibot/valibot and @gadicc/valibot-serialize
 import * as v from "valibot";
 import { fromValibot, toCode, toValibot } from "valibot-serialize";
 
