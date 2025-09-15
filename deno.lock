@@ -18,6 +18,8 @@
     "jsr:@std/testing@^1.0.15": "1.0.15",
     "jsr:@ts-morph/bootstrap@0.27": "0.27.0",
     "jsr:@ts-morph/common@0.27": "0.27.0",
+    "npm:drizzle-orm@~0.44.5": "0.44.5",
+    "npm:drizzle-valibot@~0.4.2": "0.4.2_drizzle-orm@0.44.5_valibot@1.1.0",
     "npm:fast-check@^4.3.0": "4.3.0",
     "npm:semantic-release@^24.2.8": "24.2.8_marked@15.0.12",
     "npm:valibot@^1.1.0": "1.1.0"
@@ -572,6 +574,16 @@
       "integrity": "sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==",
       "dependencies": [
         "is-obj"
+      ]
+    },
+    "drizzle-orm@0.44.5": {
+      "integrity": "sha512-jBe37K7d8ZSKptdKfakQFdeljtu3P2Cbo7tJoJSVZADzIKOBo9IAJPOmMsH2bZl90bZgh8FQlD8BjxXA/zuBkQ=="
+    },
+    "drizzle-valibot@0.4.2_drizzle-orm@0.44.5_valibot@1.1.0": {
+      "integrity": "sha512-tzjT7g0Di/HX7426marIy8IDtWODjPgrwvgscdevLQRUe5rzYzRhx6bDsYLdDFF9VI/eaYgnjNeF/fznWJoUjg==",
+      "dependencies": [
+        "drizzle-orm",
+        "valibot"
       ]
     },
     "duplexer2@0.1.4": {
@@ -1610,6 +1622,8 @@
       "jsr:@std/assert@1",
       "jsr:@std/expect@^1.0.17",
       "jsr:@std/testing@^1.0.15",
+      "npm:drizzle-orm@~0.44.5",
+      "npm:drizzle-valibot@~0.4.2",
       "npm:fast-check@^4.3.0",
       "npm:semantic-release@^24.2.8",
       "npm:valibot@^1.1.0"
