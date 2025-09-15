@@ -172,9 +172,9 @@ describe("fromJsonSchema extra coverage", () => {
     expect(node.maxEntries).toBe(5);
   });
 
-  it("fallback to string on unknown input and boolean mapping", () => {
+  it("fallback to any on empty schema and boolean mapping", () => {
     const fb = fromJsonSchema({});
-    expect(fb.node.type).toBe("string");
+    expect(fb.node.type).toBe("any");
     const b = fromJsonSchema({ type: "boolean" });
     expect(b.node.type).toBe("boolean");
   });
