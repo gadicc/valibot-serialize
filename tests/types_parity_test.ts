@@ -3,6 +3,16 @@ import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
 import * as codecs from "../src/types/index.ts";
 
+// Types intentionally skipped from parity detection/logging
+const PARITY_IGNORED = new Set<string>([
+  "any",
+  "unknown",
+  "never",
+  // Some Valibot exports are language keywords or helpers
+  "await",
+  "readonly",
+]);
+
 function collectImplementedTypes(): Set<string> {
   const types = new Set<string>();
   for (const mod of Object.values(codecs)) {
@@ -14,13 +24,6 @@ function collectImplementedTypes(): Set<string> {
 
 function collectValibotTypes(): Set<string> {
   const types = new Set<string>();
-  const IGNORED = new Set<string>([
-    "any",
-    "unknown",
-    "never",
-    "await",
-    "readonly",
-  ]);
 
   // 1) Zero-arg builders: call and detect `.type` strings
   for (const [_name, exp] of Object.entries(v)) {
@@ -30,7 +33,9 @@ function collectValibotTypes(): Set<string> {
         if (maybe && typeof maybe === "object") {
           const kind = (maybe as { kind?: unknown }).kind;
           const t = (maybe as { type?: unknown }).type;
-          if (kind === "schema" && typeof t === "string" && !IGNORED.has(t)) {
+          if (
+            kind === "schema" && typeof t === "string" && !PARITY_IGNORED.has(t)
+          ) {
             types.add(t);
           }
         }
@@ -73,6 +78,16 @@ describe("types/parity", () => {
   it("Valibot base types are supported by codecs", () => {
     const implemented = collectImplementedTypes();
     const valibotTypes = collectValibotTypes();
+
+    // Log discovery summary to aid maintenance
+    console.info(
+      "types/parity — discovered Valibot types:",
+      [...valibotTypes].sort().join(", "),
+    );
+    console.info(
+      "types/parity — skipped Valibot types:",
+      [...PARITY_IGNORED].sort().join(", "),
+    );
 
     // New or unknown Valibot types we don't support yet
     const missing = [...valibotTypes].filter((t) => !implemented.has(t)).sort();
