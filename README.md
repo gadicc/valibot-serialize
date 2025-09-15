@@ -18,15 +18,15 @@ Copyright (c) 2025 by Gadi Cohen. [MIT licensed](./LICENSE.txt).
 ```ts
 // On JSR, it's @valibot/valibot and @gadicc/valibot-seriazlie
 import * as v from "valibot";
-import { deserialize, serialize, toCode } from "valibot-serialize";
+import { fromValibot, toCode, toValibot } from "valibot-serialize";
 
 const LoginSchema = v.object({
   email: v.string(),
   password: v.string(),
 });
 
-const serialized = serialize(LoginSchema);
-const NewLoginSchema = deserialize(serialized);
+const serialized = fromValibot(LoginSchema);
+const NewLoginSchema = toValibot(serialized);
 
 // { email: 'jane@example.com', password: '12345678' }
 const parsed = v.parse(NewLoginSchema, {
@@ -45,8 +45,8 @@ const code = toCode(serialized);
   these elsewhere and apply after deserialization.
 
 - To avoid requiring `valibot-serialize` as a (non-dev) dependency and pulling
-  in the entire `valibot` library, use `toCode` instead of `deserialize` and
-  write the results to a file. This way you'll still benefit tree-shaking.
+  in the entire `valibot` library, use `toCode` instead of `toValibot` and write
+  the results to a file. This way you'll still benefit tree-shaking.
 
   We may provide some CLI tools in the future to make this easier for common
   cases (e.g. scan a directory and auto-write modules for each detected schema).
@@ -66,10 +66,10 @@ create dep-free versions of those schemas.
 
 ## API
 
-- `serialize(schema: v.BaseSchema): SerializedSchema`
+- `fromValibot(schema: v.BaseSchema): SerializedSchema`
   - Encodes a Valibot schema to a JSON‑serializable AST with
     `{ kind, vendor, version, format, node }`.
-- `deserialize(data: SerializedSchema): v.BaseSchema`
+- `toValibot(data: SerializedSchema): v.BaseSchema`
   - Decodes the AST back to a Valibot schema.
 - `isSerializedSchema(x: unknown): x is SerializedSchema`
   - Runtime type guard for the AST envelope.
@@ -182,9 +182,9 @@ v.object({email:v.string(),password:v.string()});
 - Some validators don’t map cleanly to JSON Schema and are approximated (e.g.,
   word counts, ISO formats, IDs) using patterns.
 - Complex constructs (custom transforms/effects) are intentionally unsupported
-  and fail fast on `serialize`.
+  and fail fast on `fromValibot`.
 - `fromJsonSchema` is intentionally minimal and lossy; prefer authoring schemas
-  in Valibot and using `serialize` as the source of truth.
+  in Valibot and using `fromValibot` as the source of truth.
 
 ### Compatibility mapping (selected)
 

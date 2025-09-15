@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --quiet
 import * as v from "@valibot/valibot";
-import { serialize } from "../src/converters/encode.ts";
+import { fromValibot } from "../src/converters/from_valibot.ts";
 import { toJsonSchema } from "../src/converters/to_jsonschema.ts";
 
 type Entry = { name: string; schema: unknown };
@@ -34,7 +34,9 @@ const entries: Entry[] = [
 ];
 
 for (const { name, schema } of entries) {
-  const ast = serialize(schema as unknown as Parameters<typeof serialize>[0]);
+  const ast = fromValibot(
+    schema as unknown as Parameters<typeof fromValibot>[0],
+  );
   const js = toJsonSchema(ast);
   console.log("\n===", name, "===\n");
   console.log("AST:\n", JSON.stringify(ast, null, 2));

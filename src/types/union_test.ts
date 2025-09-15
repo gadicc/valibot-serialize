@@ -1,13 +1,13 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../converters/encode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/union", () => {
   it("serialize union node", () => {
-    const u = serialize(v.union([v.string(), v.number()]));
+    const u = fromValibot(v.union([v.string(), v.number()]));
     expect(u.node).toEqual({
       type: "union",
       options: [{ type: "string" }, { type: "number" }],

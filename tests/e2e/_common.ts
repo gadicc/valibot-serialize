@@ -101,9 +101,9 @@ export async function e2eCheck(
     checkJsonSchema: false,
   },
 ) {
-  const serialized = vs.serialize(schema);
+  const serialized = vs.fromValibot(schema);
 
-  const deserialized = vs.deserialize(serialized);
+  const deserialized = vs.toValibot(serialized);
   equalSchema(schema, deserialized, "deserialized");
   await assertSameAcceptance(schema, deserialized, fc.anything());
   await assertSameOutput(
@@ -114,7 +114,7 @@ export async function e2eCheck(
 
   if (checkJsonSchema) {
     const jsonSchema = vs.toJsonSchema(serialized);
-    const schemaFromJsonSchema = vs.deserialize(vs.fromJsonSchema(jsonSchema));
+    const schemaFromJsonSchema = vs.toValibot(vs.fromJsonSchema(jsonSchema));
     equalSchema(schema, schemaFromJsonSchema, "JSON schema");
     await assertSameAcceptance(schema, schemaFromJsonSchema, fc.anything());
     await assertSameOutput(

@@ -1,11 +1,11 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../converters/encode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 
 describe("types/date", () => {
   it("serialize date node", () => {
-    const d = serialize(v.date());
+    const d = fromValibot(v.date());
     expect(d.node).toEqual({ type: "date" });
   });
 });

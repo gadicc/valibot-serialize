@@ -1,18 +1,18 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../converters/encode.ts";
-import { deserialize } from "../converters/decode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
+import { toValibot } from "../converters/to_valibot.ts";
 import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/array", () => {
   it("serialize array node shape", () => {
-    const s = serialize(v.array(v.string()));
+    const s = fromValibot(v.array(v.string()));
     expect(s.node).toEqual({ type: "array", item: { type: "string" } });
   });
 
   it("serialize array constraints (min/max/length)", () => {
-    const s1 = serialize(
+    const s1 = fromValibot(
       v.pipe(v.array(v.string()), v.minLength(2), v.maxLength(3)),
     );
     expect(s1.node).toEqual({
@@ -21,7 +21,7 @@ describe("types/array", () => {
       minLength: 2,
       maxLength: 3,
     });
-    const s2 = serialize(v.pipe(v.array(v.number()), v.length(2)));
+    const s2 = fromValibot(v.pipe(v.array(v.number()), v.length(2)));
     expect(s2.node).toEqual({
       type: "array",
       item: { type: "number" },
@@ -30,7 +30,7 @@ describe("types/array", () => {
   });
 
   it("serialize nonEmpty maps to minLength >= 1", () => {
-    const s = serialize(v.pipe(v.array(v.string()), v.nonEmpty()));
+    const s = fromValibot(v.pipe(v.array(v.string()), v.nonEmpty()));
     const n = s.node as { type: string; minLength?: number };
     expect(n.type).toBe("array");
     expect(n.minLength).toBe(1);
@@ -50,7 +50,7 @@ describe("types/array", () => {
         length: 2,
       },
     };
-    const sch = deserialize(payload as never);
+    const sch = toValibot(payload as never);
     expect(() => v.parse(sch, [1, 2])).not.toThrow();
     expect(() => v.parse(sch, [1])).toThrow();
     expect(() => v.parse(sch, [1, 2, 3])).toThrow();

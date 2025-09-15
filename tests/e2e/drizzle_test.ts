@@ -82,9 +82,9 @@ describe("e2e - drizzle", () => {
         const insert = createInsertSchema(table);
         const update = createUpdateSchema(table);
         try {
-          vs.serialize(select);
-          vs.serialize(insert);
-          vs.serialize(update);
+          vs.fromValibot(select);
+          vs.fromValibot(insert);
+          vs.fromValibot(update);
           supported.push([name, select, insert, update]);
         } catch (err) {
           skipped.push([name, (err as Error).message ?? "serialize failed"]);

@@ -4,7 +4,7 @@ import { e2eCheck } from "./_common.ts";
 
 // Build a comprehensive set of sample schemas covering all supported types.
 // Strategy mirrors tests/types_parity_test.ts discovery but produces actual schemas
-// to feed through full e2e (serialize/deserialize, code, and optionally JSON Schema).
+// to feed through full e2e (fromValibot/toValibot, code, and optionally JSON Schema).
 
 type AnySchema = v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
 

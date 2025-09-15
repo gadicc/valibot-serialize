@@ -1,8 +1,8 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../converters/encode.ts";
-import { deserialize } from "../converters/decode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
+import { toValibot } from "../converters/to_valibot.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 import { fromJsonSchema } from "../converters/from_jsonschema.ts";
 
@@ -14,7 +14,7 @@ describe("types/null", () => {
     const schema = typeof fn === "function"
       ? (fn as () => unknown)()
       : v.literal(null as never);
-    const ser = serialize(schema as never);
+    const ser = fromValibot(schema as never);
     expect(ser.node).toEqual({ type: "null" });
   });
 
@@ -29,7 +29,7 @@ describe("types/null", () => {
     expect(js).toEqual({ type: "null" });
     const back = fromJsonSchema({ type: "null" } as never);
     expect(back.node).toEqual({ type: "null" });
-    const schema = deserialize(back);
+    const schema = toValibot(back);
     expect(() => v.parse(schema, null)).not.toThrow();
     expect(() => v.parse(schema, 1)).toThrow();
   });

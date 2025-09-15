@@ -1,8 +1,8 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize } from "../converters/decode.ts";
-import { serialize } from "../converters/encode.ts";
+import { toValibot } from "../converters/to_valibot.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 import { FORMAT_VERSION } from "../types.ts";
 import { isSerializedSchema } from "./guard.ts";
 
@@ -12,7 +12,7 @@ describe("guards and error paths", () => {
       type: "literal",
       value: { a: 1 },
     } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
-    expect(() => serialize(fake as never)).toThrow();
+    expect(() => fromValibot(fake as never)).toThrow();
   });
 
   it("serialize throws on picklist without options", () => {
@@ -21,7 +21,7 @@ describe("guards and error paths", () => {
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(fake as never)).toThrow();
+    expect(() => fromValibot(fake as never)).toThrow();
   });
 
   it("serialize throws on object missing/invalid entries", () => {
@@ -30,12 +30,12 @@ describe("guards and error paths", () => {
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(missing as never)).toThrow();
+    expect(() => fromValibot(missing as never)).toThrow();
     const invalid = {
       type: "object",
       entries: { a: undefined },
     } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
-    expect(() => serialize(invalid as never)).toThrow();
+    expect(() => fromValibot(invalid as never)).toThrow();
   });
 
   it("serialize throws on tuple_with_rest missing parts", () => {
@@ -43,12 +43,12 @@ describe("guards and error paths", () => {
       type: "tuple_with_rest",
       rest: v.number(),
     } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
-    expect(() => serialize(noItems as never)).toThrow();
+    expect(() => fromValibot(noItems as never)).toThrow();
     const noRest = {
       type: "tuple_with_rest",
       items: [v.string()],
     } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
-    expect(() => serialize(noRest as never)).toThrow();
+    expect(() => fromValibot(noRest as never)).toThrow();
   });
 
   it("serialize throws on record without key/value and enum without options", () => {
@@ -57,13 +57,13 @@ describe("guards and error paths", () => {
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(rec as never)).toThrow();
+    expect(() => fromValibot(rec as never)).toThrow();
     const en = { type: "enum" } as unknown as v.BaseSchema<
       unknown,
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(en as never)).toThrow();
+    expect(() => fromValibot(en as never)).toThrow();
   });
 
   it("serialize throws on map/optional/nullable/nullish bad shapes and enum bad value", () => {
@@ -72,38 +72,38 @@ describe("guards and error paths", () => {
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(badMap1 as never)).toThrow();
+    expect(() => fromValibot(badMap1 as never)).toThrow();
     const badMap2 = { type: "map", key: v.string() } as unknown as v.BaseSchema<
       unknown,
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(badMap2 as never)).toThrow();
+    expect(() => fromValibot(badMap2 as never)).toThrow();
 
     const badOpt = { type: "optional" } as unknown as v.BaseSchema<
       unknown,
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(badOpt as never)).toThrow();
+    expect(() => fromValibot(badOpt as never)).toThrow();
     const badNul = { type: "nullable" } as unknown as v.BaseSchema<
       unknown,
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(badNul as never)).toThrow();
+    expect(() => fromValibot(badNul as never)).toThrow();
     const badNsh = { type: "nullish" } as unknown as v.BaseSchema<
       unknown,
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(badNsh as never)).toThrow();
+    expect(() => fromValibot(badNsh as never)).toThrow();
 
     const badEnumVal = {
       type: "enum",
       options: [{ a: 1 }],
     } as unknown as v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
-    expect(() => serialize(badEnumVal as never)).toThrow();
+    expect(() => fromValibot(badEnumVal as never)).toThrow();
   });
 
   it("isSerializedSchema rejects invalid string transforms and word counts", () => {
@@ -146,7 +146,7 @@ describe("guards and error paths", () => {
       unknown,
       v.BaseIssue<unknown>
     >;
-    expect(() => serialize(unk as never)).toThrow();
+    expect(() => fromValibot(unk as never)).toThrow();
   });
 
   it("isSerializedSchema rejects invalid node shapes", () => {
@@ -184,13 +184,13 @@ describe("guards and error paths", () => {
       format: FORMAT_VERSION,
       node: { type: "weird" },
     };
-    expect(() => deserialize(payload as never)).toThrow();
+    expect(() => toValibot(payload as never)).toThrow();
   });
 });
 
 describe("isSerializedSchema type guard", () => {
   it("accepts valid payload", () => {
-    const payload = serialize(v.string());
+    const payload = fromValibot(v.string());
     expect(isSerializedSchema(payload)).toBe(true);
   });
 
@@ -385,7 +385,7 @@ describe("isSerializedSchema type guard", () => {
   });
 
   it("rejects wrong vendor/version/format", () => {
-    const payload = serialize(v.string());
+    const payload = fromValibot(v.string());
     const badVendor = { ...payload, vendor: "other" as const };
     const badVersion = { ...payload, version: 2 as 1 } as typeof payload;
     const badFormat = {

@@ -2,7 +2,7 @@
   "name": "@gadicc/valibot-serialize",
   "version": "0.0.1",
   "license": "MIT",
-  "description": "Serialize and deserialize Valibot schemas",
+  "description": "Convert Valibot schemas to/from a stable serialized AST",
   "tasks": {
     "dev": "deno run --watch main.ts",
     "build:npm": "deno run -A scripts/build_npm.ts",

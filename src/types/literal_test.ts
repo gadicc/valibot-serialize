@@ -1,16 +1,16 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize } from "../converters/decode.ts";
+import { toValibot } from "../converters/to_valibot.ts";
 import { fromJsonSchema } from "../converters/from_jsonschema.ts";
-import { serialize } from "../converters/encode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 
 describe("types/literal", () => {
   it("serialize/deserialize literal values", () => {
-    const s = serialize(v.literal("x"));
+    const s = fromValibot(v.literal("x"));
     expect(s.node).toEqual({ type: "literal", value: "x" });
-    const schema = deserialize(s);
+    const schema = toValibot(s);
     expect(() => v.parse(schema, "x")).not.toThrow();
     expect(() => v.parse(schema, "y")).toThrow();
   });

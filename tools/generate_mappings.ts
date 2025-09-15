@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --allow-write=docs/MAPPINGS.md
 import * as v from "@valibot/valibot";
-import { serialize } from "../src/converters/encode.ts";
+import { fromValibot } from "../src/converters/from_valibot.ts";
 import { toJsonSchema } from "../src/converters/to_jsonschema.ts";
 
 type Sample = {
@@ -180,7 +180,9 @@ parts.push(
 for (const s of samples) {
   try {
     const built = s.build();
-    const ast = serialize(built as unknown as Parameters<typeof serialize>[0]);
+    const ast = fromValibot(
+      built as unknown as Parameters<typeof fromValibot>[0],
+    );
     const js = toJsonSchema(ast);
     parts.push(header(s.title));
     parts.push(codeBlock(s.code));

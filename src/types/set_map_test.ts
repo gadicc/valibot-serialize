@@ -1,17 +1,17 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize } from "../converters/decode.ts";
-import { serialize } from "../converters/encode.ts";
+import { toValibot } from "../converters/to_valibot.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 
 describe("types/set & map", () => {
   it("serialize set node", () => {
-    const s = serialize(v.set(v.string()));
+    const s = fromValibot(v.set(v.string()));
     expect(s.node).toEqual({ type: "set", value: { type: "string" } });
   });
 
   it("serialize map node", () => {
-    const m = serialize(v.map(v.string(), v.number()));
+    const m = fromValibot(v.map(v.string(), v.number()));
     expect(m.node).toEqual({
       type: "map",
       key: { type: "string" },
@@ -20,7 +20,7 @@ describe("types/set & map", () => {
   });
 
   it("encode size validators for set/map", () => {
-    const s = serialize(
+    const s = fromValibot(
       v.pipe(v.set(v.string()), v.minSize(1), v.maxSize(2)),
     );
     expect(s.node).toEqual({
@@ -30,7 +30,7 @@ describe("types/set & map", () => {
       maxSize: 2,
     });
 
-    const m = serialize(
+    const m = fromValibot(
       v.pipe(v.map(v.string(), v.number()), v.minSize(3), v.maxSize(4)),
     );
     expect(m.node).toEqual({
@@ -51,7 +51,7 @@ describe("types/set & map", () => {
       format: 1 as const,
       node: { type: "set" as const, value: { type: "string" as const } },
     };
-    const set0schema = deserialize(set0 as never);
+    const set0schema = toValibot(set0 as never);
     expect(() => v.parse(set0schema, new Set(["a"]))).not.toThrow();
 
     // set: 1 validator (max only)
@@ -59,7 +59,7 @@ describe("types/set & map", () => {
       ...set0,
       node: { ...set0.node, maxSize: 1 },
     } as const;
-    const set1schema = deserialize(set1 as never);
+    const set1schema = toValibot(set1 as never);
     expect(() => v.parse(set1schema, new Set(["a"]))).not.toThrow();
     expect(() => v.parse(set1schema, new Set(["a", "b"]))).toThrow();
 
@@ -77,12 +77,12 @@ describe("types/set & map", () => {
         value: { type: "number" as const },
       },
     } as const;
-    const map0schema = deserialize(map0 as never);
+    const map0schema = toValibot(map0 as never);
     expect(() => v.parse(map0schema, new Map([["a", 1]]))).not.toThrow();
 
     // map: 1 validator (max only)
     const map1 = { ...map0, node: { ...map0.node, maxSize: 1 } } as const;
-    const map1schema = deserialize(map1 as never);
+    const map1schema = toValibot(map1 as never);
     expect(() => v.parse(map1schema, new Map([["a", 1]]))).not.toThrow();
     expect(() => v.parse(map1schema, new Map([["a", 1], ["b", 2]]))).toThrow();
 
@@ -91,7 +91,7 @@ describe("types/set & map", () => {
       ...map0,
       node: { ...map0.node, minSize: 1, maxSize: 1 },
     } as const;
-    const map2schema = deserialize(map2 as never);
+    const map2schema = toValibot(map2 as never);
     expect(() => v.parse(map2schema, new Map([["a", 1]]))).not.toThrow();
     expect(() => v.parse(map2schema, new Map())).toThrow();
     expect(() => v.parse(map2schema, new Map([["a", 1], ["b", 2]]))).toThrow();

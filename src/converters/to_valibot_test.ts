@@ -1,21 +1,21 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize } from "./decode.ts";
-import { serialize } from "./encode.ts";
+import { toValibot } from "./to_valibot.ts";
+import { fromValibot } from "./from_valibot.ts";
 import { FORMAT_VERSION } from "../types.ts";
 
 describe("converters/decode behavior", () => {
   it("string", () => {
-    const serialized = serialize(v.string());
-    const schema = deserialize(serialized);
+    const serialized = fromValibot(v.string());
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, "ok")).not.toThrow();
     expect(() => v.parse(schema, 123)).toThrow();
   });
 
   it("array of strings", () => {
-    const serialized = serialize(v.array(v.string()));
-    const schema = deserialize(serialized);
+    const serialized = fromValibot(v.array(v.string()));
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, ["a", "b"]))
       .not.toThrow();
     expect(() => v.parse(schema, [1, 2]))
@@ -23,8 +23,8 @@ describe("converters/decode behavior", () => {
   });
 
   it("object with primitives", () => {
-    const serialized = serialize(v.object({ a: v.string(), b: v.number() }));
-    const schema = deserialize(serialized);
+    const serialized = fromValibot(v.object({ a: v.string(), b: v.number() }));
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, { a: "x", b: 1 }))
       .not.toThrow();
     expect(() => v.parse(schema, { a: 1, b: "x" }))
@@ -33,34 +33,34 @@ describe("converters/decode behavior", () => {
 
   it("pick/omit/partial behavior", () => {
     const base = v.object({ a: v.string(), b: v.number(), c: v.boolean() });
-    const picked = deserialize(serialize(v.pick(base, ["a", "b"])));
+    const picked = toValibot(fromValibot(v.pick(base, ["a", "b"])));
     expect(() => v.parse(picked, { a: "x", b: 1 })).not.toThrow();
     expect(() => v.parse(picked, { a: "x" as unknown as number })).toThrow();
 
-    const omitted = deserialize(serialize(v.omit(base, ["c"])));
+    const omitted = toValibot(fromValibot(v.omit(base, ["c"])));
     expect(() => v.parse(omitted, { a: "x", b: 1 })).not.toThrow();
     expect(() => v.parse(omitted, { a: "x", b: 1, c: true })).not.toThrow();
 
-    const partial = deserialize(serialize(v.partial(base)));
+    const partial = toValibot(fromValibot(v.partial(base)));
     expect(() => v.parse(partial, {})).not.toThrow();
     expect(() => v.parse(partial, { a: "x" })).not.toThrow();
   });
 
   it("loose/strict/rest behavior", () => {
-    const loose = deserialize(serialize(v.looseObject({ a: v.string() })));
+    const loose = toValibot(fromValibot(v.looseObject({ a: v.string() })));
     expect(() => v.parse(loose, { a: "x", extra: 1 })).not.toThrow();
 
-    const strict = deserialize(serialize(v.strictObject({ a: v.string() })));
+    const strict = toValibot(fromValibot(v.strictObject({ a: v.string() })));
     expect(() => v.parse(strict, { a: "x" })).not.toThrow();
     expect(() => v.parse(strict, { a: "x", extra: 1 })).toThrow();
 
-    const rest = deserialize(
-      serialize(v.objectWithRest({ a: v.string() }, v.number())),
+    const rest = toValibot(
+      fromValibot(v.objectWithRest({ a: v.string() }, v.number())),
     );
     expect(() => v.parse(rest, { a: "x", extra: 1 })).not.toThrow();
     expect(() => v.parse(rest, { a: "x", extra: "no" })).toThrow();
-    const counted = deserialize(
-      serialize(
+    const counted = toValibot(
+      fromValibot(
         v.pipe(v.object({ a: v.string(), b: v.number() }), v.minEntries(2)),
       ),
     );
@@ -69,24 +69,24 @@ describe("converters/decode behavior", () => {
   });
 
   it("optional string", () => {
-    const serialized = serialize(v.optional(v.string()));
-    const schema = deserialize(serialized);
+    const serialized = fromValibot(v.optional(v.string()));
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, undefined)).not.toThrow();
     expect(() => v.parse(schema, "hi")).not.toThrow();
     expect(() => v.parse(schema, 1)).toThrow();
   });
 
   it("nullable number", () => {
-    const serialized = serialize(v.nullable(v.number()));
-    const schema = deserialize(serialized);
+    const serialized = fromValibot(v.nullable(v.number()));
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, null)).not.toThrow();
     expect(() => v.parse(schema, 1)).not.toThrow();
     expect(() => v.parse(schema, "1")).toThrow();
   });
 
   it("nullish boolean", () => {
-    const serialized = serialize(v.nullish(v.boolean()));
-    const schema = deserialize(serialized);
+    const serialized = fromValibot(v.nullish(v.boolean()));
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, null)).not.toThrow();
     expect(() => v.parse(schema, undefined)).not.toThrow();
     expect(() => v.parse(schema, true)).not.toThrow();
@@ -94,60 +94,60 @@ describe("converters/decode behavior", () => {
   });
 
   it("string constraints behavior", () => {
-    const serialized = serialize(
+    const serialized = fromValibot(
       v.pipe(v.string(), v.minLength(2), v.regex(/^a/)),
     );
-    const schema = deserialize(serialized);
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, "ab")).not.toThrow();
     expect(() => v.parse(schema, "b")).toThrow();
     expect(() => v.parse(schema, "a")).toThrow();
   });
 
   it("number constraints behavior", () => {
-    const serialized = serialize(
+    const serialized = fromValibot(
       v.pipe(v.number(), v.minValue(2), v.maxValue(3)),
     );
-    const schema = deserialize(serialized);
+    const schema = toValibot(serialized);
     expect(() => v.parse(schema, 2)).not.toThrow();
     expect(() => v.parse(schema, 4)).toThrow();
     expect(() => v.parse(schema, 1)).toThrow();
   });
 
   it("union/tuple/record behavior", () => {
-    const u = deserialize(serialize(v.union([v.string(), v.number()])));
+    const u = toValibot(fromValibot(v.union([v.string(), v.number()])));
     expect(() => v.parse(u, "ok")).not.toThrow();
     expect(() => v.parse(u, 123)).not.toThrow();
     expect(() => v.parse(u, true)).toThrow();
 
-    const t = deserialize(serialize(v.tuple([v.string(), v.number()])));
+    const t = toValibot(fromValibot(v.tuple([v.string(), v.number()])));
     expect(() => v.parse(t, ["a", 1])).not.toThrow();
     expect(() => v.parse(t, [1, "a"]))
       .toThrow();
 
-    const r = deserialize(serialize(v.record(v.string(), v.number())));
+    const r = toValibot(fromValibot(v.record(v.string(), v.number())));
     expect(() => v.parse(r, { a: 1, b: 2 })).not.toThrow();
     expect(() => v.parse(r, { a: "x" }))
       .toThrow();
   });
 
   it("enum + set/map behavior", () => {
-    const e = deserialize(serialize(v.union([v.literal("a"), v.literal("b")])));
+    const e = toValibot(fromValibot(v.union([v.literal("a"), v.literal("b")])));
     expect(() => v.parse(e, "a")).not.toThrow();
     expect(() => v.parse(e, "c")).toThrow();
 
-    const s = deserialize(serialize(v.set(v.number())));
+    const s = toValibot(fromValibot(v.set(v.number())));
     expect(() => v.parse(s, new Set([1, 2]))).not.toThrow();
     expect(() => v.parse(s, [1, 2] as unknown as Set<number>)).toThrow();
 
-    const m = deserialize(serialize(v.map(v.string(), v.number())));
+    const m = toValibot(fromValibot(v.map(v.string(), v.number())));
     expect(() => v.parse(m, new Map([["a", 1]]))).not.toThrow();
     expect(() => v.parse(m, { a: 1 } as unknown as Map<string, number>))
       .toThrow();
   });
 
   it("array constraints behavior", () => {
-    const s = deserialize(
-      serialize(v.pipe(v.array(v.number()), v.minLength(1), v.maxLength(2))),
+    const s = toValibot(
+      fromValibot(v.pipe(v.array(v.number()), v.minLength(1), v.maxLength(2))),
     );
     expect(() => v.parse(s, [1])).not.toThrow();
     expect(() => v.parse(s, [1, 2])).not.toThrow();
@@ -156,8 +156,10 @@ describe("converters/decode behavior", () => {
   });
 
   it("string formats behavior", () => {
-    const s = deserialize(
-      serialize(v.pipe(v.string(), v.email(), v.rfcEmail(), v.startsWith("a"))),
+    const s = toValibot(
+      fromValibot(
+        v.pipe(v.string(), v.email(), v.rfcEmail(), v.startsWith("a")),
+      ),
     );
     expect(() => v.parse(s, "a@test.com")).not.toThrow();
     expect(() => v.parse(s, "test.com")).toThrow();
@@ -165,33 +167,33 @@ describe("converters/decode behavior", () => {
   });
 
   it("string transforms behavior", () => {
-    const s = deserialize(
-      serialize(v.pipe(v.string(), v.trim(), v.toUpperCase())),
+    const s = toValibot(
+      fromValibot(v.pipe(v.string(), v.trim(), v.toUpperCase())),
     );
     expect(v.parse(s, "  a ")).toBe("A");
   });
 
   it("credit card behavior", () => {
-    const s = deserialize(serialize(v.pipe(v.string(), v.creditCard())));
+    const s = toValibot(fromValibot(v.pipe(v.string(), v.creditCard())));
     expect(() => v.parse(s, "4111111111111111")).not.toThrow();
     expect(() => v.parse(s, "123")).toThrow();
   });
 
   it("array nonEmpty behavior", () => {
-    const s = deserialize(serialize(v.pipe(v.array(v.string()), v.nonEmpty())));
+    const s = toValibot(fromValibot(v.pipe(v.array(v.string()), v.nonEmpty())));
     expect(() => v.parse(s, ["a"])).not.toThrow();
     expect(() => v.parse(s, [])).toThrow();
   });
 
   it("date behavior", () => {
-    const s = deserialize(serialize(v.date()));
+    const s = toValibot(fromValibot(v.date()));
     expect(() => v.parse(s, new Date())).not.toThrow();
     expect(() => v.parse(s, "2020-01-01")).toThrow();
   });
 
   it("file behavior", () => {
-    const f = deserialize(
-      serialize(
+    const f = toValibot(
+      fromValibot(
         v.pipe(
           v.file(),
           v.minSize(1),
@@ -213,8 +215,8 @@ describe("converters/decode behavior", () => {
   });
 
   it("blob behavior", () => {
-    const b = deserialize(
-      serialize(
+    const b = toValibot(
+      fromValibot(
         v.pipe(
           v.blob(),
           v.minSize(1),
@@ -246,7 +248,7 @@ describe("converters/decode behavior", () => {
         maxSize: 2,
       },
     };
-    const setSchema = deserialize(setSerialized);
+    const setSchema = toValibot(setSerialized);
     expect(() => v.parse(setSchema, new Set(["a"]))).not.toThrow();
     expect(() => v.parse(setSchema, new Set())).toThrow();
     expect(() => v.parse(setSchema, new Set(["a", "b", "c"]))).toThrow();
@@ -263,14 +265,14 @@ describe("converters/decode behavior", () => {
         minSize: 1,
       },
     };
-    const mapSchema = deserialize(mapSerialized);
+    const mapSchema = toValibot(mapSerialized);
     expect(() => v.parse(mapSchema, new Map([["a", 1]]))).not.toThrow();
     expect(() => v.parse(mapSchema, new Map())).toThrow();
   });
 
   it("tuple with rest behavior", () => {
-    const schema = deserialize(
-      serialize(v.tupleWithRest([v.string()], v.number())),
+    const schema = toValibot(
+      fromValibot(v.tupleWithRest([v.string()], v.number())),
     );
     expect(() => v.parse(schema, ["a"])).not.toThrow();
     expect(() => v.parse(schema, ["a", 1, 2])).not.toThrow();
@@ -282,14 +284,14 @@ describe("converters/decode behavior", () => {
 describe("converters round-trip", () => {
   it("string", () => {
     const original = v.string();
-    const deserialized = deserialize(serialize(original));
+    const deserialized = toValibot(fromValibot(original));
     expect(() => v.parse(deserialized, "hi")).not.toThrow();
     expect(() => v.parse(deserialized, 1)).toThrow();
   });
 
   it("array", () => {
     const original = v.array(v.number());
-    const deserialized = deserialize(serialize(original));
+    const deserialized = toValibot(fromValibot(original));
     expect(() => v.parse(deserialized, [1, 2, 3])).not.toThrow();
     expect(() => v.parse(deserialized, ["1"]))
       .toThrow();
@@ -297,7 +299,7 @@ describe("converters round-trip", () => {
 
   it("object", () => {
     const original = v.object({ a: v.string(), b: v.boolean() });
-    const deserialized = deserialize(serialize(original));
+    const deserialized = toValibot(fromValibot(original));
     expect(() => v.parse(deserialized, { a: "ok", b: true }))
       .not.toThrow();
     expect(() => v.parse(deserialized, { a: 1, b: "no" }))
@@ -306,9 +308,10 @@ describe("converters round-trip", () => {
 
   it("optional + constraints", () => {
     const original = v.optional(v.pipe(v.string(), v.minLength(2)));
-    const deserialized = deserialize(serialize(original));
+    const deserialized = toValibot(fromValibot(original));
     expect(() => v.parse(deserialized, undefined)).not.toThrow();
     expect(() => v.parse(deserialized, "a")).toThrow();
     expect(() => v.parse(deserialized, "ab")).not.toThrow();
   });
 });
+

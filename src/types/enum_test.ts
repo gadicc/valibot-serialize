@@ -1,12 +1,12 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../converters/encode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 import { toCode } from "../converters/to_code.ts";
 
 describe("types/enum", () => {
   it("serialize union of non-string literals to enum node", () => {
-    const u = serialize(v.union([v.literal(1), v.literal(2)]));
+    const u = fromValibot(v.union([v.literal(1), v.literal(2)]));
     expect(u.node).toEqual({ type: "enum", values: [1, 2] });
   });
 

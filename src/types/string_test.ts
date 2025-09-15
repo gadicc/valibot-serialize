@@ -1,9 +1,9 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize } from "../converters/decode.ts";
+import { toValibot } from "../converters/to_valibot.ts";
 import { fromJsonSchema } from "../converters/from_jsonschema.ts";
-import { serialize } from "../converters/encode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 import { toCode } from "../converters/to_code.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 import { FORMAT_VERSION } from "../types.ts";
@@ -16,7 +16,7 @@ describe("types/string integration", () => {
       v.maxLength(5),
       v.trim(),
     );
-    const ser = serialize(schema as never);
+    const ser = fromValibot(schema as never);
     expect(ser.node.type).toBe("string");
     const s = ser.node as Extract<
       NonNullable<typeof ser.node>,
@@ -62,7 +62,7 @@ describe("types/string integration", () => {
       v.startsWith("st"),
       v.endsWith("nd"),
     );
-    const ser = serialize(schema as never);
+    const ser = fromValibot(schema as never);
     const s = ser.node as unknown as Record<string, unknown>;
     const keys = [
       "email",
@@ -113,7 +113,7 @@ describe("types/string integration", () => {
         transforms: ["toUpperCase"],
       },
     };
-    const schema = deserialize(node as never);
+    const schema = toValibot(node as never);
     expect(v.parse(schema, "ab")).toBe("AB");
     expect(() => v.parse(schema, "b")).toThrow();
   });
@@ -129,7 +129,7 @@ describe("types/string integration", () => {
         transforms: ["trimStart", "trimEnd", "normalize"],
       },
     };
-    const schema = deserialize(payload as never);
+    const schema = toValibot(payload as never);
     expect(v.parse(schema, "  a  ")).toBe("a");
   });
 
@@ -403,15 +403,15 @@ describe("types/string integration", () => {
 
   it("toCode emits regex literal for empty and escaped pattern", () => {
     const empty = toCode(
-      serialize(v.pipe(v.string(), v.regex(new RegExp("")))) as never,
+      fromValibot(v.pipe(v.string(), v.regex(new RegExp("")))) as never,
     );
     expect(empty).toContain("v.regex(/(?:)/)");
     const emptyI = toCode(
-      serialize(v.pipe(v.string(), v.regex(new RegExp("", "i")))) as never,
+      fromValibot(v.pipe(v.string(), v.regex(new RegExp("", "i")))) as never,
     );
     expect(emptyI).toContain("v.regex(/(?:)/i)");
     const slash = toCode(
-      serialize(v.pipe(v.string(), v.regex(/a\/b/i))) as never,
+      fromValibot(v.pipe(v.string(), v.regex(/a\/b/i))) as never,
     );
     expect(slash).toContain("/a\\\\/b/i");
   });

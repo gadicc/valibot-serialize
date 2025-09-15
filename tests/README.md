@@ -7,5 +7,5 @@ Co-locate unit tests next to their respective source files, e.g. `string.ts` and
 
 ## e2e
 
-Simple "end-to-end" tests that, given a valibot schema, will serialize it,
-deserialize, toJson, fromJson, and toCode, and make sure all schemas match.
+Simple "end-to-end" tests that, given a valibot schema, will fromValibot it,
+toValibot, toJson, fromJson, and toCode, and make sure all schemas match.

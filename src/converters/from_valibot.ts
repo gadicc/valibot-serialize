@@ -9,16 +9,16 @@ import * as codecs from "../types/index.ts";
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
 /**
- * Serialize a Valibot schema into a portable JSON-friendly representation.
+ * Convert a Valibot schema into a portable JSON-friendly representation.
  *
  * The returned value contains a stable envelope plus an AST `node` that
  * captures the schema structure and constraints without functions.
  *
  * @typeParam T - Any Valibot `BaseSchema`.
- * @param schema - The Valibot schema to serialize.
+ * @param schema - The Valibot schema to convert.
  * @returns A `SerializedSchema` envelope with the encoded AST.
  */
-export function serialize<T extends AnySchema>(schema: T): SerializedSchema {
+export function fromValibot<T extends AnySchema>(schema: T): SerializedSchema {
   const node = encodeNode(schema);
   return {
     kind: "schema",
@@ -43,3 +43,4 @@ function encodeNode(schema: AnySchema): SchemaNode {
     `Unsupported schema type for serialization: ${String(type)}`,
   );
 }
+

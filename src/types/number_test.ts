@@ -1,9 +1,9 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { deserialize } from "../converters/decode.ts";
+import { toValibot } from "../converters/to_valibot.ts";
 import { fromJsonSchema } from "../converters/from_jsonschema.ts";
-import { serialize } from "../converters/encode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 import { toCode } from "../converters/to_code.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 
@@ -15,7 +15,7 @@ describe("types/number integration", () => {
       v.maxValue(3),
       v.integer(),
     );
-    const ser = serialize(schema as never);
+    const ser = fromValibot(schema as never);
     expect(ser.node.type).toBe("number");
     const n = ser.node as Extract<
       NonNullable<typeof ser.node>,
@@ -36,7 +36,7 @@ describe("types/number integration", () => {
       v.gtValue(1),
       v.ltValue(9),
     );
-    const ser = serialize(schema as never);
+    const ser = fromValibot(schema as never);
     const n = ser.node as Extract<
       NonNullable<typeof ser.node>,
       { type: "number" }
@@ -60,7 +60,7 @@ describe("types/number integration", () => {
       format: 1 as const,
       node: { type: "number" as const, min: 2, max: 4 },
     };
-    const schema = deserialize(payload as never);
+    const schema = toValibot(payload as never);
     expect(v.parse(schema, 3)).toBe(3);
     expect(() => v.parse(schema, 1)).toThrow();
   });
@@ -105,7 +105,7 @@ describe("types/number integration", () => {
 
   it("deserialize handles 0,1,2,>2 validator lengths", () => {
     // 0 validators
-    const zero = deserialize({
+    const zero = toValibot({
       kind: "schema" as const,
       vendor: "valibot" as const,
       version: 1 as const,
@@ -115,7 +115,7 @@ describe("types/number integration", () => {
     expect(() => v.parse(zero, 1)).not.toThrow();
 
     // 1 validator
-    const one = deserialize({
+    const one = toValibot({
       kind: "schema" as const,
       vendor: "valibot" as const,
       version: 1 as const,
@@ -126,7 +126,7 @@ describe("types/number integration", () => {
     expect(() => v.parse(one, 2.5)).toThrow();
 
     // 2 validators
-    const two = deserialize({
+    const two = toValibot({
       kind: "schema" as const,
       vendor: "valibot" as const,
       version: 1 as const,
@@ -137,7 +137,7 @@ describe("types/number integration", () => {
     expect(() => v.parse(two, 4)).toThrow();
 
     // >2 validators
-    const many = deserialize({
+    const many = toValibot({
       kind: "schema" as const,
       vendor: "valibot" as const,
       version: 1 as const,

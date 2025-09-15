@@ -1,18 +1,18 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-import { serialize } from "../converters/encode.ts";
+import { fromValibot } from "../converters/from_valibot.ts";
 import { toCode } from "../converters/to_code.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/wrappers", () => {
   it("serialize optional/nullable/nullish wrappers", () => {
-    const opt = serialize(v.optional(v.string()));
+    const opt = fromValibot(v.optional(v.string()));
     expect(opt.node).toEqual({ type: "optional", base: { type: "string" } });
-    const nul = serialize(v.nullable(v.number()));
+    const nul = fromValibot(v.nullable(v.number()));
     expect(nul.node).toEqual({ type: "nullable", base: { type: "number" } });
-    const nsh = serialize(v.nullish(v.boolean()));
+    const nsh = fromValibot(v.nullish(v.boolean()));
     expect(nsh.node).toEqual({ type: "nullish", base: { type: "boolean" } });
   });
 

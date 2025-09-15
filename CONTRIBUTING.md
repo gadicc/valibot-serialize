@@ -38,8 +38,8 @@ Currently you should do run this by hand but we might add a hook for it.
 - Tests are permission‑free and deterministic (no network/fs access).
 - Name tests `file_test.ts` colocated next to the code under `src/`.
 - For tests and tools, prefer importing from specific `src/*` modules directly
-  (e.g., `import { serialize } from "../converters/encode.ts";`). The `main.ts`
-  barrel remains the public entry for external consumers.
+  (e.g., `import { fromValibot } from "../converters/from_valibot.ts";`). The
+  `main.ts` barrel remains the public entry for external consumers.
 - Prefer structural/behavioral assertions over implementation details.
 
 ## Coding Style
