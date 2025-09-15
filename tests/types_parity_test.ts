@@ -1,54 +1,11 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
-
-// Import our codec registry to introspect implemented types
-import {
-  array,
-  blob,
-  boolean,
-  date,
-  enum as enumCodec,
-  file,
-  literal,
-  map,
-  nullable,
-  nullish,
-  number,
-  object,
-  optional,
-  picklist,
-  record,
-  set,
-  string,
-  tuple,
-  union,
-} from "../src/types/index.ts";
+import * as codecs from "../src/types/index.ts";
 
 function collectImplementedTypes(): Set<string> {
   const types = new Set<string>();
-  const modules = [
-    array,
-    blob,
-    boolean,
-    date,
-    enumCodec,
-    file,
-    literal,
-    map,
-    nullable,
-    nullish,
-    number,
-    object,
-    optional,
-    picklist,
-    record,
-    set,
-    string,
-    tuple,
-    union,
-  ];
-  for (const mod of modules) {
+  for (const mod of Object.values(codecs)) {
     const tn = (mod as { typeName?: unknown }).typeName;
     if (typeof tn === "string") types.add(tn);
   }
