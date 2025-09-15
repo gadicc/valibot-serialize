@@ -15,9 +15,9 @@ describe("fromJsonSchema extra coverage", () => {
     expect((s.node as { ip?: boolean }).ip).toBe(true);
   });
 
-  it("anyOf consts => enum values", () => {
+  it("anyOf consts => enum/picklist values", () => {
     const s = fromJsonSchema({ anyOf: [{ const: "a" }, { const: "b" }] });
-    expect(s.node.type).toBe("enum");
+    expect(s.node.type).toBe("picklist");
     expect((s.node as { type: string; values: string[] }).values).toEqual([
       "a",
       "b",

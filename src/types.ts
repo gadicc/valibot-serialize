@@ -19,6 +19,7 @@ import type { UnionNode } from "./types/union.ts";
 import type { TupleNode } from "./types/tuple.ts";
 import type { RecordNode } from "./types/record.ts";
 import type { EnumNode } from "./types/enum.ts";
+import type { PicklistNode } from "./types/picklist.ts";
 import type { SetNode } from "./types/set.ts";
 import type { MapNode } from "./types/map.ts";
 
@@ -39,6 +40,7 @@ export type SchemaNode =
   | TupleNode
   | RecordNode
   | EnumNode
+  | PicklistNode
   | SetNode
   | MapNode;
 

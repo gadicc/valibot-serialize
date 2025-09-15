@@ -87,6 +87,14 @@ create dep-free versions of those schemas.
   - Emits concise Valibot builder code for the given AST (no imports), ending
     with a semicolon. Intended for code‑gen/export; format it as you like.
 
+## Module Structure
+
+- Each Valibot schema kind is implemented in its own module under `src/types/`.
+  For example: `string.ts`, `number.ts`, `object.ts`, `enum.ts`, and
+  `picklist.ts`. This keeps detection/encode/decode/codegen/JSON‑Schema logic
+  focused and easy to maintain. When adding support for a new schema, prefer
+  creating `src/types/<kind>.ts` and export it via `src/types/index.ts`.
+
 ### Supported nodes and flags (AST)
 
 - `string` with:
@@ -109,6 +117,7 @@ create dep-free versions of those schemas.
 - `optional`, `nullable`, `nullish`
 - `union`, `tuple` (+ `rest`), `record`
 - `enum` with `values`
+- `picklist` with `values` (string options)
 - `set` with `value`, `minSize`, `maxSize`
 - `map` with `key`, `value`, `minSize`, `maxSize`
 - `date`, `file` (`minSize`, `maxSize`, `mimeTypes`), `blob` (`minSize`,
@@ -137,7 +146,7 @@ find it useful.
 - `fromJsonSchema` converts back a subset:
   - `type` string/number/integer/boolean, `const` (`literal`), `enum`,
     `array`/`object`, `tuple` (`prefixItems`), `union` (`anyOf`), and `anyOf` of
-    constants → `enum`.
+    constants → `picklist` (all strings) or `enum` (mixed types).
   - Recognizes string format/email/uri/uuid/ipv4/ipv6, and common patterns
     produced by `toJsonSchema` for startsWith/endsWith, `hexColor`, `slug`,
     `digits`, `hexadecimal`, ids (`ulid`, `nanoid`, `cuid2`) and sets flags

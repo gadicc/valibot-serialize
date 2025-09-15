@@ -37,6 +37,7 @@ export const serializedSchemaJson = {
         { $ref: "#/$defs/TupleNode" },
         { $ref: "#/$defs/RecordNode" },
         { $ref: "#/$defs/EnumNode" },
+        { $ref: "#/$defs/PicklistNode" },
         { $ref: "#/$defs/SetNode" },
         { $ref: "#/$defs/MapNode" },
         { $ref: "#/$defs/DateNode" },
@@ -250,6 +251,15 @@ export const serializedSchemaJson = {
       properties: {
         type: { const: "enum" },
         values: { type: "array", items: { $ref: "#/$defs/PrimitiveLiteral" } },
+      },
+    },
+    PicklistNode: {
+      type: "object",
+      additionalProperties: false,
+      required: ["type", "values"],
+      properties: {
+        type: { const: "picklist" },
+        values: { type: "array", items: { type: "string" } },
       },
     },
     SetNode: {

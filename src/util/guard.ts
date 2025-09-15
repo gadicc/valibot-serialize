@@ -296,6 +296,11 @@ function isSchemaNode(node: unknown): node is SchemaNode {
       }
       return true;
     }
+    case "picklist": {
+      const values = (node as { values?: unknown }).values;
+      return Array.isArray(values) &&
+        values.every((v) => typeof v === "string");
+    }
     case "set": {
       const n = node as {
         value?: unknown;

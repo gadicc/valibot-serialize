@@ -20,15 +20,20 @@ export interface EnumNode extends BaseNode<typeof typeName> {
 }
 
 export const matches: Matches = (any: AnySchema): boolean => {
-  const type = any?.type as string | undefined;
-  return type === "picklist" || type === "enum";
+  const type = (any as { type?: string }).type;
+  return type === "enum";
 };
 
 export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
-  if (Array.isArray((schema as { enum?: unknown[] }).enum)) return true;
-  if (!Array.isArray((schema as { anyOf?: unknown[] }).anyOf)) return false;
-  const items = (schema as { anyOf: Array<Record<string, unknown>> }).anyOf;
-  return items.length > 0 && items.every((i) => i.const !== undefined);
+  const en = (schema as { enum?: unknown[] }).enum;
+  if (Array.isArray(en)) return en.some((x) => typeof x !== "string");
+  const anyOf = (schema as { anyOf?: Array<Record<string, unknown>> }).anyOf;
+  if (!Array.isArray(anyOf)) return false;
+  return (
+    anyOf.length > 0 &&
+    anyOf.every((i) => i.const !== undefined) &&
+    anyOf.some((i) => typeof i.const !== "string")
+  );
 };
 
 export const encode: Encoder<EnumNode> = function encodeEnum(
@@ -37,6 +42,7 @@ export const encode: Encoder<EnumNode> = function encodeEnum(
   const snap = JSON.parse(JSON.stringify(any)) as {
     options?: unknown[];
     enum?: unknown[];
+    type?: string;
   };
   const values =
     (snap.options ?? snap.enum ?? (any as { options?: unknown[] }).options ??
@@ -55,13 +61,27 @@ export const encode: Encoder<EnumNode> = function encodeEnum(
 };
 
 export const decode: Decoder<EnumNode> = function decodeEnum(node): AnySchema {
+  const allStrings = node.values.every((val) => typeof val === "string");
+  if (allStrings) {
+    const mapping = Object.fromEntries(
+      (node.values as string[]).map((s) => [s, s] as const),
+    );
+    // deno-lint-ignore no-explicit-any
+    return (v as any).enum(mapping);
+  }
+  // Fallback: union of literals
   const literals = node.values.map((val) => v.literal(val as never));
   return v.union(literals as never);
 };
 
 export const toCode: ToCode<EnumNode> = function enumToCode(node): string {
   const allStrings = node.values.every((v) => typeof v === "string");
-  if (allStrings) return `v.picklist(${JSON.stringify(node.values)})`;
+  if (allStrings) {
+    const mapping = Object.fromEntries(
+      (node.values as string[]).map((s) => [s, s] as const),
+    );
+    return `v.enum(${JSON.stringify(mapping)})`;
+  }
   const lits = node.values.map((v) => `v.literal(${JSON.stringify(v)})`).join(
     ",",
   );

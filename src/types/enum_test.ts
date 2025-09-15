@@ -5,14 +5,9 @@ import { serialize } from "../converters/encode.ts";
 import { toCode } from "../converters/to_code.ts";
 
 describe("types/enum", () => {
-  it("serialize union of literals to enum node", () => {
-    const u = serialize(v.union([v.literal("a"), v.literal("b")]));
-    expect(u.node).toEqual({ type: "enum", values: ["a", "b"] });
-  });
-
-  it("serialize picklist to enum node", () => {
-    const e = serialize(v.picklist(["x", "y", "z"]));
-    expect(e.node).toEqual({ type: "enum", values: ["x", "y", "z"] });
+  it("serialize union of non-string literals to enum node", () => {
+    const u = serialize(v.union([v.literal(1), v.literal(2)]));
+    expect(u.node).toEqual({ type: "enum", values: [1, 2] });
   });
 
   it("toCode uses union for mixed literal types", () => {
@@ -22,9 +17,10 @@ describe("types/enum", () => {
       version: 1 as const,
       format: 1 as const,
     };
-    const code = toCode(
-      { ...env, node: { type: "enum", values: ["x", 1, true, null] } } as never,
-    );
+    const code = toCode({
+      ...env,
+      node: { type: "enum", values: ["x", 1, true, null] },
+    } as never);
     expect(code).toBe(
       'v.union([v.literal("x"),v.literal(1),v.literal(true),v.literal(null)]);',
     );

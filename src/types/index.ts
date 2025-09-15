@@ -1,6 +1,7 @@
 // Convenience re-exports for all type modules, namespaced to avoid collisions.
 // Order here influences fromJsonSchema detection precedence via matchesJsonSchema.
 export * as literal from "./literal.ts";
+export * as picklist from "./picklist.ts";
 export * as enum from "./enum.ts";
 export * as union from "./union.ts";
 export * as tuple from "./tuple.ts";

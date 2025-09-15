@@ -43,12 +43,14 @@ export const encode: Encoder<UnionNode> = function encodeUnion(
   const enc = options.map((o) => ctx.encodeNode(o));
   const literals = enc.every((n) => n.type === "literal");
   if (literals) {
-    return {
-      type: "enum",
-      values: enc.map((n) =>
-        (n as { type: "literal"; value: unknown }).value as never
-      ),
-    } as never;
+    const vals = enc.map((n) =>
+      (n as { type: "literal"; value: unknown }).value
+    );
+    const allStrings = vals.every((v) => typeof v === "string");
+    if (allStrings) {
+      return { type: "picklist", values: vals as string[] } as never;
+    }
+    return { type: "enum", values: vals as never } as never;
   }
   return { type: typeName, options: enc };
 };
