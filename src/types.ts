@@ -6,9 +6,11 @@ export type PrimitiveLiteral = string | number | boolean | null;
 import type { StringNode } from "./types/string.ts";
 import type { NumberNode } from "./types/number.ts";
 import type { BooleanNode } from "./types/boolean.ts";
+import type { BigIntNode } from "./types/bigint.ts";
 import type { DateNode } from "./types/date.ts";
 import type { FileNode } from "./types/file.ts";
 import type { BlobNode } from "./types/blob.ts";
+import type { SymbolNode } from "./types/symbol.ts";
 import type { LiteralNode } from "./types/literal.ts";
 import type { ArrayNode } from "./types/array.ts";
 import type { ObjectNode } from "./types/object.ts";
@@ -23,14 +25,18 @@ import type { EnumNode } from "./types/enum.ts";
 import type { PicklistNode } from "./types/picklist.ts";
 import type { SetNode } from "./types/set.ts";
 import type { MapNode } from "./types/map.ts";
+import type { UndefinedNode } from "./types/undefined.ts";
+import type { VoidNode } from "./types/void.ts";
 
 export type SchemaNode =
   | StringNode
   | NumberNode
   | BooleanNode
+  | BigIntNode
   | DateNode
   | FileNode
   | BlobNode
+  | SymbolNode
   | LiteralNode
   | ArrayNode
   | ObjectNode
@@ -44,7 +50,9 @@ export type SchemaNode =
   | EnumNode
   | PicklistNode
   | SetNode
-  | MapNode;
+  | MapNode
+  | UndefinedNode
+  | VoidNode;
 
 export interface SerializedSchema {
   kind: "schema";

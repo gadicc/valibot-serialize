@@ -42,6 +42,10 @@ function collectValibotTypes(): {
   pushIfFn("string");
   pushIfFn("number");
   pushIfFn("boolean");
+  pushIfFn("bigint");
+  pushIfFn("symbol");
+  pushIfFn("undefined");
+  pushIfFn("void");
   pushIfFn("date");
   pushIfFn("file");
   pushIfFn("blob");
