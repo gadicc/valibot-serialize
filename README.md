@@ -7,7 +7,7 @@ and to decode them back. It also includes helpers to export a JSON Schema (Draft
 Copyright (c) 2025 by Gadi Cohen. [MIT licensed](./LICENSE.txt).
 
 [![npm](https://img.shields.io/npm/v/valibot-serialize)](https://www.npmjs.com/package/valibot-serialize)
-[![Tests](https://github.com/gadicc/valibot-serialize/actions/workflows/tests.yaml/badge.svg)](https://github.com/gadicc/valibot-serialize/actions/workflows/tests.yaml)
+[![Tests](https://github.com/gadicc/valibot-serialize/actions/workflows/test-release.yaml/badge.svg)](https://github.com/gadicc/valibot-serialize/actions/workflows/test-release.yaml)
 [![coverage](https://img.shields.io/codecov/c/github/gadicc/valibot-serialize)](https://codecov.io/gh/gadicc/valibot-serialize)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
