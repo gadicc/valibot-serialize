@@ -4,6 +4,14 @@ import {
   type SerializedSchema,
 } from "../types.ts";
 
+/**
+ * Type guard for validating `SerializedSchema` envelopes.
+ *
+ * Ensures the outer envelope fields and inner AST node are structurally valid.
+ *
+ * @param value - Unknown input to check.
+ * @returns `true` if `value` is a valid `SerializedSchema` (narrows type).
+ */
 export function isSerializedSchema(value: unknown): value is SerializedSchema {
   if (!value || typeof value !== "object") return false;
   const vObj = value as Record<string, unknown>;

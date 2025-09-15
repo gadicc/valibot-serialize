@@ -1,3 +1,8 @@
+/**
+ * Internal serialization format version for this library.
+ *
+ * Increment when the AST structure changes in a non-backward-compatible way.
+ */
 export const FORMAT_VERSION = 1 as const;
 
 export type PrimitiveLiteral = string | number | boolean | null;
@@ -28,6 +33,9 @@ import type { MapNode } from "./types/map.ts";
 import type { UndefinedNode } from "./types/undefined.ts";
 import type { VoidNode } from "./types/void.ts";
 
+/**
+ * Union of all AST node variants used by serialized Valibot schemas.
+ */
 export type SchemaNode =
   | StringNode
   | NumberNode
@@ -54,6 +62,9 @@ export type SchemaNode =
   | UndefinedNode
   | VoidNode;
 
+/**
+ * Stable envelope that wraps a serialized Valibot schema AST.
+ */
 export interface SerializedSchema {
   kind: "schema";
   vendor: "valibot";

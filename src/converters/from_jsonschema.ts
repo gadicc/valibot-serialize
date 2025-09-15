@@ -7,6 +7,14 @@ import * as codecs from "../types/index.ts";
 
 type JS = Record<string, unknown>;
 
+/**
+ * Build a serialized Valibot schema from a JSON Schema (Draft 2020-12).
+ *
+ * The conversion is best-effort and focuses on commonly-used constraints.
+ *
+ * @param schema - A JSON Schema-ish input object.
+ * @returns A `SerializedSchema` envelope containing the converted AST.
+ */
 export function fromJsonSchema(schema: JS): SerializedSchema {
   return {
     kind: "schema",
@@ -33,4 +41,8 @@ function convert(schema: JS): SchemaNode {
   return { type: "string" };
 }
 
+/**
+ * Input type accepted by {@link fromJsonSchema}.
+ * A loose structural type representing a JSON Schema-like object.
+ */
 export type { JS as JsonSchemaInput };

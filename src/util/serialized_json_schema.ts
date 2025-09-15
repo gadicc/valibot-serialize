@@ -1,5 +1,8 @@
-// JSON Schema for the SerializedSchema envelope and AST nodes
-// Draft 2020-12
+/**
+ * JSON Schema (Draft 2020-12) for the `SerializedSchema` envelope and AST.
+ *
+ * Useful for validation, documentation, and tooling interoperability.
+ */
 export const serializedSchemaJson = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://example.com/valibot-serialized.schema.json",
@@ -288,4 +291,7 @@ export const serializedSchemaJson = {
   },
 } as const;
 
+/**
+ * Structural type of {@link serializedSchemaJson} for convenience.
+ */
 export type SerializedJsonSchema = typeof serializedSchemaJson;

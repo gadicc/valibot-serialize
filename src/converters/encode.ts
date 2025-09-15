@@ -8,7 +8,16 @@ import * as codecs from "../types/index.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
-// Encoder: Valibot schema -> SerializedSchema
+/**
+ * Serialize a Valibot schema into a portable JSON-friendly representation.
+ *
+ * The returned value contains a stable envelope plus an AST `node` that
+ * captures the schema structure and constraints without functions.
+ *
+ * @typeParam T - Any Valibot `BaseSchema`.
+ * @param schema - The Valibot schema to serialize.
+ * @returns A `SerializedSchema` envelope with the encoded AST.
+ */
 export function serialize<T extends AnySchema>(schema: T): SerializedSchema {
   const node = encodeNode(schema);
   return {

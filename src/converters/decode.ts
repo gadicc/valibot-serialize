@@ -6,7 +6,16 @@ import * as codecs from "../types/index.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
-// Decoder: SerializedSchema -> Valibot schema
+/**
+ * Deserialize a previously serialized schema back to a Valibot schema.
+ *
+ * Validates the envelope shape and converts the contained AST into
+ * Valibot builder objects.
+ *
+ * @param data - A `SerializedSchema` envelope produced by {@link serialize}.
+ * @returns A Valibot schema equivalent to the original.
+ * @throws If the input is not a valid serialized schema.
+ */
 export function deserialize(data: SerializedSchema): AnySchema {
   if (!isSerializedSchema(data)) {
     throw new Error("Invalid serialized schema format");
