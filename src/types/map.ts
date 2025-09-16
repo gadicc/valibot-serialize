@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
+import type { AnyNode, BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -20,6 +20,19 @@ export interface MapNode extends BaseNode<typeof typeName> {
   minSize?: number;
   maxSize?: number;
 }
+
+export const isSchemaNode: IsSchemaNode<MapNode> = (
+  node: unknown,
+  ctx,
+): node is MapNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  const n = node as Record<string, unknown>;
+  if (!ctx.isSchemaNode(n.key) || !ctx.isSchemaNode(n.value)) return false;
+  if (n.minSize !== undefined && typeof n.minSize !== "number") return false;
+  if (n.maxSize !== undefined && typeof n.maxSize !== "number") return false;
+  return true;
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;

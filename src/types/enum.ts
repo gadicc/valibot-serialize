@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { BaseNode } from "./lib/type_interfaces.ts";
+import type { BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -18,6 +18,23 @@ export const typeName = "enum" as const;
 export interface EnumNode extends BaseNode<typeof typeName> {
   values: Array<string | number | boolean | null>;
 }
+
+export const isSchemaNode: IsSchemaNode<EnumNode> = (
+  node: unknown,
+  _ctx,
+): node is EnumNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  const values = (node as { values?: unknown }).values as unknown;
+  if (!Array.isArray(values)) return false;
+  for (const v of values) {
+    const t = typeof v;
+    if (!(t === "string" || t === "number" || t === "boolean") && v !== null) {
+      return false;
+    }
+  }
+  return true;
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = (any as { type?: string }).type;

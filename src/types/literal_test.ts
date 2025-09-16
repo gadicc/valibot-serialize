@@ -4,9 +4,17 @@ import * as v from "@valibot/valibot";
 import { toValibot } from "../converters/to_valibot.ts";
 import { fromJsonSchema } from "../converters/from_jsonschema.ts";
 import { fromValibot } from "../converters/from_valibot.ts";
+import { isSchemaNode as isLiteralNode } from "./literal.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 
 describe("types/literal", () => {
+  it("guard rejects non-primitive value", () => {
+    expect(
+      isLiteralNode({ type: "literal", value: { a: 1 } } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+  });
   it("serialize/deserialize literal values", () => {
     const s = fromValibot(v.literal("x"));
     expect(s.node).toEqual({ type: "literal", value: "x" });

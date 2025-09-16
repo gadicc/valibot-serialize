@@ -3,8 +3,43 @@ import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
 import { toValibot } from "../converters/to_valibot.ts";
 import { fromValibot } from "../converters/from_valibot.ts";
+import { isSchemaNode as isSetNode } from "./set.ts";
+import { isSchemaNode as isMapNode } from "./map.ts";
 
 describe("types/set & map", () => {
+  it("guards reject wrong sizes and missing child nodes", () => {
+    expect(
+      isSetNode({ type: "set", value: 1 } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isSetNode(
+        { type: "set", value: { type: "string" }, minSize: "x" } as unknown,
+        {
+          isSchemaNode: () => false,
+        },
+      ),
+    ).toBe(false);
+    expect(
+      isMapNode(
+        {
+          type: "map",
+          key: { type: "string" },
+          value: { type: "number" },
+          maxSize: {},
+        } as unknown,
+        {
+          isSchemaNode: () => false,
+        },
+      ),
+    ).toBe(false);
+    expect(
+      isMapNode({ type: "map", key: 1, value: { type: "number" } } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+  });
   it("serialize set node", () => {
     const s = fromValibot(v.set(v.string()));
     expect(s.node).toEqual({ type: "set", value: { type: "string" } });

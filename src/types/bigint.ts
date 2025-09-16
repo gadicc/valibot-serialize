@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { BaseNode } from "./lib/type_interfaces.ts";
+import type { BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -15,6 +15,16 @@ export const typeName = "bigint" as const;
 
 // Serialized node shape for "bigint"
 export interface BigIntNode extends BaseNode<typeof typeName> {}
+
+export const isSchemaNode: IsSchemaNode<BigIntNode> = (
+  node: unknown,
+  _ctx,
+): node is BigIntNode => {
+  return Boolean(
+    node && typeof node === "object" &&
+      (node as { type?: unknown }).type === typeName,
+  );
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;

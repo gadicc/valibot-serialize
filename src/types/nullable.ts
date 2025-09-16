@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
+import type { AnyNode, BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type { AnySchema, Matches } from "./lib/type_interfaces.ts";
 import type {
@@ -16,6 +16,15 @@ export const typeName = "nullable" as const;
 export interface NullableNode extends BaseNode<typeof typeName> {
   base: AnyNode;
 }
+
+export const isSchemaNode: IsSchemaNode<NullableNode> = (
+  node: unknown,
+  ctx,
+): node is NullableNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  return ctx.isSchemaNode((node as { base?: unknown }).base);
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;

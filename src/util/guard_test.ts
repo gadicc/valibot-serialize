@@ -106,40 +106,6 @@ describe("guards and error paths", () => {
     expect(() => fromValibot(badEnumVal as never)).toThrow();
   });
 
-  it("isSerializedSchema rejects invalid string transforms and word counts", () => {
-    const base = {
-      kind: "schema" as const,
-      vendor: "valibot" as const,
-      version: 1 as const,
-      format: FORMAT_VERSION,
-    };
-    const badTransforms = {
-      ...base,
-      node: { type: "string" as const, transforms: ["bad"] as unknown },
-    };
-    expect(isSerializedSchema(badTransforms)).toBe(false);
-    const badMinWords = {
-      ...base,
-      node: { type: "string" as const, minWords: "x" as unknown as number },
-    };
-    expect(isSerializedSchema(badMinWords)).toBe(false);
-    const badMaxWords = {
-      ...base,
-      node: { type: "string" as const, maxWords: {} as unknown as number },
-    };
-    expect(isSerializedSchema(badMaxWords)).toBe(false);
-    const badStarts = {
-      ...base,
-      node: { type: "string" as const, startsWith: 1 as unknown as string },
-    };
-    expect(isSerializedSchema(badStarts)).toBe(false);
-    const badEnds = {
-      ...base,
-      node: { type: "string" as const, endsWith: {} as unknown as string },
-    };
-    expect(isSerializedSchema(badEnds)).toBe(false);
-  });
-
   it("serialize throws on unsupported schema type", () => {
     const unk = { type: "weird" } as unknown as v.BaseSchema<
       unknown,
@@ -149,31 +115,17 @@ describe("guards and error paths", () => {
     expect(() => fromValibot(unk as never)).toThrow();
   });
 
-  it("isSerializedSchema rejects invalid node shapes", () => {
+  it("isSerializedSchema envelope rejects non-object node and primitives", () => {
     const base = {
       kind: "schema" as const,
       vendor: "valibot" as const,
       version: 1 as const,
       format: FORMAT_VERSION,
     };
-    const badString = { ...base, node: { type: "string", minLength: "x" } };
-    expect(isSerializedSchema(badString)).toBe(false);
-    const badObject = { ...base, node: { type: "object", entries: "bad" } };
-    expect(isSerializedSchema(badObject)).toBe(false);
-    const badEnum = { ...base, node: { type: "enum", values: [{ a: 1 }] } };
-    expect(isSerializedSchema(badEnum)).toBe(false);
-    const badArrayLen = {
-      ...base,
-      node: { type: "array", item: { type: "string" }, length: "x" },
-    };
-    expect(isSerializedSchema(badArrayLen)).toBe(false);
-    // additional guards
     expect(isSerializedSchema(null)).toBe(false);
     expect(isSerializedSchema(123)).toBe(false);
     const notObjectNode = { ...base, node: 1 };
     expect(isSerializedSchema(notObjectNode)).toBe(false);
-    const badFlags = { ...base, node: { type: "string", patternFlags: 1 } };
-    expect(isSerializedSchema(badFlags)).toBe(false);
   });
 
   it("deserialize throws on unsupported node type", () => {

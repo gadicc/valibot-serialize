@@ -6,8 +6,31 @@ import { fromJsonSchema } from "../converters/from_jsonschema.ts";
 import { fromValibot } from "../converters/from_valibot.ts";
 import { toCode } from "../converters/to_code.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
+import { isSchemaNode as isNumberNode } from "./number.ts";
 
 describe("types/number integration", () => {
+  it("guard rejects wrong field types", () => {
+    expect(
+      isNumberNode({ type: "number", min: "1" } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isNumberNode({ type: "number", max: {} } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isNumberNode({ type: "number", gt: [] } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isNumberNode({ type: "number", integer: false } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+  });
   it("serialize captures number validators", () => {
     const schema = v.pipe(
       v.number(),

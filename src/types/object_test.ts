@@ -4,9 +4,25 @@ import * as v from "@valibot/valibot";
 import { fromValibot } from "../converters/from_valibot.ts";
 import { toCode } from "../converters/to_code.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
+import { isSchemaNode as isObjectNode } from "./object.ts";
 import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/object", () => {
+  it("guard rejects invalid optionalKeys and rest", () => {
+    expect(
+      isObjectNode(
+        { type: "object", entries: {}, optionalKeys: [1] } as unknown,
+        {
+          isSchemaNode: () => false,
+        },
+      ),
+    ).toBe(false);
+    expect(
+      isObjectNode({ type: "object", entries: {}, rest: 123 } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+  });
   it("serialize object node shape", () => {
     const s = fromValibot(v.object({ a: v.string(), b: v.number() }));
     expect(s.node).toEqual({

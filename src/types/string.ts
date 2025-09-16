@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
+import type { AnyNode, BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import { escapeRegex, unescapeRegex } from "../util/regex_utils.ts";
 import { detect, patterns as pat } from "../util/patterns.ts";
@@ -66,6 +66,79 @@ export interface StringNode extends BaseNode<typeof typeName> {
     | "normalize"
   >;
 }
+
+// Runtime guard for serialized StringNode
+export const isSchemaNode: IsSchemaNode<StringNode> = (
+  node: unknown,
+  _ctx,
+): node is StringNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  const n = node as Record<string, unknown>;
+  const num = [
+    "minLength",
+    "maxLength",
+    "length",
+    "minGraphemes",
+    "maxGraphemes",
+    "minWords",
+    "maxWords",
+  ] as const;
+  for (const k of num) {
+    if (n[k] !== undefined && typeof n[k] !== "number") return false;
+  }
+  const str = ["pattern", "patternFlags", "startsWith", "endsWith"] as const;
+  for (const k of str) {
+    if (n[k] !== undefined && typeof n[k] !== "string") return false;
+  }
+  const bools = [
+    "email",
+    "rfcEmail",
+    "url",
+    "uuid",
+    "ip",
+    "ipv4",
+    "ipv6",
+    "hexColor",
+    "slug",
+    "creditCard",
+    "imei",
+    "mac",
+    "mac48",
+    "mac64",
+    "base64",
+    "ulid",
+    "nanoid",
+    "cuid2",
+    "isoDate",
+    "isoDateTime",
+    "isoTime",
+    "isoTimeSecond",
+    "isoTimestamp",
+    "isoWeek",
+    "digits",
+    "emoji",
+    "hexadecimal",
+  ] as const;
+  for (const k of bools) {
+    if (n[k] !== undefined && n[k] !== true) return false;
+  }
+  if (n.transforms !== undefined) {
+    if (!Array.isArray(n.transforms)) return false;
+    const allowed = new Set([
+      "trim",
+      "trimStart",
+      "trimEnd",
+      "toUpperCase",
+      "toLowerCase",
+      "normalize",
+    ]);
+    for (const t of n.transforms as unknown[]) {
+      if (typeof t !== "string" || !allowed.has(t)) return false;
+    }
+  }
+  return true;
+};
 
 // Whether a Valibot schema snapshot refers to a string builder
 export const matches: Matches = (any: AnySchema): boolean => {

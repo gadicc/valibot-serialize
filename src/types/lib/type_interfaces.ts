@@ -16,6 +16,14 @@ export type Matches = (schema: AnySchema) => boolean;
 
 export type MatchesJsonSchema = (schema: Record<string, unknown>) => boolean;
 
+// Runtime type guard for a specific serialized node shape.
+// The `ctx.isSchemaNode` callback allows recursive validation of child nodes
+// without creating static import cycles.
+export type IsSchemaNode<N extends AnyNode> = (
+  node: unknown,
+  ctx: { isSchemaNode: (node: unknown) => boolean },
+) => node is N;
+
 export type Encoder<N extends AnyNode> = (
   schema: { type?: string; pipe?: unknown[] } & Record<string, unknown>,
   ctx: { encodeNode: (schema: AnySchema) => AnyNode },
@@ -46,6 +54,8 @@ export interface TypeCodec<N extends AnyNode> {
   matches: Matches;
   // Optional detection for JSON Schema inputs
   matchesJsonSchema?: MatchesJsonSchema;
+  // Optional runtime guard for serialized node validation
+  isSchemaNode?: IsSchemaNode<N>;
   encode: Encoder<N>;
   decode: Decoder<N>;
   toCode: ToCode<N>;

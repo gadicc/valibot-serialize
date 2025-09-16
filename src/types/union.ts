@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
+import type { AnyNode, BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -18,6 +18,17 @@ export const typeName = "union" as const;
 export interface UnionNode extends BaseNode<typeof typeName> {
   options: AnyNode[];
 }
+
+export const isSchemaNode: IsSchemaNode<UnionNode> = (
+  node: unknown,
+  ctx,
+): node is UnionNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  const options = (node as { options?: unknown }).options as unknown;
+  if (!Array.isArray(options)) return false;
+  return options.every((o) => ctx.isSchemaNode(o));
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;

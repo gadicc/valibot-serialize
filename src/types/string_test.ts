@@ -7,8 +7,35 @@ import { fromValibot } from "../converters/from_valibot.ts";
 import { toCode } from "../converters/to_code.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 import { FORMAT_VERSION } from "../types.ts";
+import { isSchemaNode as isStringNode } from "./string.ts";
 
 describe("types/string integration", () => {
+  it("guard rejects invalid transforms and word counts", () => {
+    const badTransforms = { type: "string", transforms: ["bad"] } as unknown;
+    expect(isStringNode(badTransforms, { isSchemaNode: () => false })).toBe(
+      false,
+    );
+    expect(
+      isStringNode({ type: "string", minWords: "x" } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isStringNode({ type: "string", maxWords: {} } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isStringNode({ type: "string", startsWith: 1 } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isStringNode({ type: "string", endsWith: {} } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+  });
   it("serialize captures string validators and transforms", () => {
     const schema = v.pipe(
       v.string(),

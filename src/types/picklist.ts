@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { BaseNode } from "./lib/type_interfaces.ts";
+import type { BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -17,6 +17,16 @@ export const typeName = "picklist" as const;
 export interface PicklistNode extends BaseNode<typeof typeName> {
   values: string[];
 }
+
+export const isSchemaNode: IsSchemaNode<PicklistNode> = (
+  node: unknown,
+  _ctx,
+): node is PicklistNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  const values = (node as { values?: unknown }).values as unknown;
+  return Array.isArray(values) && values.every((v) => typeof v === "string");
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return (any as { type?: string }).type === typeName;

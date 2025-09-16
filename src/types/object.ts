@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { AnyNode, BaseNode } from "./lib/type_interfaces.ts";
+import type { AnyNode, BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -23,6 +23,33 @@ export interface ObjectNode extends BaseNode<typeof typeName> {
   minEntries?: number;
   maxEntries?: number;
 }
+
+export const isSchemaNode: IsSchemaNode<ObjectNode> = (
+  node: unknown,
+  ctx,
+): node is ObjectNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  const n = node as Record<string, unknown>;
+  const entries = n.entries;
+  if (!entries || typeof entries !== "object") return false;
+  if (n.optionalKeys !== undefined) {
+    const ok = Array.isArray(n.optionalKeys) &&
+      (n.optionalKeys as unknown[]).every((k) => typeof k === "string");
+    if (!ok) return false;
+  }
+  if (n.policy !== undefined && n.policy !== "loose" && n.policy !== "strict") {
+    return false;
+  }
+  if (n.rest !== undefined && !ctx.isSchemaNode(n.rest)) return false;
+  if (n.minEntries !== undefined && typeof n.minEntries !== "number") {
+    return false;
+  }
+  if (n.maxEntries !== undefined && typeof n.maxEntries !== "number") {
+    return false;
+  }
+  return true;
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;

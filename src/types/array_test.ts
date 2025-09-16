@@ -2,10 +2,26 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
 import { fromValibot } from "../converters/from_valibot.ts";
+import { isSchemaNode as isArrayNode } from "./array.ts";
 import { toValibot } from "../converters/to_valibot.ts";
 import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/array", () => {
+  it("guard rejects invalid item and wrong bounds", () => {
+    expect(
+      isArrayNode({ type: "array", item: 1 } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isArrayNode(
+        { type: "array", item: { type: "string" }, length: "x" } as unknown,
+        {
+          isSchemaNode: () => false,
+        },
+      ),
+    ).toBe(false);
+  });
   it("serialize array node shape", () => {
     const s = fromValibot(v.array(v.string()));
     expect(s.node).toEqual({ type: "array", item: { type: "string" } });

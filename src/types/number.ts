@@ -1,5 +1,5 @@
 import * as v from "@valibot/valibot";
-import type { BaseNode } from "./lib/type_interfaces.ts";
+import type { BaseNode, IsSchemaNode } from "./lib/type_interfaces.ts";
 import type { JsonSchema } from "../converters/to_jsonschema.ts";
 import type {
   AnySchema,
@@ -25,6 +25,24 @@ export interface NumberNode extends BaseNode<typeof typeName> {
   multipleOf?: number;
   finite?: true;
 }
+
+export const isSchemaNode: IsSchemaNode<NumberNode> = (
+  node: unknown,
+  _ctx,
+): node is NumberNode => {
+  if (!node || typeof node !== "object") return false;
+  if ((node as { type?: unknown }).type !== typeName) return false;
+  const n = node as Record<string, unknown>;
+  const num = ["min", "max", "gt", "lt", "multipleOf"] as const;
+  for (const k of num) {
+    if (n[k] !== undefined && typeof n[k] !== "number") return false;
+  }
+  const bools = ["integer", "safeInteger", "finite"] as const;
+  for (const k of bools) {
+    if (n[k] !== undefined && n[k] !== true) return false;
+  }
+  return true;
+};
 
 export const matches: Matches = (any: AnySchema): boolean => {
   return any?.type === typeName;

@@ -2,11 +2,31 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import * as v from "@valibot/valibot";
 import { fromValibot } from "../converters/from_valibot.ts";
+import { isSchemaNode as isOptionalNode } from "./optional.ts";
+import { isSchemaNode as isNullableNode } from "./nullable.ts";
+import { isSchemaNode as isNullishNode } from "./nullish.ts";
 import { toCode } from "../converters/to_code.ts";
 import { toJsonSchema } from "../converters/to_jsonschema.ts";
 import { FORMAT_VERSION } from "../types.ts";
 
 describe("types/wrappers", () => {
+  it("guards reject missing/invalid base", () => {
+    expect(
+      isOptionalNode({ type: "optional" } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isNullableNode({ type: "nullable", base: 1 } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+    expect(
+      isNullishNode({ type: "nullish", base: 1 } as unknown, {
+        isSchemaNode: () => false,
+      }),
+    ).toBe(false);
+  });
   it("serialize optional/nullable/nullish wrappers", () => {
     const opt = fromValibot(v.optional(v.string()));
     expect(opt.node).toEqual({ type: "optional", base: { type: "string" } });
