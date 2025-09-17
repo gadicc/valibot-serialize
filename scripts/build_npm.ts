@@ -47,12 +47,16 @@ await build({
     "engines": {
       "node": ">=20.0.0",
     },
-    devDependencies: {
-      "tsx": "^4.20.0",
-    },
     peerDependencies: {
-      "drizzle-orm": denoJson.imports["drizzle-orm"].split("@").pop(),
-      "drizzle-valibot": denoJson.imports["drizzle-valibot"].split("@").pop(),
+      "tsx": "^4.20.0",
+      "drizzle-orm": denoJson.imports["drizzle-orm"].split("@").pop()!,
+      "drizzle-valibot": denoJson.imports["drizzle-valibot"].split("@").pop()!,
+      "@biomejs/biome": denoJson.imports["@biomejs/biome"].split("@").pop()!,
+      "@biomejs/js-api": denoJson.imports["@biomejs/js-api"].split("@").pop()!,
+      "@biomejs/wasm-nodejs": denoJson.imports["@biomejs/wasm-nodejs"].split(
+        "@",
+      ).pop()!,
+      "prettier": denoJson.imports["prettier"].split("@").pop()!,
     },
   },
   importMap: "deno.json",
@@ -70,12 +74,16 @@ await build({
     for (const peerDep of Object.keys(pkgJson.peerDependencies)) {
       delete pkgJson.dependencies[peerDep];
     }
+    pkgJson.bin.vs_tocode = pkgJson.bin.vs_tocode.replace(
+      /\/esm\/tools\//,
+      "/esm/src/tools/",
+    );
     Deno.writeTextFileSync(
       "npm/package.json",
       JSON.stringify(pkgJson, null, 2) + "\n",
     );
 
-    rewrite("npm/esm/tools/vs_tocode.js", (content) =>
+    rewrite("npm/esm/src/tools/vs_tocode.js", (content) =>
       content.replace(
         /^\#\!\/usr\/bin\/env node/,
         "#!/usr/bin/env -S tsx",

@@ -3,6 +3,7 @@ import { parseArgs } from "@std/cli";
 import * as path from "@std/path";
 import { fileList } from "./vs_tocode/util.ts";
 import * as _handlers from "./vs_tocode/handlers/index.ts";
+import * as _formatters from "./vs_tocode/formatters/index.ts";
 import type { HandlerTransformResult } from "./vs_tocode/handlers/_interface.ts";
 
 // Useful for anyone not using the CLI directly
@@ -28,6 +29,7 @@ interface CreateFileOptions {
   typescript: boolean;
   header(): string;
   valibotPackage: string;
+  formatter?: (input: string) => string | Promise<string>;
 }
 
 const createFileDefaults: Omit<CreateFileOptions, "options"> = {
@@ -97,7 +99,8 @@ function createFileContents(
     }
   }
 
-  return out.filter(Boolean).join("\n");
+  const contents = out.filter(Boolean).join("\n");
+  return opts.formatter ? opts.formatter(contents) : contents;
 }
 
 export interface Options {
@@ -112,6 +115,10 @@ export interface Options {
   console: Console;
   typescript: boolean;
   module: "esm" | "cjs";
+  formatter:
+    | keyof typeof _formatters
+    | "auto"
+    | ((input: string) => Promise<string> | string);
   /** Function to generate output file path from input file */
   genOutputFilePath(
     fileResult: Omit<FileResult, "outFilePath" | "contents">,
@@ -123,6 +130,7 @@ const defaultOptions: Options = {
   console,
   typescript: true,
   module: "esm",
+  formatter: "auto",
   genOutputFilePath(fileResult: FileResult, goOpts: Options) {
     const inExt = path.extname(fileResult.filePath);
     const outExt = goOpts.typescript ? ".ts" : ".js";
@@ -159,7 +167,6 @@ async function writeFile(
     console.log(
       `  -> ${shortOutFilePath} (${symbolResults.length} symbol(s), ${contents.length} bytes)`,
     );
-    console.log("contents", dryRun);
     if (dryRun) {
       console.log(contents.split("\n").map((l) => "     " + l).join("\n"));
       console.log();
@@ -187,6 +194,19 @@ async function go(options: Partial<Options>) {
 
   const valibotPackage = isDenoProject ? "@valibot/valibot" : "valibot";
 
+  let formatter: ((input: string) => Promise<string> | string) | undefined;
+  if (options.formatter === "auto") {
+    for (const f of Object.values(_formatters)) {
+      if (await f.test()) {
+        formatter = f.format;
+        if (!opts.quiet) {
+          console.log(`Using formatter: ${f.name}`);
+        }
+        break;
+      }
+    }
+  }
+
   const explicitFiles =
     opts.explicitFiles?.map((f) => path.resolve(f as string)) || [];
   if (explicitFiles.length) {
@@ -207,7 +227,7 @@ async function go(options: Partial<Options>) {
   const handlers = await Promise.all(
     Object.values(_handlers).filter((h) => h.available()),
   );
-  if (opts.verbose) {
+  if (!opts.quiet) {
     console.log(
       `Available handlers: ${handlers.map((h) => `"${h.name}"`).join(", ")}`,
     );
@@ -240,6 +260,7 @@ async function go(options: Partial<Options>) {
         module: opts.module,
         typescript: opts.typescript,
         valibotPackage,
+        formatter,
       }),
     })),
   );
@@ -254,7 +275,7 @@ async function go(options: Partial<Options>) {
 async function main() {
   const flags = parseArgs(Deno.args, {
     boolean: ["watch", "help", "verbose", "quiet", "dryRun", "typescript"],
-    string: ["include", "exclude", "dryRun", "module"],
+    string: ["include", "exclude", "dryRun", "module", "formatter"],
     negatable: ["typescript"],
     default: {
       dryRun: false,
@@ -264,6 +285,7 @@ async function main() {
       watch: false,
       typescript: true,
       module: "esm",
+      formatter: "auto",
     },
     alias: {
       w: "watch",
@@ -306,6 +328,8 @@ Options
       quiet: flags.quiet,
       verbose: flags.verbose,
       watch: flags.watch,
+      // @ts-expect-error: another day
+      formatter: flags.formatter,
     });
   } catch (error) {
     if (error instanceof Error) {
