@@ -22,7 +22,7 @@ describe("types/enum", () => {
       node: { type: "enum", values: ["x", 1, true, null] },
     } as never);
     expect(code).toBe(
-      'v.union([v.literal("x"),v.literal(1),v.literal(true),v.literal(null)]);',
+      'v.union([v.literal("x"),v.literal(1),v.literal(true),v.literal(null)])',
     );
   });
 });

@@ -46,15 +46,15 @@ describe("types/wrappers", () => {
     const opt = toCode(
       { ...env, node: { type: "optional", base: { type: "string" } } } as never,
     );
-    expect(opt).toBe("v.optional(v.string());");
+    expect(opt).toBe("v.optional(v.string())");
     const nul = toCode(
       { ...env, node: { type: "nullable", base: { type: "number" } } } as never,
     );
-    expect(nul).toBe("v.nullable(v.number());");
+    expect(nul).toBe("v.nullable(v.number())");
     const nsh = toCode(
       { ...env, node: { type: "nullish", base: { type: "boolean" } } } as never,
     );
-    expect(nsh).toBe("v.nullish(v.boolean());");
+    expect(nsh).toBe("v.nullish(v.boolean())");
 
     const nulJs = toJsonSchema(
       { ...env, node: { type: "nullable", base: { type: "string" } } } as never,

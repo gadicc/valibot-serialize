@@ -12,7 +12,6 @@
     "lint": "deno lint",
     "fmt": "deno fmt",
     "tojson": "deno run tools/tojson.ts",
-    "tocode": "deno run tools/tocode.ts",
     "validate": "deno run tools/validate.ts",
     "gen-docs": "deno run --allow-write=docs tools/generate_mappings.ts",
     "playground": "deno run tools/playground.ts"

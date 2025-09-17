@@ -13,6 +13,6 @@ describe("types/picklist", () => {
   it("toCode emits picklist", () => {
     const ast = fromValibot(v.picklist(["x", "y"]));
     const code = toCode(ast);
-    expect(code).toBe('v.picklist(["x","y"]);');
+    expect(code).toBe('v.picklist(["x","y"])');
   });
 });

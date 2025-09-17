@@ -48,10 +48,9 @@ const code = toCode(serialized);
 
 - To avoid requiring `valibot-serialize` as a (non-dev) dependency and pulling
   in the entire `valibot` library, use `toCode` instead of `toValibot` and write
-  the results to a file. This way you'll still benefit tree-shaking.
-
-  We may provide some CLI tools in the future to make this easier for common
-  cases (e.g. scan a directory and auto-write modules for each detected schema).
+  the results to a file. This way you'll still benefit tree-shaking. See
+  [CLI](#cli) below for a code-free way to scan a directory and auto-write
+  modules for each detected schema.
 
 ## Motivation
 
@@ -101,7 +100,7 @@ export type UsersUpdate = v.InferOutput<typeof usersUpdate>;
 ```
 
 If you don't like this opinionated output structure for drizzle tables, simply
-use drizzle-valibot yourself and export the structure you like. Or use the
+use `drizzle-valibot` yourself and export the structure you like. Or use the
 programatic API.
 
 ### Other Miscellaneous things we might not keep

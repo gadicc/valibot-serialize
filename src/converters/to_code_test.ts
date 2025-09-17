@@ -23,7 +23,7 @@ describe("toCode", () => {
       v.object({ email: v.string(), password: v.string() }),
     );
     const code = toCode(ast);
-    expect(code).toBe("v.object({email:v.string(),password:v.string()});");
+    expect(code).toBe("v.object({email:v.string(),password:v.string()})");
   });
 
   it("string with regex and bounds", () => {
@@ -32,14 +32,14 @@ describe("toCode", () => {
     );
     const code = toCode(ast);
     expect(code).toBe(
-      "v.pipe(v.string(),v.minLength(3),v.maxLength(5),v.regex(/abc/i));",
+      "v.pipe(v.string(),v.minLength(3),v.maxLength(5),v.regex(/abc/i))",
     );
   });
 
   it("number constraints", () => {
     const ast = fromValibot(v.pipe(v.number(), v.minValue(1), v.maxValue(10)));
     const code = toCode(ast);
-    expect(code).toBe("v.pipe(v.number(),v.minValue(1),v.maxValue(10));");
+    expect(code).toBe("v.pipe(v.number(),v.minValue(1),v.maxValue(10))");
   });
 
   it("array validators and tupleWithRest", () => {
@@ -47,10 +47,10 @@ describe("toCode", () => {
       v.pipe(v.array(v.number()), v.minLength(1), v.maxLength(2)),
     );
     expect(toCode(arr)).toBe(
-      "v.pipe(v.array(v.number()),v.minLength(1),v.maxLength(2));",
+      "v.pipe(v.array(v.number()),v.minLength(1),v.maxLength(2))",
     );
     const tr = fromValibot(v.tupleWithRest([v.string()], v.number()));
-    expect(toCode(tr)).toBe("v.tupleWithRest([v.string()],v.number());");
+    expect(toCode(tr)).toBe("v.tupleWithRest([v.string()],v.number())");
   });
 
   it("set/map/object policies and rest", () => {
@@ -58,19 +58,19 @@ describe("toCode", () => {
       v.pipe(v.set(v.string()), v.minSize(1), v.maxSize(2)),
     );
     expect(toCode(set)).toBe(
-      "v.pipe(v.set(v.string()),v.minSize(1),v.maxSize(2));",
+      "v.pipe(v.set(v.string()),v.minSize(1),v.maxSize(2))",
     );
     const map = fromValibot(
       v.pipe(v.map(v.string(), v.number()), v.minSize(1)),
     );
     expect(toCode(map)).toBe(
-      "v.pipe(v.map(v.string(),v.number()),v.minSize(1));",
+      "v.pipe(v.map(v.string(),v.number()),v.minSize(1))",
     );
     const withRest = fromValibot(
       v.objectWithRest({ a: v.string() }, v.number()),
     );
     expect(toCode(withRest)).toBe(
-      "v.objectWithRest({a:v.string()},v.number());",
+      "v.objectWithRest({a:v.string()},v.number())",
     );
   });
 
@@ -84,25 +84,25 @@ describe("toCode", () => {
       ),
     );
     expect(toCode(blob)).toBe(
-      'v.pipe(v.blob(),v.minSize(1),v.maxSize(2),v.mimeType(["text/plain","image/png"]));',
+      'v.pipe(v.blob(),v.minSize(1),v.maxSize(2),v.mimeType(["text/plain","image/png"]))',
     );
-    expect(toCode(fromValibot(v.boolean()))).toBe("v.boolean();");
-    expect(toCode(fromValibot(v.date()))).toBe("v.date();");
+    expect(toCode(fromValibot(v.boolean()))).toBe("v.boolean()");
+    expect(toCode(fromValibot(v.date()))).toBe("v.date()");
   });
 
   it("literal code emits correct values", () => {
     const env = { kind: "schema", vendor: "valibot", version: 1, format: 1 };
     expect(toCode({ ...env, node: { type: "literal", value: "x" } } as never))
-      .toBe('v.literal("x");');
+      .toBe('v.literal("x")');
     expect(toCode({ ...env, node: { type: "literal", value: true } } as never))
-      .toBe("v.literal(true);");
+      .toBe("v.literal(true)");
     expect(toCode({ ...env, node: { type: "literal", value: null } } as never))
-      .toBe("v.literal(null);");
+      .toBe("v.literal(null)");
     // Non-finite numbers serialize to null in codegen helper
     expect(
       toCode({ ...env, node: { type: "literal", value: Infinity } } as never),
     )
-      .toBe("v.literal(null);");
+      .toBe("v.literal(null)");
   });
 
   it("string regex literals emit correctly (empty and escaped)", () => {
@@ -121,7 +121,7 @@ describe("toCode", () => {
   it("enum uses picklist for strings", () => {
     const ast = fromValibot(v.picklist(["x", "y"]));
     const code = toCode(ast);
-    expect(code).toBe('v.picklist(["x","y"]);');
+    expect(code).toBe('v.picklist(["x","y"])');
   });
 
   it("evaluated code reconstructs equivalent schema", () => {
