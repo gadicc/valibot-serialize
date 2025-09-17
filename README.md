@@ -39,6 +39,8 @@ const code = toCode(serialized);
 // "v.object({email:v.string(),password:v.string()});"
 ```
 
+**See [CLI Usage](#cli) section for quick no-code usage.**
+
 #### Important Notes
 
 - Obviously **transforms and callbacks** can't be serialized. You should store
@@ -59,11 +61,51 @@ postgresql), which works great, but, sometimes I want them on the client side
 too without bundling `drizzle` and `pg`. This way, we can use a small script to
 create dep-free versions of those schemas.
 
-## Relevant issues / discussions on valibot repo:
+## CLI
 
-- [Issue #30: Allow schema serialization](https://github.com/fabian-hiller/valibot/issues/30)
-- [Discussion #733: Can you generate a schema from the Reflection API?](https://github.com/fabian-hiller/valibot/discussions/733)
+### vs_tocode
 
+Scan files for supported exports (valibot schema or drizzle tables) and generate
+static code to recreate them that works with tree-shaking.
+
+Suggested usage: put it in your `package.json`:
+
+```json
+{
+  "scripts": {
+    "schema:gen": "vs_tocode --include 'src/db/schema/*.ts' --outDir src/db/valibot/generated",
+  }
+}
+
+`vs_tocode --help` for all options.  You can also import `"valibot-serialize/vs_tocode"` and
+run it programatically.
+
+### Other Miscellaneous things we might not keep
+
+Convert a serialized AST (read from stdin) to JSON Schema:
+```
+
+echo
+'{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":"object","entries":{"a":{"type":"string"}},"policy":"strict"}}'\
+| deno task tojson
+
+```
+Outputs a JSON Schema for the data shape.
+
+~~Generate Valibot builder code from a serialized AST (read from stdin):~~
+```
+
+// Removed for now. If you'd find this useful, please open an issue. echo
+'{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":"object","entries":{"email":{"type":"string"},"password":{"type":"string"}}}}'\
+| deno task tocode
+
+```
+Outputs:
+```
+
+v.object({email:v.string(),password:v.string()});
+
+```
 ## API
 
 - `fromValibot(schema: v.BaseSchema): SerializedSchema`
@@ -123,6 +165,16 @@ create dep-free versions of those schemas.
 - `date`, `file` (`minSize`, `maxSize`, `mimeTypes`), `blob` (`minSize`,
   `maxSize`, `mimeTypes`)
 
+## Notes
+
+- The AST is independent of Valibot internals and versioned (`format: 1`).
+- Some validators don’t map cleanly to JSON Schema and are approximated (e.g.,
+  word counts, ISO formats, IDs) using patterns.
+- Complex constructs (custom transforms/effects) are intentionally unsupported
+  and fail fast on `fromValibot`.
+- `fromJsonSchema` is intentionally minimal and lossy; prefer authoring schemas
+  in Valibot and using `fromValibot` as the source of truth.
+
 ### JSON Schema conversion
 
 This was never a main goal for the project especially since other, mature tools
@@ -151,40 +203,6 @@ find it useful.
     produced by `toJsonSchema` for startsWith/endsWith, `hexColor`, `slug`,
     `digits`, `hexadecimal`, ids (`ulid`, `nanoid`, `cuid2`) and sets flags
     accordingly.
-
-## CLI
-
-Convert a serialized AST (read from stdin) to JSON Schema:
-
-```
-echo '{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":"object","entries":{"a":{"type":"string"}},"policy":"strict"}}' \
-  | deno task tojson
-```
-
-Outputs a JSON Schema for the data shape.
-
-Generate Valibot builder code from a serialized AST (read from stdin):
-
-```
-echo '{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":"object","entries":{"email":{"type":"string"},"password":{"type":"string"}}}}' \
-  | deno task tocode
-```
-
-Outputs:
-
-```
-v.object({email:v.string(),password:v.string()});
-```
-
-## Notes
-
-- The AST is independent of Valibot internals and versioned (`format: 1`).
-- Some validators don’t map cleanly to JSON Schema and are approximated (e.g.,
-  word counts, ISO formats, IDs) using patterns.
-- Complex constructs (custom transforms/effects) are intentionally unsupported
-  and fail fast on `fromValibot`.
-- `fromJsonSchema` is intentionally minimal and lossy; prefer authoring schemas
-  in Valibot and using `fromValibot` as the source of truth.
 
 ### Compatibility mapping (selected)
 
@@ -225,6 +243,11 @@ needed.
 Please do bring any weird issues to our attention, and feel free to request
 clearer docs, examples, etc. Working on that next.
 
+## Relevant issues / discussions on valibot repo:
+
+- [Issue #30: Allow schema serialization](https://github.com/fabian-hiller/valibot/issues/30)
+- [Discussion #733: Can you generate a schema from the Reflection API?](https://github.com/fabian-hiller/valibot/discussions/733)
+
 ## Development
 
 See CONTRIBUTING.md for project layout, test naming, and workflow conventions.
@@ -232,3 +255,4 @@ See CONTRIBUTING.md for project layout, test naming, and workflow conventions.
 ## License
 
 MIT
+```

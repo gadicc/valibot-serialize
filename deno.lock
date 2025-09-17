@@ -3,9 +3,11 @@
   "specifiers": {
     "jsr:@david/code-block-writer@^13.0.3": "13.0.3",
     "jsr:@deno/dnt@~0.42.3": "0.42.3",
+    "jsr:@standard-schema/spec@1": "1.0.0",
     "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/assert@^1.0.13": "1.0.14",
     "jsr:@std/assert@^1.0.14": "1.0.14",
+    "jsr:@std/cli@^1.0.22": "1.0.22",
     "jsr:@std/data-structures@^1.0.9": "1.0.9",
     "jsr:@std/expect@^1.0.17": "1.0.17",
     "jsr:@std/fmt@1": "1.0.8",
@@ -15,11 +17,13 @@
     "jsr:@std/internal@^1.0.9": "1.0.10",
     "jsr:@std/path@1": "1.1.2",
     "jsr:@std/path@^1.1.1": "1.1.2",
+    "jsr:@std/path@^1.1.2": "1.1.2",
     "jsr:@std/testing@^1.0.15": "1.0.15",
     "jsr:@ts-morph/bootstrap@0.27": "0.27.0",
     "jsr:@ts-morph/common@0.27": "0.27.0",
     "npm:drizzle-orm@~0.44.5": "0.44.5",
     "npm:drizzle-valibot@~0.4.2": "0.4.2_drizzle-orm@0.44.5_valibot@1.1.0",
+    "npm:drizzle-zod@~0.8.3": "0.8.3_drizzle-orm@0.44.5_zod@4.1.8",
     "npm:fast-check@^4.3.0": "4.3.0",
     "npm:semantic-release@^24.2.8": "24.2.8_marked@15.0.12",
     "npm:valibot@^1.1.0": "1.1.0"
@@ -38,11 +42,17 @@
         "jsr:@ts-morph/bootstrap"
       ]
     },
+    "@standard-schema/spec@1.0.0": {
+      "integrity": "4f20bbcf34e92b92f8c01589b958abc7c87385fa9a96170cecdc643d4d5737c0"
+    },
     "@std/assert@1.0.14": {
       "integrity": "68d0d4a43b365abc927f45a9b85c639ea18a9fab96ad92281e493e4ed84abaa4",
       "dependencies": [
         "jsr:@std/internal@^1.0.10"
       ]
+    },
+    "@std/cli@1.0.22": {
+      "integrity": "50d1e4f87887cb8a8afa29b88505ab5081188f5cad3985460c3b471fa49ff21a"
     },
     "@std/data-structures@1.0.9": {
       "integrity": "033d6e17e64bf1f84a614e647c1b015fa2576ae3312305821e1a4cb20674bb4d"
@@ -584,6 +594,13 @@
       "dependencies": [
         "drizzle-orm",
         "valibot"
+      ]
+    },
+    "drizzle-zod@0.8.3_drizzle-orm@0.44.5_zod@4.1.8": {
+      "integrity": "sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==",
+      "dependencies": [
+        "drizzle-orm",
+        "zod"
       ]
     },
     "duplexer2@0.1.4": {
@@ -1614,16 +1631,24 @@
     },
     "yoctocolors@2.1.2": {
       "integrity": "sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug=="
+    },
+    "zod@4.1.8": {
+      "integrity": "sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ=="
     }
   },
   "workspace": {
     "dependencies": [
       "jsr:@deno/dnt@~0.42.3",
+      "jsr:@standard-schema/spec@1",
       "jsr:@std/assert@1",
+      "jsr:@std/cli@^1.0.22",
       "jsr:@std/expect@^1.0.17",
+      "jsr:@std/fs@^1.0.19",
+      "jsr:@std/path@^1.1.2",
       "jsr:@std/testing@^1.0.15",
       "npm:drizzle-orm@~0.44.5",
       "npm:drizzle-valibot@~0.4.2",
+      "npm:drizzle-zod@~0.8.3",
       "npm:fast-check@^4.3.0",
       "npm:semantic-release@^24.2.8",
       "npm:valibot@^1.1.0"

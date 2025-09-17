@@ -5,7 +5,7 @@ import * as codecs from "../types/index.ts";
 /**
  * Generate compact Valibot builder code from a serialized schema.
  *
- * Returns a single expression string ending with a semicolon, e.g.:
+ * Returns a single expression string, e.g.:
  * `v.object({ email: v.string(), password: v.string() });`
  *
  * @param serialized - A `SerializedSchema` envelope.
@@ -16,7 +16,7 @@ export function toCode(serialized: SerializedSchema): string {
   if (!isSerializedSchema(serialized)) {
     throw new Error("Invalid serialized schema format");
   }
-  return nodeToCode(serialized.node) + ";";
+  return nodeToCode(serialized.node);
 }
 
 function nodeToCode(node: SchemaNode): string {

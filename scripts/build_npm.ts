@@ -3,8 +3,18 @@ import denoJson from "../deno.json" with { type: "json" };
 
 await emptyDir("./npm");
 
+function rewrite(path: string, rewriter: (content: string) => string) {
+  const original = Deno.readTextFileSync(path);
+  const updated = rewriter(original);
+  Deno.writeTextFileSync(path, updated);
+}
+
 await build({
-  entryPoints: ["./main.ts"],
+  entryPoints: ["./main.ts", {
+    kind: "bin",
+    name: "vs_tocode",
+    path: "./tools/vs_tocode.ts",
+  }],
   outDir: "./npm",
   test: false,
   shims: {
@@ -37,6 +47,13 @@ await build({
     "engines": {
       "node": ">=20.0.0",
     },
+    devDependencies: {
+      "tsx": "^4.20.0",
+    },
+    peerDependencies: {
+      "drizzle-orm": denoJson.imports["drizzle-orm"].split("@").pop(),
+      "drizzle-valibot": denoJson.imports["drizzle-valibot"].split("@").pop(),
+    },
   },
   importMap: "deno.json",
 
@@ -48,6 +65,27 @@ await build({
 
   postBuild() {
     // steps to run after building and before running the tests
+    const pkg = Deno.readTextFileSync("npm/package.json");
+    const pkgJson = JSON.parse(pkg);
+    for (const peerDep of Object.keys(pkgJson.peerDependencies)) {
+      delete pkgJson.dependencies[peerDep];
+    }
+    Deno.writeTextFileSync(
+      "npm/package.json",
+      JSON.stringify(pkgJson, null, 2) + "\n",
+    );
+
+    rewrite("npm/esm/tools/vs_tocode.js", (content) =>
+      content.replace(
+        /^\#\!\/usr\/bin\/env node/,
+        "#!/usr/bin/env -S tsx",
+      ));
+    rewrite("npm/script/tools/vs_tocode.js", (content) =>
+      content.replace(
+        /^\#\!\/usr\/bin\/env node/,
+        "#!/usr/bin/env -S tsx",
+      ));
+
     Deno.copyFileSync("LICENSE.txt", "npm/LICENSE.txt");
     Deno.copyFileSync("README.md", "npm/README.md");
   },
