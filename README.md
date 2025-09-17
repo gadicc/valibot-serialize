@@ -73,39 +73,63 @@ Suggested usage: put it in your `package.json`:
 ```json
 {
   "scripts": {
-    "schema:gen": "vs_tocode --include 'src/db/schema/*.ts' --outDir src/db/valibot/generated",
+    "schema:gen": "vs_tocode --include 'src/db/schema/*.ts' --outDir src/db/valibot/generated"
   }
 }
+```
 
-`vs_tocode --help` for all options.  You can also import `"valibot-serialize/vs_tocode"` and
-run it programatically.
+`vs_tocode --help` for all options. You can also import
+`"valibot-serialize/vs_tocode"` and run it programatically. Formatters like
+`prettier`, `biome` or `deno` will be used if found.
+
+Sample input:
+
+```ts
+import { integer, pgTable, text } from "drizzle-orm/pg-core";
+export const users = pgTable("users", { id: integer().primaryKey() /* ... */ });
+```
+
+Sample output:
+
+```ts
+export const usersSelect = v.object({ name: v.string() /*...*/ });
+export const usersInsert = v.object({ id: v.pipe(v.number() /*...*/) });
+export const usersUpdate = v.object({ name: v.optiona(v.string()) /*...*/ });
+export type UsersSelect = v.InferOutput<typeof usersSelect>;
+export type UsersInsert = v.InferOutput<typeof usersInsert>;
+export type UsersUpdate = v.InferOutput<typeof usersUpdate>;
+```
+
+If you don't like this opinionated output structure for drizzle tables, simply
+use drizzle-valibot yourself and export the structure you like. Or use the
+programatic API.
 
 ### Other Miscellaneous things we might not keep
 
 Convert a serialized AST (read from stdin) to JSON Schema:
-```
 
+```
 echo
 '{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":"object","entries":{"a":{"type":"string"}},"policy":"strict"}}'\
 | deno task tojson
-
 ```
+
 Outputs a JSON Schema for the data shape.
 
 ~~Generate Valibot builder code from a serialized AST (read from stdin):~~
-```
 
+```
 // Removed for now. If you'd find this useful, please open an issue. echo
 '{"kind":"schema","vendor":"valibot","version":1,"format":1,"node":{"type":"object","entries":{"email":{"type":"string"},"password":{"type":"string"}}}}'\
 | deno task tocode
-
 ```
+
 Outputs:
-```
 
+```
 v.object({email:v.string(),password:v.string()});
-
 ```
+
 ## API
 
 - `fromValibot(schema: v.BaseSchema): SerializedSchema`
@@ -255,4 +279,9 @@ See CONTRIBUTING.md for project layout, test naming, and workflow conventions.
 ## License
 
 MIT
+
+```
+```
+
+```
 ```

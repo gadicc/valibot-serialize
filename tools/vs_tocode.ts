@@ -24,11 +24,16 @@ function gen_type_export(symbol: string, code: string, module: "cjs" | "esm") {
   return null;
 }
 
-interface CreateFileOptions {
-  module: "cjs" | "esm";
+export interface CreateFileOptions {
+  /** The module type: "esm" (ECMAScript Module) | "cjs" (CommonJS Module) */
+  module: "esm" | "cjs";
+  /** Whether to emit .ts files (default: true) */
   typescript: boolean;
+  /** Function to generate file header */
   header(): string;
+  /** The valibot package to import from, e.g. "valibot" or "@valibot/valibot" */
   valibotPackage: string;
+  /** Optional formatter function to run on final output */
   formatter?: (input: string) => string | Promise<string>;
 }
 
@@ -60,9 +65,13 @@ async function mapRelevantExports(
 }
 
 export interface FileResult {
+  /** The full path to the file */
   filePath: string;
+  /** The full path to the output file */
   outFilePath: string;
+  /** The symbol results from mapping exports */
   symbolResults: Awaited<ReturnType<typeof mapRelevantExports>>;
+  /** The final file contents */
   contents: string;
 }
 
@@ -104,17 +113,29 @@ function createFileContents(
 }
 
 export interface Options {
+  /** Whether to run in dry mode (no changes will be made) */
   dryRun?: boolean;
+  /** Explicit files to include (overrides include/exclude) */
   explicitFiles?: string[];
+  /** Glob patterns to exclude */
   exclude?: string[];
+  /** Glob patterns to include */
   include?: string[];
+  /** Output directory */
   outDir?: string;
+  /** Show extra debugging information */
   verbose?: boolean;
+  /** Suppress output */
   quiet?: boolean;
+  /** Watch files for changes */
   watch?: boolean;
+  /** Console to use for logging (default: global console) */
   console: Console;
+  /** Whether to emit .ts files (default: true) */
   typescript: boolean;
+  /** The module type: "esm" (ECMAScript Module) | "cjs" (CommonJS Module) */
   module: "esm" | "cjs";
+  /** Formatter to use, "auto" to auto-detect, or a custom function */
   formatter:
     | keyof typeof _formatters
     | "auto"
@@ -275,7 +296,7 @@ async function go(options: Partial<Options>) {
 async function main() {
   const flags = parseArgs(Deno.args, {
     boolean: ["watch", "help", "verbose", "quiet", "dryRun", "typescript"],
-    string: ["include", "exclude", "dryRun", "module", "formatter"],
+    string: ["include", "exclude", "outDir", "module", "formatter"],
     negatable: ["typescript"],
     default: {
       dryRun: false,
@@ -292,8 +313,8 @@ async function main() {
       h: "help",
       v: "verbose",
       q: "quiet",
-      "-out-dir": "outDir",
-      "-dry-run": "dryRun",
+      "out-dir": "outDir",
+      "dry-run": "dryRun",
     },
   });
 
@@ -318,7 +339,7 @@ Options
 
   try {
     await go({
-      dryRun: flags["dry-run"],
+      dryRun: flags["dryRun"],
       explicitFiles: flags._.map((f) => f as string),
       exclude: flags.exclude ? flags.exclude.split(",") : undefined,
       include: flags.include ? flags.include.split(",") : undefined,
