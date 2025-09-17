@@ -2,7 +2,10 @@ import * as path from "@std/path";
 import { globToRegExp } from "@std/path";
 import { expandGlob } from "@std/fs";
 
-export async function fileList(include: string[], exclude?: string[]) {
+export async function fileList(
+  include: string[],
+  exclude?: string[],
+): Promise<string[]> {
   const files = new Set<string>();
   for (const pattern of include) {
     for await (const file of expandGlob(pattern, { globstar: true, exclude })) {
@@ -57,13 +60,13 @@ export function fileMatches(
   path: string,
   include: string[],
   exclude: string[],
-) {
+): boolean {
   const inc = include.map((p) => globToRegExp(p));
   const exc = exclude.map((p) => globToRegExp(p));
   return inc.some((re) => re.test(path)) && !exc.some((re) => re.test(path));
 }
 
-export function basePaths(paths: string[]) {
+export function basePaths(paths: string[]): string[] {
   const bases = new Set<string>();
   for (const p of paths) {
     const dir = path.dirname(p);

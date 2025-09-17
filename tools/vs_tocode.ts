@@ -49,7 +49,11 @@ const createFileDefaults: Omit<CreateFileOptions, "options"> = {
 async function mapRelevantExports(
   filePath: string,
   handlers: _handlers.Handler[],
-) {
+): Promise<{
+  symbol: string;
+  handler: string;
+  transformResult: _handlers.HandlerTransformResult;
+}[]> {
   const mod = await import(filePath);
   return (await Promise.all(
     Object.entries(mod).map(async ([symbol, object]) => {

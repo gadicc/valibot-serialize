@@ -4,7 +4,7 @@ import * as vs from "../../../main.ts";
 
 export const name = "valibot-schema";
 
-export const available = async () => {
+export const available: Handler["available"] = async () => {
   try {
     await import("@valibot/valibot");
   } catch {
