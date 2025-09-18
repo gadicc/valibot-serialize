@@ -1,8 +1,7 @@
 # valibot-serialize
 
-A tiny library to serialize Valibot schemas into a stable, vendor/versioned AST,
-and to decode them back. It also includes helpers to export a JSON Schema (Draft
-2020‑12) for the data that a schema validates.
+Serialize / deserialize Valibot schemas, including "to code" for dep-free
+tree-shaking.
 
 Copyright (c) 2025 by Gadi Cohen. [MIT licensed](./LICENSE.txt).
 
@@ -18,15 +17,15 @@ Copyright (c) 2025 by Gadi Cohen. [MIT licensed](./LICENSE.txt).
 ```ts
 // On JSR, it's @valibot/valibot and @gadicc/valibot-serialize
 import * as v from "valibot";
-import { fromValibot, toCode, toValibot } from "valibot-serialize";
+import * as vs from "valibot-serialize";
 
 const LoginSchema = v.object({
   email: v.string(),
   password: v.string(),
 });
 
-const serialized = fromValibot(LoginSchema);
-const NewLoginSchema = toValibot(serialized);
+const serialized = vs.fromValibot(LoginSchema);
+const NewLoginSchema = vs.toValibot(serialized);
 
 // { email: 'jane@example.com', password: '12345678' }
 const parsed = v.parse(NewLoginSchema, {
@@ -35,7 +34,7 @@ const parsed = v.parse(NewLoginSchema, {
 });
 
 // Write this to a file to benefit from dep-free tree-shaking
-const code = toCode(serialized);
+const code = vs.toCode(serialized);
 // "v.object({email:v.string(),password:v.string()});"
 ```
 
@@ -81,6 +80,13 @@ Suggested usage: put it in your `package.json`:
 `"valibot-serialize/vs_tocode"` and run it programatically. Formatters like
 `prettier`, `biome` or `deno` will be used if found.
 
+Alternative ways to run:
+
+```bash
+$ npx -p valibot-serialize vs_tocode
+$ deno run --allow-read --allow-write jsr:@gadicc/valibot-serialize/vs_tocode
+```
+
 Sample input:
 
 ```ts
@@ -100,8 +106,8 @@ export type UsersUpdate = v.InferOutput<typeof usersUpdate>;
 ```
 
 If you don't like this opinionated output structure for drizzle tables, simply
-use `drizzle-valibot` yourself and export the structure you like. Or use the
-programatic API.
+use `drizzle-valibot` yourself and export the structure you like. **Or use the
+programatic API** (by simply importing `"valibot-serialize/vs_tocode"`).
 
 ### Other Miscellaneous things we might not keep
 

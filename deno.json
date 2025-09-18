@@ -38,6 +38,6 @@
   },
   "exports": {
     ".": "./main.ts",
-    "./tools/vs_tocode": "./tools/vs_tocode.ts"
+    "./vs_tocode": "./tools/vs_tocode.ts"
   }
 }
