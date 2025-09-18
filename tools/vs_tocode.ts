@@ -179,7 +179,9 @@ async function writeFile(
     console.log(
       "* " + (dryRun ? "(dry run) " : "") +
         path.relative(projectRoot, filePath) +
-        ` (${symbolResults.length} symbol(s))`,
+        ` (${symbolResults.length} symbol${
+          symbolResults.length === 1 ? "" : "s"
+        })`,
     );
   }
   if (verbose) {
