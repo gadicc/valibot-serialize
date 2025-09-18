@@ -104,8 +104,8 @@ export const usersSelect = v.object({ name: v.string() /*...*/ });
 export const usersInsert = v.object({ id: v.pipe(v.number() /*...*/) });
 export const usersUpdate = v.object({ name: v.optiona(v.string()) /*...*/ });
 export type UsersSelect = v.InferOutput<typeof usersSelect>;
-export type UsersInsert = v.InferOutput<typeof usersInsert>;
-export type UsersUpdate = v.InferOutput<typeof usersUpdate>;
+export type UsersInsert = v.InferInput<typeof usersInsert>;
+export type UsersUpdate = v.InferInput<typeof usersUpdate>;
 ```
 
 If you don't like this opinionated output structure for drizzle tables, simply

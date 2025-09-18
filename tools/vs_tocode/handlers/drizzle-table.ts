@@ -40,8 +40,8 @@ export const transform: Handler["transform"] = async (symbol, object) => {
     },
     typeExports: {
       [Symbol + "Select"]: `v.InferOutput<typeof ${symbol}Select>`,
-      [Symbol + "Insert"]: `v.InferOutput<typeof ${symbol}Insert>`,
-      [Symbol + "Update"]: `v.InferOutput<typeof ${symbol}Update>`,
+      [Symbol + "Insert"]: `v.InferInput<typeof ${symbol}Insert>`,
+      [Symbol + "Update"]: `v.InferInput<typeof ${symbol}Update>`,
     },
   };
 };
