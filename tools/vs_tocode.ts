@@ -55,7 +55,7 @@ async function mapRelevantExports(
   handler: string;
   transformResult: _handlers.HandlerTransformResult;
 }[]> {
-  const mod = await import(filePath);
+  const mod = await import(filePath + "?t=" + Date.now());
   return (await Promise.all(
     Object.entries(mod).map(async ([symbol, object]) => {
       const handler = handlers.find((h) => h.test(object));
