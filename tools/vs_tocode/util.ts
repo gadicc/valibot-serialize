@@ -60,10 +60,12 @@ export function fileMatches(
   path: string,
   include: string[],
   exclude: string[],
+  explicit: string[],
 ): boolean {
   const inc = include.map((p) => globToRegExp(p));
   const exc = exclude.map((p) => globToRegExp(p));
-  return inc.some((re) => re.test(path)) && !exc.some((re) => re.test(path));
+  return explicit.includes(path) ||
+    (inc.some((re) => re.test(path)) && !exc.some((re) => re.test(path)));
 }
 
 export function basePaths(paths: string[]): string[] {

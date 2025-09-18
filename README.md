@@ -51,6 +51,9 @@ const code = vs.toCode(serialized);
   [CLI](#cli) below for a code-free way to scan a directory and auto-write
   modules for each detected schema.
 
+- This is a new project (mid September, 2025) - please let us know if anything
+  doesn't work as expected.
+
 ## Motivation
 
 I use [`drizzle-valibot`](http://npmjs.com/package/drizzle-valibot) to create
@@ -109,7 +112,42 @@ If you don't like this opinionated output structure for drizzle tables, simply
 use `drizzle-valibot` yourself and export the structure you like. **Or use the
 programatic API** (by simply importing `"valibot-serialize/vs_tocode"`).
 
+We also suggest to auto-load in watch-mode with e.g. `.vscode/tasks.json`:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "schema watch",
+      "command": "npm",
+      "args": ["run", "schema:gen", "--watch"],
+      "isBackground": true,
+      "type": "shell",
+      "runOptions": { "runOn": "folderOpen" },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    }
+  ]
+}
+```
+
+FAQ:
+
+- **Should I commit generated files to git/vcs?**
+
+  Totally up to you. No problem to generate at build time, but also nice to have
+  them for clear, easy viewing in your repo.
+
 ### Other Miscellaneous things we might not keep
+
+Is anything here useful? Anything else you'd like?
 
 Convert a serialized AST (read from stdin) to JSON Schema:
 

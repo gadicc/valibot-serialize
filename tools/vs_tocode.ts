@@ -1,7 +1,8 @@
 import * as fs from "@std/fs";
 import { parseArgs } from "@std/cli";
+import { debounce } from "@std/async";
 import * as path from "@std/path";
-import { fileList } from "./vs_tocode/util.ts";
+import { basesFromGlobs, fileList, fileMatches } from "./vs_tocode/util.ts";
 import * as _handlers from "./vs_tocode/handlers/index.ts";
 import type { HandlerTransformResult } from "./vs_tocode/handlers/_interface.ts";
 import XFormatter, { type Formatter } from "./vs_tocode/formatter.ts";
@@ -144,10 +145,7 @@ export interface Options {
   /** Formatter to use, "auto" to auto-detect, or a custom function */
   formatter: Formatter;
   /** Function to generate output file path from input file */
-  genOutputFilePath(
-    fileResult: Omit<FileResult, "outFilePath" | "contents">,
-    goOpts: Options,
-  ): string;
+  genOutputFilePath(filePath: string, goOpts: Options): string;
 }
 
 const defaultOptions: Options = {
@@ -155,17 +153,17 @@ const defaultOptions: Options = {
   typescript: true,
   module: "esm",
   formatter: "auto",
-  genOutputFilePath(fileResult: FileResult, goOpts: Options) {
-    const inExt = path.extname(fileResult.filePath);
+  genOutputFilePath(filePath: string, goOpts: Options) {
+    const inExt = path.extname(filePath);
     const outExt = goOpts.typescript ? ".ts" : ".js";
 
     if (goOpts.outDir) {
       return path.join(
         goOpts.outDir,
-        path.basename(fileResult.filePath, inExt) + outExt,
+        path.basename(filePath, inExt) + outExt,
       );
     }
-    return path.basename(fileResult.filePath, inExt) + ".vs" + outExt;
+    return path.basename(filePath, inExt) + ".vs" + outExt;
   },
 };
 
@@ -180,7 +178,8 @@ async function writeFile(
   if (!quiet) {
     console.log(
       "* " + (dryRun ? "(dry run) " : "") +
-        path.relative(projectRoot, filePath),
+        path.relative(projectRoot, filePath) +
+        ` (${symbolResults.length} symbol(s))`,
     );
   }
   if (verbose) {
@@ -189,7 +188,7 @@ async function writeFile(
       outFilePath,
     );
     console.log(
-      `  -> ${shortOutFilePath} (${symbolResults.length} symbol(s), ${contents.length} bytes)`,
+      `  -> ${shortOutFilePath} (${contents.length} bytes)`,
     );
     if (dryRun) {
       console.log(contents.split("\n").map((l) => "     " + l).join("\n"));
@@ -237,6 +236,9 @@ async function go(options: Partial<Options>) {
     );
   }
 
+  opts.include = opts.include?.map((p) => path.resolve(p as string));
+  opts.exclude = opts.exclude?.map((p) => path.resolve(p as string));
+
   const files = explicitFiles.length ? explicitFiles : await fileList(
     opts.include!,
     opts.exclude,
@@ -251,43 +253,97 @@ async function go(options: Partial<Options>) {
     );
   }
 
-  const _fileResults = (await Promise.all(
-    files.map(async (filePath) => ({
+  const allInputFiles: string[] = [];
+
+  async function processFile(
+    filePath: string,
+  ) {
+    const symbolResults = await mapRelevantExports(filePath, handlers);
+    if (symbolResults.length === 0) return null;
+
+    allInputFiles.push(filePath);
+
+    const outFilePath = opts.genOutputFilePath(filePath, opts);
+    if (allInputFiles?.includes(outFilePath)) {
+      console.warn(`Skipping overwrite of input file: ${outFilePath}`);
+      return null;
+    }
+
+    const interimFileResult: Omit<FileResult, "contents"> = {
       filePath,
-      symbolResults: await mapRelevantExports(filePath, handlers),
-    })),
-  )).filter((r) => r.symbolResults.length > 0);
-  const allInputFiles = _fileResults.map((r) => r.filePath);
+      outFilePath,
+      symbolResults,
+    };
 
-  const fileResults: Omit<FileResult, "contents">[] = _fileResults
-    .map((fileResult) => {
-      const outFilePath = opts.genOutputFilePath(fileResult, opts);
-      if (allInputFiles?.includes(outFilePath)) {
-        console.warn(`Skipping overwrite of input file: ${outFilePath}`);
-        return null;
+    const contents = await createFileContents(interimFileResult, {
+      module: opts.module,
+      typescript: opts.typescript,
+      valibotPackage,
+      formatter,
+    });
+
+    const fileResult: FileResult = { ...interimFileResult, contents };
+    return fileResult;
+  }
+
+  const fileResults = (await Promise.all(
+    files.map((filePath) => processFile(filePath)),
+  )).filter((fr) => fr !== null);
+
+  async function onChange(filePath: string) {
+    const fr = await processFile(filePath);
+    if (fr) {
+      if (!fileResults.find((f) => f.filePath === fr.filePath)) {
+        fileResults.push(fr);
       }
+      await writeFile(fr, opts, projectRoot);
+    }
+  }
 
-      return { ...fileResult, outFilePath };
-    })
-    .filter((r) => r !== null);
-
-  const finalResults = await Promise.all(
-    fileResults.map(async (fileResult) => ({
-      ...fileResult,
-      contents: await createFileContents(fileResult, {
-        module: opts.module,
-        typescript: opts.typescript,
-        valibotPackage,
-        formatter,
-      }),
-    })),
-  );
+  const debouncedOnChange = debounce(onChange, 500);
 
   await Promise.all(
-    finalResults.map((fr) => writeFile(fr, opts, projectRoot)),
+    fileResults.map((fr) => writeFile(fr, opts, projectRoot)),
   );
 
-  return finalResults;
+  if (opts.watch) {
+    const bases = opts.include ? basesFromGlobs(opts.include) : [projectRoot];
+
+    if (!opts.quiet) {
+      console.log();
+      console.log(
+        `Watching ${bases.join(", ")} for changes... (Ctrl-C to exit)`,
+      );
+    }
+    const watchers = bases.map((b) => Deno.watchFs(b, { recursive: true }));
+    for (const watcher of watchers) {
+      (async () => {
+        for await (const event of watcher) {
+          if (
+            !["modify", "create"].includes(event.kind) ||
+            event.paths.length === 0
+          ) {
+            continue;
+          }
+
+          const relevantFiles = event.paths.filter((p) =>
+            fileMatches(
+              p,
+              opts.include || [],
+              opts.exclude || [],
+              explicitFiles,
+            )
+          );
+
+          for (const filePath of relevantFiles) {
+            debouncedOnChange(filePath);
+          }
+        }
+      })();
+    }
+  }
+
+  return fileResults;
 }
 
 async function main() {
@@ -306,7 +362,6 @@ async function main() {
       formatter: "auto",
     },
     alias: {
-      w: "watch",
       h: "help",
       v: "verbose",
       q: "quiet",
@@ -329,7 +384,7 @@ Options
   --include=<globs>  Comma-separated list, e.g. "db/schema/*.ts,models/**/*.ts"
   -q, --quiet        Suppress non-error output
   -v, --verbose      Show verbose output
-  -w, --watch        Watch for changes  
+  --watch        Watch for changes  
 `);
     Deno.exit();
   }

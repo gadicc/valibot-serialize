@@ -32,6 +32,7 @@ const XFormatterOptionsDefaults: XFormatterOptions = {
 
 export default class XFormatter {
   opts: XFormatterOptions;
+  name: string = "none";
   formatter:
     | null
     | ((source: string, filePath: string) => string | Promise<string>)
@@ -54,6 +55,7 @@ export default class XFormatter {
       this.formatter = (async () => {
         for (const f of Object.values(formatters)) {
           if (await f.test()) {
+            this.name = f.name;
             this.formatter = f.format;
             if (!quiet) {
               console.log(`Using formatter: ${f.name}`);
@@ -71,10 +73,13 @@ export default class XFormatter {
         return null;
       })();
     } else if (formatter === null || formatter === "none") {
+      this.name = "none";
       this.formatter = null;
     } else if (typeof formatter === "function") {
+      this.name = formatter.name || "custom";
       this.formatter = formatter;
     } else if (typeof formatter === "string" && formatter in formatters) {
+      this.name = formatter;
       this.formatter = formatters[formatter as keyof typeof formatters].format;
     } else {
       throw new Error(
@@ -90,12 +95,6 @@ export default class XFormatter {
   async format(source: string, filePath: string): Promise<string> {
     const formatter = await this.formatter;
     if (!formatter) return source;
-
-    const { console, verbose, quiet: _quiet } = this.opts;
-
-    if (verbose) {
-      console.log(`Formatting ${filePath} with ${formatter.name}...`);
-    }
 
     const result = formatter(source, filePath);
     return result;
