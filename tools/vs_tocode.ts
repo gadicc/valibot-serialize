@@ -3,8 +3,8 @@ import { parseArgs } from "@std/cli";
 import * as path from "@std/path";
 import { fileList } from "./vs_tocode/util.ts";
 import * as _handlers from "./vs_tocode/handlers/index.ts";
-import * as _formatters from "./vs_tocode/formatters/index.ts";
 import type { HandlerTransformResult } from "./vs_tocode/handlers/_interface.ts";
+import XFormatter, { type Formatter } from "./vs_tocode/formatter.ts";
 
 // Useful for anyone not using the CLI directly
 export * as util from "./vs_tocode/util.ts";
@@ -34,7 +34,7 @@ export interface CreateFileOptions {
   /** The valibot package to import from, e.g. "valibot" or "@valibot/valibot" */
   valibotPackage: string;
   /** Optional formatter function to run on final output */
-  formatter?: (input: string) => string | Promise<string>;
+  formatter?: XFormatter | null;
 }
 
 const createFileDefaults: Omit<CreateFileOptions, "options"> = {
@@ -113,7 +113,9 @@ function createFileContents(
   }
 
   const contents = out.filter(Boolean).join("\n");
-  return opts.formatter ? opts.formatter(contents) : contents;
+  return opts.formatter
+    ? opts.formatter.format(contents, fileResult.outFilePath)
+    : contents;
 }
 
 export interface Options {
@@ -140,10 +142,7 @@ export interface Options {
   /** The module type: "esm" (ECMAScript Module) | "cjs" (CommonJS Module) */
   module: "esm" | "cjs";
   /** Formatter to use, "auto" to auto-detect, or a custom function */
-  formatter:
-    | keyof typeof _formatters
-    | "auto"
-    | ((input: string) => Promise<string> | string);
+  formatter: Formatter;
   /** Function to generate output file path from input file */
   genOutputFilePath(
     fileResult: Omit<FileResult, "outFilePath" | "contents">,
@@ -219,18 +218,12 @@ async function go(options: Partial<Options>) {
 
   const valibotPackage = isDenoProject ? "@valibot/valibot" : "valibot";
 
-  let formatter: ((input: string) => Promise<string> | string) | undefined;
-  if (options.formatter === "auto") {
-    for (const f of Object.values(_formatters)) {
-      if (await f.test()) {
-        formatter = f.format;
-        if (!opts.quiet) {
-          console.log(`Using formatter: ${f.name}`);
-        }
-        break;
-      }
-    }
-  }
+  const formatter = new XFormatter(opts.formatter, {
+    quiet: opts.quiet,
+    verbose: opts.verbose,
+    console,
+    projectRoot,
+  });
 
   const explicitFiles =
     opts.explicitFiles?.map((f) => path.resolve(f as string)) || [];
