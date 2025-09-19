@@ -194,7 +194,6 @@ async function writeFile(
     );
     if (dryRun) {
       console.log(contents.split("\n").map((l) => "     " + l).join("\n"));
-      console.log();
     }
   }
 
@@ -293,12 +292,20 @@ async function go(options: Partial<Options>) {
   )).filter((fr) => fr !== null);
 
   async function onChange(filePath: string) {
-    const fr = await processFile(filePath);
-    if (fr) {
-      if (!fileResults.find((f) => f.filePath === fr.filePath)) {
-        fileResults.push(fr);
+    try {
+      const fr = await processFile(filePath);
+      if (fr) {
+        if (!fileResults.find((f) => f.filePath === fr.filePath)) {
+          fileResults.push(fr);
+        }
+        await writeFile(fr, opts, projectRoot);
       }
-      await writeFile(fr, opts, projectRoot);
+    } catch (error) {
+      console.log();
+      console.error(`Error processing ${filePath}:`, error);
+      console.log("Still watching for changes...");
+      console.log();
+      return;
     }
   }
 
