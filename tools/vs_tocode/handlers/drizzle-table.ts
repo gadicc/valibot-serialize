@@ -32,9 +32,9 @@ export const transform: Handler["transform"] = async (symbol, object) => {
   return {
     exports: {
       // deno-lint-ignore no-explicit-any
-      [symbol + "Select"]: t(drizzleValibot.createInsertSchema(object as any)),
+      [symbol + "Select"]: t(drizzleValibot.createSelectSchema(object as any)),
       // deno-lint-ignore no-explicit-any
-      [symbol + "Insert"]: t(drizzleValibot.createSelectSchema(object as any)),
+      [symbol + "Insert"]: t(drizzleValibot.createInsertSchema(object as any)),
       // deno-lint-ignore no-explicit-any
       [symbol + "Update"]: t(drizzleValibot.createUpdateSchema(object as any)),
     },
