@@ -74,10 +74,13 @@ await build({
     for (const peerDep of Object.keys(pkgJson.peerDependencies)) {
       delete pkgJson.dependencies[peerDep];
     }
-    pkgJson.bin.vs_tocode = pkgJson.bin.vs_tocode.replace(
-      /\/esm\/tools\//,
-      "/esm/src/tools/",
-    );
+
+    // I think this is because of the import("package.json") somewhere.
+    const fixEsmPath = (path: string) => path.replace(/\/esm\//, "/esm/src/");
+    pkgJson.module = fixEsmPath(pkgJson.module);
+    pkgJson.exports["."].import = fixEsmPath(pkgJson.exports["."].import);
+    pkgJson.bin.vs_tocode = fixEsmPath(pkgJson.bin.vs_tocode);
+
     Deno.writeTextFileSync(
       "npm/package.json",
       JSON.stringify(pkgJson, null, 2) + "\n",
