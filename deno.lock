@@ -5,10 +5,8 @@
     "jsr:@deno/dnt@~0.42.3": "0.42.3",
     "jsr:@dprint/formatter@*": "0.4.1",
     "jsr:@standard-schema/spec@1": "1.0.0",
-    "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/assert@^1.0.13": "1.0.14",
     "jsr:@std/assert@^1.0.14": "1.0.14",
-    "jsr:@std/async@^1.0.13": "1.0.14",
     "jsr:@std/async@^1.0.14": "1.0.14",
     "jsr:@std/cli@^1.0.22": "1.0.22",
     "jsr:@std/data-structures@^1.0.9": "1.0.9",
@@ -27,6 +25,7 @@
     "npm:@biomejs/biome@^2.2.4": "2.2.4",
     "npm:@biomejs/js-api@3": "3.0.0_@biomejs+wasm-nodejs@2.2.4",
     "npm:@biomejs/wasm-nodejs@^2.2.4": "2.2.4",
+    "npm:@traversable/valibot-test@^0.0.16": "0.0.16_@traversable+registry@0.0.46_@traversable+valibot-types@0.0.15__@traversable+json@0.0.49___@traversable+registry@0.0.46___fast-check@4.3.0__@traversable+registry@0.0.46__valibot@1.1.0__fast-check@4.3.0_fast-check@4.3.0_valibot@1.1.0",
     "npm:@types/node@*": "24.2.0",
     "npm:drizzle-orm@~0.44.5": "0.44.5",
     "npm:drizzle-valibot@~0.4.2": "0.4.2_drizzle-orm@0.44.5_valibot@1.1.0",
@@ -101,7 +100,6 @@
       "integrity": "a490169f5ccb0f3ae9c94fbc69d2cd43603f2cffb41713a85f99bbb0e3087cbc",
       "dependencies": [
         "jsr:@std/assert@^1.0.13",
-        "jsr:@std/async@^1.0.13",
         "jsr:@std/data-structures",
         "jsr:@std/fs@^1.0.19",
         "jsr:@std/internal@^1.0.10",
@@ -433,6 +431,36 @@
     },
     "@sindresorhus/merge-streams@4.0.0": {
       "integrity": "sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ=="
+    },
+    "@traversable/json@0.0.49_@traversable+registry@0.0.46_fast-check@4.3.0": {
+      "integrity": "sha512-3f78MRJ8R3yqeD5Wc65H1/dcGt2tjrztTANrN3v/9NXeo9BpUZYWUiLYDjEFdPMheu1i1wwMNkOLm4RlyC7bbQ==",
+      "dependencies": [
+        "@traversable/registry",
+        "fast-check"
+      ],
+      "optionalPeers": [
+        "fast-check"
+      ]
+    },
+    "@traversable/registry@0.0.46": {
+      "integrity": "sha512-DiqVPWYAxMEJNfeiYwd0xw7D3QYSsQgAm/9bIrFOjwQZhjClo4nYAGP253l8OxpGmOIfEa+4KKZwb50zSLdLlA=="
+    },
+    "@traversable/valibot-test@0.0.16_@traversable+registry@0.0.46_@traversable+valibot-types@0.0.15__@traversable+json@0.0.49___@traversable+registry@0.0.46___fast-check@4.3.0__@traversable+registry@0.0.46__valibot@1.1.0__fast-check@4.3.0_fast-check@4.3.0_valibot@1.1.0": {
+      "integrity": "sha512-jDGMezHBcZhwOWO8IQyCvqXgY10KcZ1p2aysC1KxOdGwCKcbA27tOJ+JnHP94JS2IAJA0x3xFXiWSEBiuYub7g==",
+      "dependencies": [
+        "@traversable/registry",
+        "@traversable/valibot-types",
+        "fast-check",
+        "valibot"
+      ]
+    },
+    "@traversable/valibot-types@0.0.15_@traversable+json@0.0.49__@traversable+registry@0.0.46__fast-check@4.3.0_@traversable+registry@0.0.46_valibot@1.1.0_fast-check@4.3.0": {
+      "integrity": "sha512-YGqV9EQm2odS2mxxCjnLTtyoKl9mWiCnBml+OCJSIyKKMk/VZ/tjGU7icsPRJ1LgxOm8w+xQgBOXWT4osR6GvA==",
+      "dependencies": [
+        "@traversable/json",
+        "@traversable/registry",
+        "valibot"
+      ]
     },
     "@types/node@24.2.0": {
       "integrity": "sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==",
@@ -1737,7 +1765,7 @@
     "dependencies": [
       "jsr:@deno/dnt@~0.42.3",
       "jsr:@standard-schema/spec@1",
-      "jsr:@std/assert@1",
+      "jsr:@std/assert@^1.0.14",
       "jsr:@std/async@^1.0.14",
       "jsr:@std/cli@^1.0.22",
       "jsr:@std/expect@^1.0.17",
@@ -1747,6 +1775,7 @@
       "npm:@biomejs/biome@^2.2.4",
       "npm:@biomejs/js-api@3",
       "npm:@biomejs/wasm-nodejs@^2.2.4",
+      "npm:@traversable/valibot-test@^0.0.16",
       "npm:drizzle-orm@~0.44.5",
       "npm:drizzle-valibot@~0.4.2",
       "npm:drizzle-zod@~0.8.3",
