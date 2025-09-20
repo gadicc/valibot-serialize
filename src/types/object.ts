@@ -14,6 +14,13 @@ import type {
 
 export const typeName = "object" as const;
 
+export const supportedTypes = [
+  typeName,
+  "loose_object",
+  "strict_object",
+  "object_with_rest",
+] as const;
+
 // Serialized node shape for "object"
 export interface ObjectNode extends BaseNode<typeof typeName> {
   entries: Record<string, AnyNode>;
@@ -53,8 +60,9 @@ export const isSchemaNode: IsSchemaNode<ObjectNode> = (
 
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
-  return type === "object" || type === "loose_object" ||
-    type === "strict_object" || type === "object_with_rest";
+  return supportedTypes.includes(
+    (type as typeof supportedTypes[number]) ?? typeName,
+  );
 };
 
 export const matchesJsonSchema: MatchesJsonSchema = (schema) => {

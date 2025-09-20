@@ -35,6 +35,16 @@ import type { VoidNode } from "./types/void.ts";
 import type { AnyNode } from "./types/any.ts";
 import type { UnknownNode } from "./types/unknown.ts";
 import type { NeverNode } from "./types/never.ts";
+import type { FunctionNode } from "./types/function.ts";
+import type { NanNode } from "./types/nan.ts";
+import type { PromiseNode } from "./types/promise.ts";
+import type { IntersectNode } from "./types/intersect.ts";
+import type { VariantNode } from "./types/variant.ts";
+import type { ExactOptionalNode } from "./types/exact_optional.ts";
+import type { NonNullableNode } from "./types/non_nullable.ts";
+import type { NonNullishNode } from "./types/non_nullish.ts";
+import type { NonOptionalNode } from "./types/non_optional.ts";
+import type { UndefinedableNode } from "./types/undefinedable.ts";
 
 /**
  * Union of all AST node variants used by serialized Valibot schemas.
@@ -51,20 +61,30 @@ export type SchemaNode =
   | FileNode
   | BlobNode
   | SymbolNode
+  | FunctionNode
   | LiteralNode
   | ArrayNode
   | ObjectNode
   | OptionalNode
   | NullableNode
   | NullishNode
+  | ExactOptionalNode
+  | NonNullableNode
+  | NonNullishNode
+  | NonOptionalNode
+  | UndefinedableNode
   | NullNode
   | UnionNode
+  | IntersectNode
   | TupleNode
   | RecordNode
   | EnumNode
   | PicklistNode
   | SetNode
   | MapNode
+  | VariantNode
+  | NanNode
+  | PromiseNode
   | UndefinedNode
   | VoidNode;
 

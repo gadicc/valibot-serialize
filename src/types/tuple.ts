@@ -15,9 +15,17 @@ import type {
 export const typeName = "tuple" as const;
 
 // Serialized node shape for "tuple"
+export const supportedTypes = [
+  typeName,
+  "tuple_with_rest",
+  "loose_tuple",
+  "strict_tuple",
+] as const;
+
 export interface TupleNode extends BaseNode<typeof typeName> {
   items: AnyNode[];
   rest?: AnyNode;
+  mode?: "loose" | "strict";
 }
 
 export const isSchemaNode: IsSchemaNode<TupleNode> = (
@@ -37,7 +45,8 @@ export const isSchemaNode: IsSchemaNode<TupleNode> = (
 
 export const matches: Matches = (any: AnySchema): boolean => {
   const type = any?.type as string | undefined;
-  return type === typeName || type === "tuple_with_rest";
+  return type === typeName || type === "tuple_with_rest" ||
+    type === "loose_tuple" || type === "strict_tuple";
 };
 
 export const matchesJsonSchema: MatchesJsonSchema = (schema) => {
@@ -62,6 +71,8 @@ export const encode: Encoder<TupleNode> = function encodeTuple(
   else if (t === "tuple_with_rest") {
     throw new Error("Unsupported tuple_with_rest schema: missing rest");
   }
+  if (t === "loose_tuple") node.mode = "loose";
+  if (t === "strict_tuple") node.mode = "strict";
   return node;
 };
 
@@ -72,6 +83,12 @@ export const decode: Decoder<TupleNode> = function decodeTuple(node, ctx) {
       ctx.decodeNode(node.rest) as never,
     );
   }
+  if (node.mode === "loose") {
+    return v.looseTuple(node.items.map((i) => ctx.decodeNode(i)) as never);
+  }
+  if (node.mode === "strict") {
+    return v.strictTuple(node.items.map((i) => ctx.decodeNode(i)) as never);
+  }
   return v.tuple(node.items.map((i) => ctx.decodeNode(i)) as never);
 };
 
@@ -79,6 +96,12 @@ export const toCode: ToCode<TupleNode> = function tupleToCode(node, ctx) {
   const items = `[${node.items.map((i) => ctx.nodeToCode(i)).join(",")}]`;
   if (node.rest) {
     return `v.tupleWithRest(${items},${ctx.nodeToCode(node.rest)})`;
+  }
+  if (node.mode === "loose") {
+    return `v.looseTuple(${items})`;
+  }
+  if (node.mode === "strict") {
+    return `v.strictTuple(${items})`;
   }
   return `v.tuple(${items})`;
 };
@@ -93,6 +116,8 @@ export const toJsonSchema: ToJsonSchema<TupleNode> = function tupleToJsonSchema(
   } as JsonSchema;
   if (node.rest) {
     (schema as Record<string, unknown>).items = ctx.convertNode(node.rest);
+    (schema as Record<string, unknown>).minItems = node.items.length;
+  } else if (node.mode === "loose") {
     (schema as Record<string, unknown>).minItems = node.items.length;
   } else {
     (schema as Record<string, unknown>).items = false as unknown as JsonSchema;
