@@ -31,12 +31,15 @@ function logger({ schema, data, error }: LoggerDeps) {
 }
 
 const fuzzTestsEnabled = (() => {
+  /*
   try {
     return Deno.env.get("FUZZ_TESTS") === "1";
   } catch (_error) {
     console.log("Deno.env.get is not available, skipping fuzz tests");
     return false;
   }
+  */
+  return true;
 })();
 
 if (fuzzTestsEnabled) {
@@ -57,7 +60,6 @@ if (fuzzTestsEnabled) {
           const outputSchema = vs.toValibot(serialized);
 
           // the real test:
-          console.log(1);
           try {
             expect(() => v.parse(outputSchema, invalidData)).toThrow();
           } catch (error) {
@@ -80,7 +82,7 @@ if (fuzzTestsEnabled) {
         },
       );
     });
-    it.only("Invariant: vs.toValibot does not change the schema's semantics", () => {
+    it("Invariant: vs.toCode does not change the schema's semantics", () => {
       return fc.assert(
         fc.asyncProperty(SeedInvalidDataGenerator, async (seed) => {
           const inputSchema = seedToSchema(seed);
