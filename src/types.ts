@@ -40,6 +40,7 @@ import type { NanNode } from "./types/nan.ts";
 import type { PromiseNode } from "./types/promise.ts";
 import type { IntersectNode } from "./types/intersect.ts";
 import type { VariantNode } from "./types/variant.ts";
+import type { LazyNode } from "./types/lazy.ts";
 import type { ExactOptionalNode } from "./types/exact_optional.ts";
 import type { NonNullableNode } from "./types/non_nullable.ts";
 import type { NonNullishNode } from "./types/non_nullish.ts";
@@ -86,7 +87,8 @@ export type SchemaNode =
   | NanNode
   | PromiseNode
   | UndefinedNode
-  | VoidNode;
+  | VoidNode
+  | LazyNode;
 
 /**
  * Stable envelope that wraps a serialized Valibot schema AST.

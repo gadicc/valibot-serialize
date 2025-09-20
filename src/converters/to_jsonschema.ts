@@ -1,6 +1,9 @@
 import type { SchemaNode, SerializedSchema } from "../types.ts";
 import * as codecs from "../types/index.ts";
 
+const jsonCache = new WeakMap<SchemaNode, JsonSchema>();
+const visiting = new WeakSet<SchemaNode>();
+
 /**
  * JSON Schema (Draft 2020-12) object produced from a serialized schema.
  *
@@ -20,10 +23,22 @@ export function toJsonSchema(serialized: SerializedSchema): JsonSchema {
 }
 
 function convertNode(node: SchemaNode): JsonSchema {
-  for (const c of Object.values(codecs)) {
-    if (c.typeName === node.type && c.toJsonSchema) {
-      return c.toJsonSchema(node as never, { convertNode });
+  const cached = jsonCache.get(node);
+  if (cached) return cached;
+  if (visiting.has(node)) {
+    throw new Error("Cyclic schema detected while generating JSON Schema");
+  }
+  visiting.add(node);
+  try {
+    for (const c of Object.values(codecs)) {
+      if (c.typeName === node.type && c.toJsonSchema) {
+        const schema = c.toJsonSchema(node as never, { convertNode });
+        jsonCache.set(node, schema);
+        return schema;
+      }
     }
+  } finally {
+    visiting.delete(node);
   }
 
   throw new Error(`Unsupported node type: ${(node as { type: string }).type}`);

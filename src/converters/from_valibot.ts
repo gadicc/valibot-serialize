@@ -8,6 +8,9 @@ import * as codecs from "../types/index.ts";
 
 type AnySchema = BaseSchema<unknown, unknown, BaseIssue<unknown>>;
 
+// Cache schema encodings to support recursive builders like v.lazy.
+const encodeCache = new WeakMap<AnySchema, SchemaNode>();
+
 /**
  * Convert a Valibot schema into a portable JSON-friendly representation.
  *
@@ -30,15 +33,28 @@ export function fromValibot<T extends AnySchema>(schema: T): SerializedSchema {
 }
 
 function encodeNode(schema: AnySchema): SchemaNode {
+  const cached = encodeCache.get(schema);
+  if (cached) return cached;
+
+  const placeholder = {} as SchemaNode;
+  encodeCache.set(schema, placeholder);
+
   // Read type directly to avoid JSON.stringify BigInt errors
   const any = schema as unknown as { type?: string } & Record<string, unknown>;
   const type = any.type;
   // Dispatch to codecs that can detect from Valibot schema
-  for (const c of Object.values(codecs)) {
-    if (c.matches(schema as never)) {
-      return c.encode(any as never, { encodeNode });
+  try {
+    for (const c of Object.values(codecs)) {
+      if (c.matches(schema as never)) {
+        const node = c.encode(any as never, { encodeNode });
+        return Object.assign(placeholder, node);
+      }
     }
+  } catch (error) {
+    encodeCache.delete(schema);
+    throw error;
   }
+  encodeCache.delete(schema);
   throw new Error(
     `Unsupported schema type for serialization: ${String(type)}`,
   );

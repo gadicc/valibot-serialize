@@ -37,3 +37,4 @@ export * as nan from "./nan.ts";
 export * as promise from "./promise.ts";
 export * as intersect from "./intersect.ts";
 export * as variant from "./variant.ts";
+export * as lazy from "./lazy.ts";
