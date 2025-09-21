@@ -304,8 +304,8 @@ with signatures. I then asked OpenAI Codex to complete the code.
 
 Codex did so, and consistently gave some great suggestions on what to do next,
 and I kept saying yes to see where it would go. Eventually then I moved on to
-prompts for cleanup, refactoring, project structure, etc, but definitely more is
-needed.
+prompts for cleanup, refactoring, project structure, etc. The CLI tool was
+written by hand.
 
 Please do bring any weird issues to our attention, and feel free to request
 clearer docs, examples, etc. Working on that next.
