@@ -1,3 +1,7 @@
+/**
+ * @file Fuzz tests for Valibot <-> x <-> Valibot conversion.
+ * With deep thanks to @ahrjarrett, author of @traversable/schema.
+ */
 import * as v from "@valibot/valibot";
 import * as fc from "fast-check";
 import * as vs from "../main.ts";
